@@ -1,64 +1,58 @@
 # Trust State Machine
 
-## States
+## How it works
 
-```mermaid
-stateDiagram-v2
-    [*] --> Unknown
-    Unknown --> Distrusted: failure
-    Unknown --> Normal: success
-    Distrusted --> Unknown: timeout
-    Distrusted --> Banned: escalation
-    Normal --> Trusted: consecutive_success > threshold
-    Trusted --> Normal: failure
-    Trusted --> Distrusted: 3 failures
-```
+Each client fingerprint gets a trust score. The score increases with good behavior and decreases with bad behavior. Based on the score, clients are classified into trust levels.
 
-| State | Meaning |
-|-------|---------|
-| Unknown | New client, no history |
-| Normal | Passing requests |
-| Trusted | Verified via proof-of-work |
-| Distrusted | Suspicious activity detected |
-| Banned | Blocked |
+## Trust levels
 
-## Enable
+| Level | Score range | Behavior |
+|-------|-------------|----------|
+| TRUSTED | score < 0.2 | Fast-tracked, minimal checks |
+| STANDARD | 0.2 <= score < 0.5 | Normal rate limiting |
+| SUSPICIOUS | 0.5 <= score < 1.0 | Additional scrutiny |
+| BANNED | score >= 1.0 or manual | Blocked |
+
+## Usage
 
 ```python
-from drogue.core.config import DrogueConfig
+from drogue.protection.trust import TrustManager
 
-config = DrogueConfig(
-    trust_enabled=True,
-    trust_ttl=3600.0,         # 1 hour
-    trust_max_size=100_000,
-)
+manager = TrustManager()
+
+# Update trust score (negative = suspicious, positive = good)
+level = manager.update("fingerprint_abc", score=-0.1)
+# TrustLevel.TRUSTED
+
+# Check trust level
+level = manager.check("fingerprint_abc")
+
+# Get full state
+state = manager.get_state("fingerprint_abc")
+# TrustState(level=TrustLevel.STANDARD, score=0.5, ...)
+
+# Quick checks
+assert manager.is_trusted("fingerprint_abc") == True
+assert manager.is_banned("fingerprint_abc") == False
+
+# Manual ban/unban
+manager.ban("fingerprint_abc")
+manager.poison("fingerprint_abc")  # mark as threat
+
+# Stats
+stats = manager.get_stats()
 ```
-
-## State transitions
-
-| Trigger | From | To |
-|---------|------|----|
-| Request succeeds | Unknown | Normal |
-| Request fails | Unknown | Distrusted |
-| `consecutive_successes > trusted_threshold` | Normal | Trusted |
-| Request fails | Trusted | Normal (or Distrusted after 3) |
-| Request fails | Distrusted | Banned |
-| TTL expires | Distrusted | Unknown |
 
 ## Standalone usage
 
 ```python
 from drogue.protection.trust import TrustManager
 
-manager = TrustManager(config)
-
-# Check state
-state = manager.get_state("client_abc")  # "unknown"
-
-# Record events
-manager.record_success("client_abc")
-manager.record_failure("client_abc")
-
-# Force state
-manager.set_state("client_abc", "trusted")
+manager = TrustManager(
+    max_fingerprints=100000,
+    trusted_ttl=14400.0,       # 4 hours
+    standard_ttl=1800.0,       # 30 minutes
+    score_threshold_trusted=0.2,
+    score_threshold_standard=0.5,
+)
 ```

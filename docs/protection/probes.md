@@ -5,48 +5,41 @@
 | Pattern | Description |
 |---------|-------------|
 | Sequential paths | Crawling `/page1`, `/page2`, `/page3` |
+| High error rate | Many 4xx/5xx responses |
 | Timing regularity | Requests at fixed intervals |
-| User-agent diversity | Rotating user agents |
 
-## Enable
-
-```python
-from drogue.core.config import DrogueConfig
-
-config = DrogueConfig(
-    probes_enabled=True,
-    probes_path_threshold=10,     # paths to detect sequential pattern
-    probes_timing_threshold=0.1,  # timing regularity threshold
-)
-```
-
-## Configuration
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `probes_enabled` | `False` | Enable probe detection |
-| `probes_path_threshold` | `10` | Paths to trigger sequential pattern |
-| `probes_timing_threshold` | `0.1` | Timing regularity threshold (0-1) |
-| `probes_window` | `300.0` | Observation window (seconds) |
-
-## Standalone usage
+## Usage
 
 ```python
 from drogue.protection.probes import ProbeDetector
 
-detector = ProbeDetector(window=300.0, path_threshold=10, timing_threshold=0.1)
+detector = ProbeDetector(
+    window=300.0,           # observation window (seconds)
+    probe_threshold=3,      # paths to trigger detection
+    min_error_rate=0.5,     # minimum error rate threshold
+    max_time_span=60.0,     # max time for sequential pattern
+    threat_boost=0.3,       # threat score boost per probe
+    max_clients=10000,
+)
 
 # Record requests
-detector.record("192.168.1.1", "/page1", "Mozilla/5.0")
-detector.record("192.168.1.1", "/page2", "Mozilla/5.0")
+detector.record("scanner.ip", "/page1", status_code=200, method="GET")
+detector.record("scanner.ip", "/page2", status_code=200, method="GET")
+detector.record("scanner.ip", "/admin", status_code=403, method="GET")
 
-# Check
-if detector.is_probe("192.168.1.1"):
-    print("Probe detected")
+# Check if client is probing
+is_probing = detector.is_probing("scanner.ip")
 
-# Score
-score = detector.get_probe_score("192.168.1.1")  # 0.0 to 1.0
+# Get signal details
+signal = detector.get_signal("scanner.ip")
 
-# Clear
-detector.clear("192.168.1.1")
+# Threat boost (0.0 to 1.0)
+boost = detector.get_threat_boost("scanner.ip")
+
+# Cleanup
+detector.clear_client("scanner.ip")
+detector.clear_all()
+
+# Stats
+stats = detector.get_stats()
 ```

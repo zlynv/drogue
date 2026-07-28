@@ -5,20 +5,21 @@
 ```python
 from drogue.observability.metrics import DrogueMetrics
 
-metrics = DrogueMetrics()
+metrics = DrogueMetrics(max_routes=500)
 
 # Record events
-metrics.record_request("allowed")
-metrics.record_request("limited")
-metrics.record_rate_limit_time(0.000043)
-metrics.record_trust_transition("unknown", "normal")
-metrics.record_ban("192.168.1.1")
-metrics.record_detection("192.168.1.1", "ddos")
-metrics.record_circuit_breaker_trip()
+metrics.record_allowed(route="/api/data")
+metrics.record_rejected(route="/api/data")
+metrics.record_check_latency(0.000043)
+metrics.record_ban("192.168.1.1", level=1)
+metrics.record_ban_expired()
+metrics.record_ddos_detection("192.168.1.1")
+metrics.record_circuit_trip()
+metrics.record_circuit_reset()
 
 # Export
-prometheus_output = metrics.export_prometheus()
-json_output = metrics.export_json()
+prometheus_output = metrics.to_prometheus()  # Prometheus text format
+summary = metrics.get_summary()              # dict with all counts
 ```
 
 ## DrogueLogger

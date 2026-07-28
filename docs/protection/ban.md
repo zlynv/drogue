@@ -3,60 +3,60 @@
 ## How it works
 
 1. Each violation increments a counter for the client
-2. Ban duration doubles with each escalation (5 min, 10 min, 20 min, ..., 160 min max)
-3. After `ban_max_level` violations, client is banned for `ban_max_duration`
-4. State resets if `ban_reset_window` elapses without violations
+2. Ban duration escalates with each level (60s, 5min, 15min, 1h, 2h, 4h)
+3. After `threshold` violations within the window, client is banned
+4. Violations expire after the window elapses
 
-## Enable
+## Usage
+
+```python
+from drogue.protection.ban import ProgressiveBanManager
+
+manager = ProgressiveBanManager(
+    threshold=5,           # violations before ban
+    window=300.0,          # violation window (seconds)
+    max_violations=20,
+    escalation=[60, 300, 900, 3600, 7200, 14400],
+)
+
+# Record a violation
+count = manager.record_violation("192.168.1.1")
+
+# Check ban status
+is_banned = manager.is_banned("192.168.1.1")
+
+# Get ban details
+ban = manager.get_ban("192.168.1.1")
+# BanEntry(key='192.168.1.1', level=1, banned_at=..., expires_at=..., violation_count=5)
+
+level = manager.get_ban_level("192.168.1.1")
+retry_after = manager.get_retry_after("192.168.1.1")
+
+# Clear
+manager.clear_ban("192.168.1.1")
+manager.clear_all()
+```
+
+## Configuration
 
 ```python
 from drogue.core.config import DrogueConfig
 
 config = DrogueConfig(
     ban_enabled=True,
-    ban_initial_duration=300.0,      # 5 minutes
-    ban_max_duration=9600.0,         # 160 minutes
-    ban_max_level=6,
-    ban_reset_window=3600.0,         # 1 hour
+    ban_threshold=5,
+    ban_window=300.0,
+    ban_escalation=[60, 300, 900, 3600, 7200, 14400],
 )
-```
-
-## Configuration
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `ban_enabled` | `False` | Enable auto-ban |
-| `ban_initial_duration` | `300.0` | First ban duration (seconds) |
-| `ban_max_duration` | `9600.0` | Maximum ban duration |
-| `ban_max_level` | `6` | Maximum escalation level |
-| `ban_reset_window` | `3600.0` | Time without violations to reset level |
-
-## Ban state
-
-```python
-from drogue.protection.ban import BanManager
-
-manager = BanManager(config)
-
-# Check if banned
-if manager.is_banned("192.168.1.1"):
-    print("Client is banned")
-
-# Record violation
-manager.record_violation("192.168.1.1")
-
-# Get ban info
-info = manager.get_ban_info("192.168.1.1")
-# {"banned": True, "until": 1690000000.0, "level": 2, "duration": 1200.0}
 ```
 
 ## Ban duration progression
 
 | Level | Duration |
 |-------|----------|
-| 1 | 5 min |
-| 2 | 10 min |
-| 3 | 20 min |
-| 4 | 40 min |
-| 5 | 80 min |
-| 6 | 160 min |
+| 1 | 1 min |
+| 2 | 5 min |
+| 3 | 15 min |
+| 4 | 1 hour |
+| 5 | 2 hours |
+| 6 | 4 hours |

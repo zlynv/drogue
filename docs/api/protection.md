@@ -1,44 +1,100 @@
-# Protection API Reference
+# Protection API
+
+## TrustManager
+
+```python
+from drogue.protection.trust import TrustManager, TrustLevel
+
+manager = TrustManager(
+    max_fingerprints=100000,
+    trusted_ttl=14400.0,    # 4 hours
+    standard_ttl=1800.0,    # 30 minutes
+    score_threshold_trusted=0.2,
+    score_threshold_standard=0.5,
+)
+
+# Update trust score (negative = suspicious, positive = good)
+level = manager.update("fingerprint_abc", score=-0.1)
+# TrustLevel.TRUSTED / STANDARD / SUSPICIOUS / BANNED
+
+# Check trust level
+level = manager.check("fingerprint_abc")
+
+# Get state
+state = manager.get_state("fingerprint_abc")
+# TrustState(level=TrustLevel.STANDARD, score=0.5, ...)
+
+# Check by level
+assert manager.is_trusted("fingerprint_abc") == True
+assert manager.is_banned("fingerprint_abc") == False
+
+# Manual ban
+manager.ban("fingerprint_abc")
+
+# Poison (mark as threat)
+manager.poison("fingerprint_abc")
+
+# Stats
+stats = manager.get_stats()
+```
 
 ## ProgressiveBanManager
 
 ```python
 from drogue.protection.ban import ProgressiveBanManager
 
-ban = ProgressiveBanManager(
-    escalation=[0, 60, 600, 3600, 86400],  # 0s, 1m, 10m, 1hr, 24hr
-    threshold=5,                             # Violations before ban
-    window=300.0,                            # Violation window (seconds)
-    max_violations=10,                       # Max violations before permanent ban
+manager = ProgressiveBanManager(
+    threshold=5,           # violations before ban
+    window=300.0,          # violation window (seconds)
+    max_violations=20,
+    escalation=[60, 300, 900, 3600, 7200, 14400],  # durations per level
 )
+
+# Record a violation
+count = manager.record_violation("192.168.1.1")
+
+# Check ban status
+is_banned = manager.is_banned("192.168.1.1")
+
+# Get ban details
+ban = manager.get_ban("192.168.1.1")
+# BanEntry(key='192.168.1.1', level=1, banned_at=..., expires_at=..., violation_count=5)
+
+level = manager.get_ban_level("192.168.1.1")
+retry_after = manager.get_retry_after("192.168.1.1")
+
+# Clear
+manager.clear_ban("192.168.1.1")
+manager.clear_all()
 ```
 
-**Methods:**
-
-| Method | Description |
-|--------|-------------|
-| `record_violation(key)` | Record violation, auto-ban if threshold exceeded |
-| `is_banned(key)` | Check if client is banned |
-| `get_ban(key)` | Get BanEntry for client |
-| `get_retry_after(key)` | Get seconds until ban expires |
-| `get_ban_level(key)` | Get current ban escalation level |
-| `clear_ban(key)` | Remove ban for client |
-| `clear_all()` | Clear all bans |
-| `get_active_bans()` | Get all active ban entries |
-
-**BanEntry:**
+## CircuitBreaker
 
 ```python
-@dataclass
-class BanEntry:
-    key: str
-    level: int
-    banned_at: float
-    expires_at: float
-    violation_count: int
-```
+from drogue.protection.circuit import CircuitBreaker
 
----
+breaker = CircuitBreaker(
+    failure_threshold=5,
+    recovery_timeout=30.0,
+    jitter=0.2,
+    half_open_max_calls=1,
+)
+
+# Check if request is allowed
+if breaker.allow_request():
+    try:
+        result = do_work()
+        breaker.record_success()
+    except Exception:
+        breaker.record_failure()
+
+# Get status
+status = breaker.get_status()
+# {"state": "closed", "failure_count": 0, ...}
+
+# Manual reset
+breaker.reset()
+```
 
 ## DDoSDetector
 
@@ -46,155 +102,31 @@ class BanEntry:
 from drogue.protection.ddos import DDoSDetector
 
 detector = DDoSDetector(
-    window=60.0,           # Sliding window (seconds)
-    z_threshold=3.0,       # Z-score threshold
-    min_samples=100,       # Minimum samples for Z-score
-    bucket_size=1.0,       # Time bucket size (seconds)
-    max_clients=100_000,   # Maximum clients to track
+    window=60.0,
+    z_threshold=3.0,
+    min_samples=100,
+    bucket_size=1.0,
+    max_clients=10000,
 )
-```
 
-**Methods:**
+# Record HTTP traffic
+detector.record("192.168.1.1")
 
-| Method | Description |
-|--------|-------------|
-| `record(client_key)` | Record HTTP request |
-| `record_ws(client_key)` | Record WebSocket message |
-| `is_anomalous(client_key)` | Check if client is anomalous |
-| `is_http_anomalous(client_key)` | Check HTTP anomaly only |
-| `is_ws_anomalous(client_key)` | Check WebSocket anomaly only |
-| `get_client_rate(client_key)` | Get client's current HTTP rate |
-| `get_ws_client_rate(client_key)` | Get client's current WS rate |
-| `get_global_rate()` | Get global HTTP request rate |
-| `get_ws_global_rate()` | Get global WS message rate |
-| `get_stats()` | Get detector statistics |
+# Record WebSocket traffic
+detector.record_ws("client_abc")
 
-**Stats:**
+# Check anomalies
+is_anomalous = detector.is_anomalous("192.168.1.1")
+is_http = detector.is_http_anomalous("192.168.1.1")
+is_ws = detector.is_ws_anomalous("client_abc")
 
-```python
+# Get rates
+rate = detector.get_client_rate("192.168.1.1")
+global_rate = detector.get_global_rate()
+
+# Stats
 stats = detector.get_stats()
-# {
-#     "http_tracked_clients": 5000,
-#     "ws_tracked_clients": 1000,
-#     "http_global_rate": 15000.0,
-#     "ws_global_rate": 5000.0,
-#     "http_window": 60.0,
-#     "ws_window": 60.0,
-#     "z_threshold": 3.0,
-# }
 ```
-
----
-
-## TrustManager
-
-```python
-from drogue.protection.trust import TrustManager
-
-trust = TrustManager(
-    max_fingerprints=100_000,
-    trusted_ttl=3600.0,                # 1 hour
-    standard_ttl=1800.0,               # 30 minutes
-    score_threshold_trusted=0.8,       # Score >= 0.8 = TRUSTED
-    score_threshold_standard=0.5,      # Score >= 0.5 = STANDARD
-)
-```
-
-**TrustLevel Enum:**
-
-```python
-from drogue.protection.trust import TrustLevel
-
-TrustLevel.UNKNOWN      # Not yet evaluated
-TrustLevel.EVALUATED    # Has been evaluated
-TrustLevel.TRUSTED      # High trust (skip expensive checks)
-TrustLevel.STANDARD     # Normal trust
-TrustLevel.SUSPICIOUS   # Low trust
-TrustLevel.POISONED     # Poisoned (attacker tried to manipulate)
-TrustLevel.BANNED       # Banned
-```
-
-**Methods:**
-
-| Method | Description |
-|--------|-------------|
-| `check(fingerprint)` | Get TrustState for fingerprint |
-| `is_trusted(fingerprint)` | Check if fingerprint is TRUSTED |
-| `update(fingerprint, score)` | Update trust score |
-| `poison(fingerprint)` | Poison fingerprint (attacker detected) |
-| `ban(fingerprint)` | Ban fingerprint |
-| `is_banned(fingerprint)` | Check if banned |
-| `get_state(fingerprint)` | Get TrustState |
-| `get_stats()` | Get trust statistics |
-| `clear()` | Clear all trust states |
-
-**TrustState:**
-
-```python
-@dataclass
-class TrustState:
-    level: TrustLevel
-    created_at: float
-    expires_at: float
-    score: float
-    request_count: int
-    anomaly_count: int
-
-    @property
-    def expired(self) -> bool: ...
-
-    @property
-    def age(self) -> float: ...
-```
-
----
-
-## SentinelDetector
-
-```python
-from drogue.protection.sentinel import SentinelDetector, extract_features
-
-detector = SentinelDetector(
-    n_features=5,
-    n_trees=100,
-    window_size=256,
-    max_depth=15,
-    target_fpr=0.01,       # Target false positive rate
-    score_window=1000,     # Samples for threshold calibration
-)
-```
-
-**Methods:**
-
-| Method | Description |
-|--------|-------------|
-| `analyze(features)` | Analyze feature vector, return anomaly score |
-| `get_threshold()` | Get current anomaly threshold |
-| `get_stats()` | Get detector statistics |
-
-**Feature Extraction:**
-
-```python
-context = {
-    "rate": 50.0,        # Requests per minute
-    "path_diversity": 0.3, # Unique paths / total
-    "error_ratio": 0.1,   # 4xx+5xx / total
-    "hour_sin": 0.5,      # sin(hour / 24 * 2π)
-    "hour_cos": 0.866,    # cos(hour / 24 * 2π)
-}
-
-features = extract_features(context)
-# Returns list of 5 floats
-
-score = detector.analyze(features)
-threshold = detector.get_threshold()
-
-if score > threshold:
-    # Anomaly detected
-    pass
-```
-
----
 
 ## ProbeDetector
 
@@ -202,102 +134,76 @@ if score > threshold:
 from drogue.protection.probes import ProbeDetector
 
 detector = ProbeDetector(
-    window=300.0,           # Time window (seconds)
-    probe_threshold=3,      # Min unique paths for probe
-    min_error_rate=0.5,     # Min error rate to flag
-    max_time_span=60.0,     # Max time span for probe
-    threat_boost=0.3,       # Threat score boost
-    max_clients=10_000,     # Max clients to track
-    cleanup_interval=60.0,  # Cleanup interval (seconds)
+    window=300.0,
+    probe_threshold=3,
+    min_error_rate=0.5,
+    max_time_span=60.0,
+    threat_boost=0.3,
+    max_clients=10000,
 )
+
+# Record requests
+detector.record("scanner.ip", "/page1", status_code=200, method="GET")
+
+# Check if client is probing
+is_probing = detector.is_probing("scanner.ip")
+
+# Get signal details
+signal = detector.get_signal("scanner.ip")
+
+# Threat boost (0.0 to 1.0)
+boost = detector.get_threat_boost("scanner.ip")
+
+# Cleanup
+detector.clear_client("scanner.ip")
+detector.clear_all()
 ```
-
-**Methods:**
-
-| Method | Description |
-|--------|-------------|
-| `record(client_id, path, status_code, method, timestamp)` | Record request |
-| `is_probing(client_id)` | Check if client is probing |
-| `get_threat_boost(client_id)` | Get threat score boost |
-| `get_signal(client_id)` | Get ProbeSignal |
-| `get_stats()` | Get detector statistics |
-| `clear_client(client_id)` | Clear client data |
-| `clear_all()` | Clear all data |
-
-**ProbeSignal:**
-
-```python
-@dataclass
-class ProbeSignal:
-    client_id: str
-    unique_paths: int
-    error_count: int
-    total_count: int
-    time_span: float
-    threat_boost: float
-    detected_at: float
-```
-
----
 
 ## CIDRFilter
 
 ```python
 from drogue.protection.cidr import CIDRFilter
 
-filter = CIDRFilter(
-    allowlist=["10.0.0.0/8"],
-    denylist=["192.168.1.100/32"],
+cidr = CIDRFilter(
+    allowlist=["192.168.0.0/16"],
+    denylist=["185.220.101.0/24"],
 )
+
+# Add/remove
+cidr.add_to_allowlist("10.0.0.0/8")
+cidr.add_to_denylist("2001:db8::/32")
+cidr.remove_from_allowlist("10.0.0.0/8")
+
+# Check
+is_allowed = cidr.is_allowed("192.168.1.1")
+is_denied = cidr.is_denied("185.220.101.50")
+
+# Load from file
+count = cidr.load_from_file("blocked_ips.txt", list_type="denylist")
+
+# Stats
+stats = cidr.get_stats()
 ```
-
-**Methods:**
-
-| Method | Description |
-|--------|-------------|
-| `is_denied(ip)` | Check if IP is denied |
-| `is_allowed(ip)` | Check if IP is allowed |
-| `add_to_denylist(cidr)` | Add CIDR to denylist |
-| `add_to_allowlist(cidr)` | Add CIDR to allowlist |
-| `remove_from_denylist(cidr)` | Remove CIDR from denylist |
-| `remove_from_allowlist(cidr)` | Remove CIDR from allowlist |
-| `load_from_file(path, list_type)` | Load CIDRs from file |
-| `get_stats()` | Get filter statistics |
-
-**File Format:**
-
-```
-# Comments start with #
-192.168.1.100/32
-10.0.0.0/8
-172.16.0.0/12
-```
-
----
 
 ## AdaptiveRateLimiter
 
 ```python
 from drogue.protection.adaptive import AdaptiveRateLimiter
 
-adaptive = AdaptiveRateLimiter(
-    cpu_threshold=0.8,       # Reduce when CPU > 80%
-    memory_threshold=0.8,    # Reduce when memory > 80%
-    latency_threshold=1.0,   # Reduce when p95 > 1s
-    check_interval=5.0,      # Check every 5 seconds
+limiter = AdaptiveRateLimiter(
+    cpu_threshold=0.8,
+    memory_threshold=0.8,
+    latency_threshold=1.0,
+    check_interval=5.0,
 )
-```
 
-**Methods:**
+# Get effective limit under load
+effective = limiter.get_effective_limit(base_limit=1000)
 
-| Method | Description |
-|--------|-------------|
-| `get_effective_limit(base_limit)` | Get adjusted limit |
-| `record_latency(latency)` | Record request latency |
-| `get_metrics()` | Get system metrics |
+# Record latency for adaptive scaling
+limiter.record_latency(0.05)
 
-**Dependencies:**
-
-```bash
-pip install drogue[adaptive]
+# Get current metrics
+metrics = limiter.get_metrics()
+# {"cpu_percent": 65.2, "memory_percent": 72.1, ...}
 ```
