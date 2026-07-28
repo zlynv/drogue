@@ -36,6 +36,9 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/zlynv
 
+extra_javascript:
+  - https://unpkg.com/mermaid/dist/mermaid.min.js
+
 plugins:
   - search
 
@@ -102,7 +105,11 @@ nav:
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - admonition
