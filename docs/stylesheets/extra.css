@@ -1,0 +1,60 @@
+/* drogue docs - minimal professional styling */
+
+/* Feature grid for landing page */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.grid-item {
+  padding: 1.25rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.grid-item:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.grid-item h3 {
+  margin-top: 0 !important;
+  font-size: 0.95rem;
+}
+
+.grid-item p {
+  margin-bottom: 0;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* Stats row */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  background: var(--md-code-bg-color);
+  text-align: center;
+}
+
+.stat-item .stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--md-accent-fg-color);
+}
+
+.stat-item .stat-label {
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+/* Tabs content styling */
+.md-typeset .tabbed-set > .tabbed-content {
+  padding-top: 0.5rem;
+}

@@ -1,0 +1,113 @@
+site_name: drogue
+site_description: Production-ready rate limiting and DDoS protection for Python web frameworks
+site_author: Zlynv
+site_url: https://zlynv.github.io/drogue/
+
+repo_name: zlynv/drogue
+repo_url: https://github.com/zlynv/drogue
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/zlynv
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick Start: quickstart.md
+  - Getting Started:
+    - FastAPI: getting-started/fastapi.md
+    - Flask: getting-started/flask.md
+    - Django: getting-started/django.md
+    - Redis: getting-started/redis.md
+  - Concepts:
+    - Architecture: concepts/architecture.md
+    - Algorithms: concepts/algorithms.md
+    - Storage: concepts/storage.md
+    - Identity: concepts/identity.md
+  - Configuration:
+    - Overview: configuration/overview.md
+    - Algorithms: configuration/algorithms.md
+    - Rate Limit Strings: configuration/rate-limit-strings.md
+  - Frameworks:
+    - FastAPI: frameworks/fastapi.md
+    - Django: frameworks/django.md
+    - Flask: frameworks/flask.md
+  - Protection:
+    - DDoS Detection: protection/ddos.md
+    - Progressive Auto-Ban: protection/ban.md
+    - Trust State Machine: protection/trust.md
+    - Circuit Breaker: protection/circuit.md
+    - Probe Detection: protection/probes.md
+    - CIDR Filtering: protection/cidr.md
+    - Adaptive Limits: protection/adaptive.md
+    - Defense Randomization: protection/randomizer.md
+  - Observability:
+    - Metrics: observability/metrics.md
+    - Logging: observability/logging.md
+    - OpenTelemetry: observability/opentelemetry.md
+  - Advanced:
+    - Trust State Machine: advanced/trust.md
+    - Sentinel Model: advanced/sentinel.md
+    - Probe Detection: advanced/probes.md
+    - Defense Randomization: advanced/randomizer.md
+    - CIDR Filtering: advanced/cidr.md
+    - Shadow Mode: advanced/shadow.md
+    - Adaptive Limits: advanced/adaptive.md
+    - Honeypots: advanced/honeypots.md
+    - Probabilistic Storage: advanced/probabilistic.md
+  - Migration:
+    - From slowapi: migration/slowapi.md
+  - API Reference:
+    - Core: api/core.md
+    - Algorithms: api/algorithms.md
+    - Adapters: api/adapters.md
+    - Protection: api/protection.md
+    - Storage: api/storage.md
+    - Observability: api/observability.md
+  - FAQ: faq.md
+  - Development:
+    - Contributing: development/contributing.md
+    - Testing: development/testing.md
+    - Changelog: development/changelog.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
