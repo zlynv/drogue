@@ -1,0 +1,124 @@
+site_name: drogue
+site_description: Production-ready rate limiting and DDoS protection for Python web frameworks. FastAPI, Django, Flask support with Redis backend.
+site_author: Zlynv
+site_url: https://zlynv.github.io/drogue/
+
+repo_name: zlynv/drogue
+repo_url: https://github.com/zlynv/drogue
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.path
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/zlynv
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/drogue/
+
+extra_javascript:
+  - https://unpkg.com/mermaid/dist/mermaid.min.js
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - meta
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: quickstart.md
+    - FastAPI: getting-started/fastapi.md
+    - Flask: getting-started/flask.md
+    - Django: getting-started/django.md
+    - Redis: getting-started/redis.md
+  - Concepts:
+    - Architecture: concepts/architecture.md
+    - Algorithms: concepts/algorithms.md
+    - Storage: concepts/storage.md
+    - Identity: concepts/identity.md
+    - Configuration: configuration/overview.md
+    - Rate Limit Strings: configuration/rate-limit-strings.md
+  - Frameworks:
+    - FastAPI: frameworks/fastapi.md
+    - Django: frameworks/django.md
+    - Flask: frameworks/flask.md
+  - Protection:
+    - DDoS Detection: protection/ddos.md
+    - Progressive Auto-Ban: protection/ban.md
+    - Trust State Machine: protection/trust.md
+    - Circuit Breaker: protection/circuit.md
+    - Probe Detection: protection/probes.md
+    - CIDR Filtering: protection/cidr.md
+    - Adaptive Limits: protection/adaptive.md
+    - Defense Randomization: protection/randomizer.md
+  - Observability:
+    - Metrics: observability/metrics.md
+    - Logging: observability/logging.md
+    - OpenTelemetry: observability/opentelemetry.md
+  - Guides:
+    - Serverless: guides/serverless.md
+    - Cloudflare: guides/cloudflare.md
+    - Shadow Mode: advanced/shadow.md
+    - Honeypots: advanced/honeypots.md
+    - Probabilistic Storage: advanced/probabilistic.md
+    - Sentinel Model: advanced/sentinel.md
+    - From slowapi: migration/slowapi.md
+  - API Reference:
+    - Core: api/core.md
+    - Algorithms: api/algorithms.md
+    - Adapters: api/adapters.md
+    - Protection: api/protection.md
+    - Storage: api/storage.md
+    - Observability: api/observability.md
+  - FAQ: faq.md
+  - Development:
+    - Contributing: development/contributing.md
+    - Testing: development/testing.md
+    - Changelog: development/changelog.md
