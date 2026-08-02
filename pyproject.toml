@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "drogue"
-version = "0.1.3"
+version = "0.2.0"
 description = "Production-ready rate limiting and DDoS protection for Python web frameworks"
 readme = "README.md"
 license = "MIT"
