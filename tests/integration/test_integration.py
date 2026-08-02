@@ -14,13 +14,13 @@ from fastapi.testclient import TestClient
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from _integration_test.fastapi_app import (
+from tests.integration.fastapi_app import (
     app as fastapi_app,
 )
-from _integration_test.fastapi_app import (
+from tests.integration.fastapi_app import (
     circuit,
 )
-from _integration_test.fastapi_app import (
+from tests.integration.fastapi_app import (
     storage as fastapi_storage,
 )
 from drogue.adapters.fastapi.limiter import _last_result as _drogue_last_result
@@ -112,7 +112,7 @@ class TestFastAPIDDoSDetection:
         body = resp.json()
         assert "is_anomalous" in body
         assert "stats" in body
-        assert "global_rate" in body["stats"]
+        assert "http_global_rate" in body["stats"]
 
     def test_ddos_not_anomalous_with_few_samples(self) -> None:
         resp = self.client.get("/api/ddos-check")
@@ -309,9 +309,9 @@ class TestDjangoRateLimiting:
 
         # Ensure Django is configured with the right URL conf
         # (conftest.py already called settings.configure and django.setup)
-        settings.ROOT_URLCONF = "_integration_test.django_urls"
+        settings.ROOT_URLCONF = "tests.integration.django_urls"
         self.client = Client()
-        from _integration_test.django_views import _storage
+        from tests.integration.django_views import _storage
 
         _storage._store.clear()
 

@@ -1,7 +1,7 @@
 """Django URL configuration for integration test."""
 from django.urls import path
 
-from _integration_test import django_views
+from tests.integration import django_views
 
 urlpatterns = [
     path("api/ping", django_views.ping),
