@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Production-ready rate limiting and DDoS protection for Python web frameworks. FastAPI, Django, Flask support with Redis backend.">
+        <meta name="description" content="Rate limiting algorithms explained with visual examples. Token Bucket, Sliding Window, Fixed Window, GCRA, and Leaky Bucket.">
       
       
         <meta name="author" content="Zlynv">
@@ -936,6 +936,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#visual-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#when-to-use" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -958,21 +969,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#storage-format" class="md-nav__link">
+  <a href="#real-world-scenario" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Storage format
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#response-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Response fields
+        Real-world scenario
       
     </span>
   </a>
@@ -1019,10 +1019,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-its-better-than-fixed-window" class="md-nav__link">
+  <a href="#visual-example_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why it's better than fixed window
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
       
     </span>
   </a>
@@ -1041,10 +1052,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#response-fields_1" class="md-nav__link">
+  <a href="#real-world-scenario_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Response fields
+        Real-world scenario
       
     </span>
   </a>
@@ -1091,7 +1102,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#when-to-use_1" class="md-nav__link">
+  <a href="#visual-example_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         When to use
@@ -1113,10 +1135,176 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#boundary-burst-problem" class="md-nav__link">
+  <a href="#real-world-scenario_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Boundary burst problem
+        Real-world scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gcra-generic-cell-rate-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GCRA (Generic Cell Rate Algorithm)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GCRA (Generic Cell Rate Algorithm)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-it-is_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it is
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visual-example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-world-scenario_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#leaky-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leaky Bucket
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Leaky Bucket">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-it-is_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it is
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visual-example_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-world-scenario_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world scenario
       
     </span>
   </a>
@@ -2610,6 +2798,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#visual-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#when-to-use" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2632,21 +2831,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#storage-format" class="md-nav__link">
+  <a href="#real-world-scenario" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Storage format
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#response-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Response fields
+        Real-world scenario
       
     </span>
   </a>
@@ -2693,10 +2881,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-its-better-than-fixed-window" class="md-nav__link">
+  <a href="#visual-example_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why it's better than fixed window
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
       
     </span>
   </a>
@@ -2715,10 +2914,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#response-fields_1" class="md-nav__link">
+  <a href="#real-world-scenario_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Response fields
+        Real-world scenario
       
     </span>
   </a>
@@ -2765,7 +2964,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#when-to-use_1" class="md-nav__link">
+  <a href="#visual-example_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         When to use
@@ -2787,10 +2997,176 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#boundary-burst-problem" class="md-nav__link">
+  <a href="#real-world-scenario_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Boundary burst problem
+        Real-world scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gcra-generic-cell-rate-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GCRA (Generic Cell Rate Algorithm)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GCRA (Generic Cell Rate Algorithm)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-it-is_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it is
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visual-example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-world-scenario_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world scenario
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#leaky-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leaky Bucket
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Leaky Bucket">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-it-is_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it is
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visual-example_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visual example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-world-scenario_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real-world scenario
       
     </span>
   </a>
@@ -2915,162 +3291,340 @@
 
 
 <h1 id="algorithms">Algorithms<a class="headerlink" href="#algorithms" title="Permanent link">&para;</a></h1>
-<p>drogue provides three rate limiting algorithms. Each has different trade-offs for burst handling, accuracy, and memory usage.</p>
+<p>drogue provides five rate limiting algorithms. Each has different trade-offs for burst handling, accuracy, and memory usage.</p>
 <h2 id="token-bucket">Token Bucket<a class="headerlink" href="#token-bucket" title="Permanent link">&para;</a></h2>
 <h3 id="what-it-is">What it is<a class="headerlink" href="#what-it-is" title="Permanent link">&para;</a></h3>
-<p>A bucket holds tokens that refill at a steady rate. Each request consumes tokens. When the bucket is empty, requests are denied.</p>
+<p>A bucket holds tokens that refill at a steady rate. Each request consumes tokens. When the bucket is empty, requests are denied. Allows bursts up to the bucket capacity.</p>
 <h3 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>1. Bucket starts full (e.g., 100 tokens)
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>2. Each request consumes 1 token
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>3. Tokens refill at a steady rate (e.g., 100/minute = 1.67/second)
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>4. If tokens remain, request is allowed
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>5. If bucket is empty, request is denied
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Time 0s:   Bucket = [■■■■■■■■■■] (10 tokens, full)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Time 1s:   Request arrives, consumes 1 → [■■■■■■■■■□] (9 left)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Time 2s:   Request arrives, consumes 1 → [■■■■■■■■□□] (8 left)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Time 3s:   2 tokens refill → [■■■■■■■■■■] (10 again)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>Time 4s:   5 requests arrive fast → [■■■■■□□□□□] (5 left)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>            All 5 allowed (burst tolerance)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Time 5s:   3 more requests → denied (only 5 left, need 3... wait)
+</code></pre></div>
+<h3 id="visual-example">Visual example<a class="headerlink" href="#visual-example" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Rate: 10 requests/minute, bucket capacity: 10
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Time:  0s   10s   20s   30s   40s   50s   60s
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>       |     |     |     |     |     |     |
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>Tokens: 10 → 10 → 10 →  5 →  5 →  8 → 10
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>              ↑           ↑     ↑
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>           refill      5 req   3 req
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>                      (burst)  (refill)
 </code></pre></div>
 <h3 id="when-to-use">When to use<a class="headerlink" href="#when-to-use" title="Permanent link">&para;</a></h3>
 <ul>
-<li>APIs that allow occasional bursts (e.g., a spike during batch operations)</li>
+<li>APIs that allow occasional bursts (batch operations, page loads)</li>
+<li>Default choice for most applications</li>
 <li>When you want smooth rate limiting with burst tolerance</li>
-<li>Most common choice -- good default</li>
 </ul>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.algorithms.token_bucket</span><span class="w"> </span><span class="kn">import</span> <span class="n">TokenBucketAlgorithm</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.storage.memory</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryStorage</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">storage</span> <span class="o">=</span> <span class="n">MemoryStorage</span><span class="p">()</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># 100 requests per minute, bucket refills steadily</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">algorithm</span> <span class="o">=</span> <span class="n">TokenBucketAlgorithm</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Request 1: allowed (99 tokens left)</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># AcquireResult(allowed=True, remaining=99, limit=100, reset=1690000060.0, retry_after=0)</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># Request 2: allowed (98 tokens left)</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1"># AcquireResult(allowed=True, remaining=98, limit=100, reset=1690000060.0, retry_after=0)</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="c1"># Exhaust tokens</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">98</span><span class="p">):</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1"># Request 101: denied (0 tokens)</span>
-<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="c1"># AcquireResult(allowed=False, remaining=0, limit=100, reset=1690000060.0, retry_after=45.2)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="n">TokenBucketAlgorithm</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.storage.memory</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryStorage</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">storage</span> <span class="o">=</span> <span class="n">MemoryStorage</span><span class="p">()</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># 100 requests per minute, bucket refills steadily</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">algorithm</span> <span class="o">=</span> <span class="n">TokenBucketAlgorithm</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="c1"># Burst: 10 requests instantly — all allowed</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">, remaining=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="c1"># Request 1: allowed=True, remaining=9</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="c1"># Request 2: allowed=True, remaining=8</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="c1"># ...</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="c1"># Request 10: allowed=True, remaining=0</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="c1"># 11th request: denied (bucket empty)</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request 11: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">, retry_after=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">retry_after</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="c1"># Request 11: allowed=False, retry_after=0.6s</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="c1"># Wait 0.6s, tokens refill</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After wait: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">, remaining=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="c1"># After wait: allowed=True, remaining=0</span>
 </code></pre></div>
-<h3 id="storage-format">Storage format<a class="headerlink" href="#storage-format" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Key: &quot;tb:user123&quot;
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Value: (remaining_tokens: float, last_refill_time: float)
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Example: (99.5, 1690000015.0)
+<h3 id="real-world-scenario">Real-world scenario<a class="headerlink" href="#real-world-scenario" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># API endpoint: 1000 requests/hour per user</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># User uploads a CSV with 500 rows → 500 requests in 10 seconds</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Token Bucket allows this burst (500 &lt; 1000 capacity)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># After burst, user must wait for refill</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;1000/hour&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">TOKEN_BUCKET</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process_csv</span><span class="p">():</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="c1"># 500 rows processed in burst — allowed</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="o">...</span>
 </code></pre></div>
-<h3 id="response-fields">Response fields<a class="headerlink" href="#response-fields" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>allowed</code></td>
-<td><code>True</code> if request is allowed, <code>False</code> if denied</td>
-</tr>
-<tr>
-<td><code>remaining</code></td>
-<td>Number of tokens left in the bucket</td>
-</tr>
-<tr>
-<td><code>limit</code></td>
-<td>Maximum tokens (the rate limit)</td>
-</tr>
-<tr>
-<td><code>reset</code></td>
-<td>Unix timestamp when the bucket refills</td>
-</tr>
-<tr>
-<td><code>retry_after</code></td>
-<td>Seconds to wait before next allowed request (0 if allowed)</td>
-</tr>
-</tbody>
-</table>
 <hr />
 <h2 id="sliding-window-counter">Sliding Window Counter<a class="headerlink" href="#sliding-window-counter" title="Permanent link">&para;</a></h2>
 <h3 id="what-it-is_1">What it is<a class="headerlink" href="#what-it-is_1" title="Permanent link">&para;</a></h3>
-<p>Estimates the count in the current window by combining the previous and current window counts with a weighted formula. This eliminates the "boundary burst" problem of fixed windows.</p>
+<p>Estimates the count in the current window by combining the previous and current window counts with a weighted formula. Eliminates the "boundary burst" problem of fixed windows.</p>
 <h3 id="how-it-works_1">How it works<a class="headerlink" href="#how-it-works_1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>1. Track request counts in fixed time windows (e.g., 1-minute windows)
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>2. When a request arrives, calculate the weighted count:
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>   estimated_count = prev_count * ((window - elapsed) / window) + curr_count
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>3. If estimated_count &lt; limit, allow the request
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>4. Otherwise, deny it
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Window size: 60 seconds
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Limit: 100 requests
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>Previous window (12:00-12:01): 80 requests
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>Current window (12:01-now, 20 seconds elapsed):
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>estimated_count = 80 × ((60 - 20) / 60) + current_count
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>                = 80 × 0.667 + current_count
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>                = 53.3 + current_count
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>If current_count &lt; 47 → allowed (53.3 + 47 = 100.3 ≈ limit)
 </code></pre></div>
-<h3 id="why-its-better-than-fixed-window">Why it's better than fixed window<a class="headerlink" href="#why-its-better-than-fixed-window" title="Permanent link">&para;</a></h3>
-<p>Fixed windows have a boundary problem: if you hit the limit at 11:59:59 and again at 12:00:01, you've sent 2x the limit in 2 seconds. Sliding window smooths this out.</p>
+<h3 id="visual-example_1">Visual example<a class="headerlink" href="#visual-example_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Rate: 100 requests/minute
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Previous Window     Current Window (20s elapsed)
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>[■■■■■■■■■■■■■■■■□□□□] [■■■■□□□□□□□□□□□□□□□□]
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>      80/100                  20/100
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>Weighted: 80 × (40/60) + 20 = 53.3 + 20 = 73.3
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>Remaining: 100 - 73 = 27 requests allowed
+</code></pre></div>
+<h3 id="when-to-use_1">When to use<a class="headerlink" href="#when-to-use_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Strict rate limiting where boundary bursts are unacceptable</li>
+<li>APIs that need accurate counting across window boundaries</li>
+<li>When you can tolerate slightly more memory (2 counters per key)</li>
+</ul>
 <h3 id="example_1">Example<a class="headerlink" href="#example_1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.algorithms.sliding_window</span><span class="w"> </span><span class="kn">import</span> <span class="n">SlidingWindowAlgorithm</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">algorithm</span> <span class="o">=</span> <span class="n">SlidingWindowAlgorithm</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># 10:00:00 - send 100 requests</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1"># All allowed</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1"># 10:00:30 - 30 seconds into the window</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="c1"># Previous window had 100, current has 0</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="c1"># estimated = 100 * ((60 - 30) / 60) + 0 = 50</span>
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="c1"># AcquireResult(allowed=True, remaining=49, limit=100, ...)</span>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="c1"># Allowed because estimated count (50) &lt; limit (100)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="n">SlidingWindowAlgorithm</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">algorithm</span> <span class="o">=</span> <span class="n">SlidingWindowAlgorithm</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># 12:00:00 — send 100 requests (all allowed)</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="c1"># All allowed</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1"># 12:00:30 — 30 seconds later</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="c1"># Previous window: 100, current window: 0</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="c1"># estimated = 100 × ((60-30)/60) + 0 = 50</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;30s later: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">, remaining=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="c1"># 30s later: allowed=True, remaining=49</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="c1"># Allowed because estimated count (50) &lt; limit (100)</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="c1"># 12:00:45 — 45 seconds later</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="c1"># estimated = 100 × ((60-45)/60) + 0 = 25</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;45s later: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">, remaining=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="c1"># 45s later: allowed=True, remaining=74</span>
 </code></pre></div>
-<h3 id="response-fields_1">Response fields<a class="headerlink" href="#response-fields_1" title="Permanent link">&para;</a></h3>
-<p>Same as Token Bucket: <code>allowed</code>, <code>remaining</code>, <code>limit</code>, <code>reset</code>, <code>retry_after</code>.</p>
+<h3 id="real-world-scenario_1">Real-world scenario<a class="headerlink" href="#real-world-scenario_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Login endpoint: 5 attempts per minute</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># User tries at 12:00:55 (5 attempts), then at 12:01:05 (1 attempt)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Fixed Window: Would allow 5 more at 12:01:05 (new window)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># Sliding Window: Only allows 0-1 (weighted estimate still high)</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;5/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">SLIDING_WINDOW</span><span class="p">)</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">login</span><span class="p">():</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="c1"># Sliding window prevents boundary abuse</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="o">...</span>
+</code></pre></div>
 <hr />
 <h2 id="fixed-window-counter">Fixed Window Counter<a class="headerlink" href="#fixed-window-counter" title="Permanent link">&para;</a></h2>
 <h3 id="what-it-is_2">What it is<a class="headerlink" href="#what-it-is_2" title="Permanent link">&para;</a></h3>
 <p>The simplest algorithm. Counts requests in fixed time windows (e.g., 12:00-12:01, 12:01-12:02). When the window resets, the counter resets to zero.</p>
 <h3 id="how-it-works_2">How it works<a class="headerlink" href="#how-it-works_2" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>1. Divide time into fixed windows (e.g., 1-minute windows)
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>2. Count requests in the current window
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>3. If count &lt; limit, allow the request
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>4. Otherwise, deny it
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>5. When the window ends, reset the counter
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Window 1: 12:00:00 - 12:01:00
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>  Count: 0 → 1 → 2 → ... → 100 → DENIED
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>Window 2: 12:01:00 - 12:02:00
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>  Count: 0 → 1 → 2 → ... → 100 → DENIED
 </code></pre></div>
-<h3 id="when-to-use_1">When to use<a class="headerlink" href="#when-to-use_1" title="Permanent link">&para;</a></h3>
+<h3 id="visual-example_2">Visual example<a class="headerlink" href="#visual-example_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Rate: 100 requests/minute
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>Time:  12:00:00    12:01:00    12:02:00
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>       |            |            |
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>       v            v            v
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>Window: [■■■■■■■■■■] [■■■■■■■■■■] [■■■■■■■■■■]
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        100 allowed   100 allowed   100 allowed
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>⚠️ Boundary problem:
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>12:00:59 → 100 requests
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>12:01:01 → 100 requests
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>= 200 requests in 2 seconds!
+</code></pre></div>
+<h3 id="when-to-use_2">When to use<a class="headerlink" href="#when-to-use_2" title="Permanent link">&para;</a></h3>
 <ul>
-<li>You need simplicity and low memory</li>
-<li>You can tolerate the boundary burst issue</li>
 <li>Development/testing environments</li>
+<li>Simple rate limiting where boundary bursts don't matter</li>
+<li>When you need minimum memory usage (1 counter per key)</li>
 </ul>
 <h3 id="example_2">Example<a class="headerlink" href="#example_2" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.algorithms.fixed_window</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixedWindowAlgorithm</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">algorithm</span> <span class="o">=</span> <span class="n">FixedWindowAlgorithm</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># Window: 12:00:00 - 12:01:00</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1"># Send 100 requests</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="c1"># All allowed</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="c1"># Request 101: denied</span>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
-<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="c1"># AcquireResult(allowed=False, remaining=0, limit=100, reset=1690000060.0, retry_after=30.5)</span>
-<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>
-<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="c1"># Window: 12:01:00 - 12:02:00</span>
-<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="c1"># Counter resets</span>
-<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
-<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="c1"># AcquireResult(allowed=True, remaining=99, limit=100, reset=1690000120.0, retry_after=0)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixedWindowAlgorithm</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">algorithm</span> <span class="o">=</span> <span class="n">FixedWindowAlgorithm</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># Window: 12:00:00 - 12:01:00</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="c1"># All allowed</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="c1"># Request 101: denied</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request 101: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="c1"># Request 101: allowed=False</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="c1"># Window: 12:01:00 - 12:02:00</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="c1"># Counter resets to 0</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New window: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">, remaining=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="c1"># New window: allowed=True, remaining=99</span>
 </code></pre></div>
-<h3 id="boundary-burst-problem">Boundary burst problem<a class="headerlink" href="#boundary-burst-problem" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Window 1: 12:00:00 - 12:01:00 (limit: 100)
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>- Send 100 requests at 12:00:59
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>Window 2: 12:01:00 - 12:02:00 (limit: 100)
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>- Send 100 requests at 12:01:01
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>Result: 200 requests in 2 seconds (12:00:59 - 12:01:01)
+<h3 id="real-world-scenario_2">Real-world scenario<a class="headerlink" href="#real-world-scenario_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Simple API: 1000 requests/hour</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="c1"># Boundary bursts acceptable (most traffic is spread out)</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;1000/hour&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">FIXED_WINDOW</span><span class="p">)</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">():</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="c1"># Simple, low memory, good enough for most cases</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="o">...</span>
+</code></pre></div>
+<hr />
+<h2 id="gcra-generic-cell-rate-algorithm">GCRA (Generic Cell Rate Algorithm)<a class="headerlink" href="#gcra-generic-cell-rate-algorithm" title="Permanent link">&para;</a></h2>
+<h3 id="what-it-is_3">What it is<a class="headerlink" href="#what-it-is_3" title="Permanent link">&para;</a></h3>
+<p>A cell-based algorithm from telecom (ATM networks). Evenly spaces requests with no bursts allowed. Each request has a "theoretical arrival time" (TAT) — the earliest time the next request can arrive.</p>
+<h3 id="how-it-works_3">How it works<a class="headerlink" href="#how-it-works_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>emission_interval = window / limit  (time between allowed requests)
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>burst = limit                       (maximum burst size)
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>For each request:
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>  new_tat = max(previous_tat, now) + emission_interval
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>  allow_at = new_tat - burst × emission_interval
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>  if allow_at ≤ now → allowed
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>  else → denied (wait until allow_at)
+</code></pre></div>
+<h3 id="visual-example_3">Visual example<a class="headerlink" href="#visual-example_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>Rate: 10 requests/minute → emission_interval = 6 seconds
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>Time:  0s    6s    12s   18s   24s   30s
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>       |     |     |     |     |     |
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>       ✓     ✓     ✓     ✓     ✓     ✓
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>       ↑     ↑     ↑     ↑     ↑     ↑
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    evenly spaced, 6 seconds apart
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>Burst attempt at t=0:
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>  5 requests at once → only 1 allowed (rest denied)
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>  Next allowed at t=6s
+</code></pre></div>
+<h3 id="when-to-use_3">When to use<a class="headerlink" href="#when-to-use_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>APIs requiring perfectly smooth traffic</li>
+<li>Telecom or streaming systems</li>
+<li>When bursts cause problems (rate-limited third-party APIs)</li>
+</ul>
+<h3 id="example_3">Example<a class="headerlink" href="#example_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="n">GCRAAlgorithm</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="c1"># 10 requests/minute, emission interval = 6 seconds</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">algorithm</span> <span class="o">=</span> <span class="n">GCRAAlgorithm</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="c1"># Request 1: allowed (TAT = now + 6s)</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request 1: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="c1"># Request 1: allowed=True</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="c1"># Request 2 immediately: denied (TAT = now + 12s, allow_at = now + 6s)</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request 2: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">, retry_after=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">retry_after</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="c1"># Request 2: allowed=False, retry_after=6.0s</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="c1"># Wait 6 seconds</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="c1"># Request 2: allowed (TAT updated)</span>
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After 6s: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="c1"># After 6s: allowed=True</span>
+</code></pre></div>
+<h3 id="real-world-scenario_3">Real-world scenario<a class="headerlink" href="#real-world-scenario_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Third-party API: strict 100 requests/minute, no bursts allowed</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="c1"># GCRA ensures you never exceed, even temporarily</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;100/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">GCRA</span><span class="p">)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">call_external_api</span><span class="p">():</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="c1"># Smooth traffic, no bursts, safe for strict rate limits</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="o">...</span>
+</code></pre></div>
+<hr />
+<h2 id="leaky-bucket">Leaky Bucket<a class="headerlink" href="#leaky-bucket" title="Permanent link">&para;</a></h2>
+<h3 id="what-it-is_4">What it is<a class="headerlink" href="#what-it-is_4" title="Permanent link">&para;</a></h3>
+<p>Requests fill a bucket that leaks at a constant rate. If the bucket is full, new requests are denied (or queued). Different from Token Bucket: Leaky Bucket processes at a constant rate with no bursts.</p>
+<h3 id="how-it-works_4">How it works<a class="headerlink" href="#how-it-works_4" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>Bucket capacity: 10 (same as limit)
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>Leak rate: 10/60 = 0.167 requests/second
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>Time 0s: Bucket = 0 (empty)
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>  → 5 requests arrive → Bucket = 5 (all allowed)
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>Time 1s: Bucket leaks 0.167 → Bucket = 4.83
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>  → 3 requests arrive → Bucket = 7.83 (all allowed)
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>Time 2s: Bucket leaks 0.167 → Bucket = 7.66
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>  → 5 requests arrive → Bucket would be 12.66 &gt; capacity(10)
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>  → 2 denied, 3 allowed
+</code></pre></div>
+<h3 id="visual-example_4">Visual example<a class="headerlink" href="#visual-example_4" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>Rate: 10 requests/minute, capacity: 10
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>Time:  0s    10s   20s   30s   40s   50s   60s
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>       |     |     |     |     |     |     |
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>Water: 0 →   3 →   5 →   4 →   6 →   3 →   0
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>       ↑     ↑     ↑     ↑     ↑     ↑     ↑
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    fill  leak  fill  leak  fill  leak  leak
+</code></pre></div>
+<h3 id="when-to-use_4">When to use<a class="headerlink" href="#when-to-use_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>APIs requiring constant-rate processing</li>
+<li>Queue-based systems (job queues, task processors)</li>
+<li>When you need to smooth out traffic spikes</li>
+</ul>
+<h3 id="example_4">Example<a class="headerlink" href="#example_4" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="n">LeakyBucketAlgorithm</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="c1"># 10 requests/minute, bucket capacity 10</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">algorithm</span> <span class="o">=</span> <span class="n">LeakyBucketAlgorithm</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="c1"># Burst: 5 requests instantly</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: allowed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="si">}</span><span class="s2">, water=</span><span class="si">{</span><span class="mi">10</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">result</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="c1"># Request 1: allowed=True, water=1</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="c1"># Request 2: allowed=True, water=2</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="c1"># ...</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="c1"># Request 5: allowed=True, water=5</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="c1"># 6 more requests (bucket would overflow)</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">allowed</span><span class="p">:</span>
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">6</span><span class="si">}</span><span class="s2">: denied, retry_after=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">retry_after</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a>        <span class="k">break</span>
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a><span class="c1"># Request 6: denied, retry_after=6.0s</span>
+</code></pre></div>
+<h3 id="real-world-scenario_4">Real-world scenario<a class="headerlink" href="#real-world-scenario_4" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Job queue: process at most 10 jobs/minute</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="c1"># Leaky Bucket ensures constant processing rate</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="c1"># Bursts are queued, not processed immediately</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;10/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">LEAKY_BUCKET</span><span class="p">)</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process_job</span><span class="p">():</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    <span class="c1"># Constant rate, no bursts, smooth processing</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>    <span class="o">...</span>
 </code></pre></div>
 <hr />
 <h2 id="algorithm-comparison">Algorithm comparison<a class="headerlink" href="#algorithm-comparison" title="Permanent link">&para;</a></h2>
@@ -3081,52 +3635,84 @@
 <th>Token Bucket</th>
 <th>Sliding Window</th>
 <th>Fixed Window</th>
+<th>GCRA</th>
+<th>Leaky Bucket</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Bursts</td>
-<td>Yes (up to bucket size)</td>
+<td><strong>Bursts</strong></td>
+<td>Yes (up to capacity)</td>
 <td>No</td>
 <td>At boundaries</td>
+<td>No</td>
+<td>No</td>
 </tr>
 <tr>
-<td>Accuracy</td>
+<td><strong>Accuracy</strong></td>
 <td>Good</td>
 <td>Best</td>
 <td>Good (except boundaries)</td>
+<td>Good</td>
+<td>Good</td>
 </tr>
 <tr>
-<td>Memory</td>
+<td><strong>Memory</strong></td>
 <td>2 values/key</td>
 <td>2 counters/key</td>
 <td>1 counter/key</td>
+<td>1 value/key</td>
+<td>2 values/key</td>
 </tr>
 <tr>
-<td>Complexity</td>
+<td><strong>Complexity</strong></td>
 <td>Low</td>
 <td>Medium</td>
 <td>Low</td>
+<td>Low</td>
+<td>Low</td>
 </tr>
 <tr>
-<td>Use case</td>
+<td><strong>Use case</strong></td>
 <td>Most APIs</td>
 <td>Strict rate limiting</td>
 <td>Simple cases</td>
+<td>Smooth traffic</td>
+<td>Constant rate</td>
+</tr>
+<tr>
+<td><strong>Best for</strong></td>
+<td>General purpose</td>
+<td>Login/security</td>
+<td>Development</td>
+<td>Third-party APIs</td>
+<td>Job queues</td>
 </tr>
 </tbody>
 </table>
 <h2 id="choosing-an-algorithm">Choosing an algorithm<a class="headerlink" href="#choosing-an-algorithm" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.rules.rule</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlgorithmType</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># Default: Token Bucket (good for most cases)</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;100/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">TOKEN_BUCKET</span><span class="p">)</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="c1"># Strict: Sliding Window (no bursts, most accurate)</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;100/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">SLIDING_WINDOW</span><span class="p">)</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="c1"># Simple: Fixed Window (lowest memory)</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;100/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">FIXED_WINDOW</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>    <span class="n">TokenBucketAlgorithm</span><span class="p">,</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">SlidingWindowAlgorithm</span><span class="p">,</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">FixedWindowAlgorithm</span><span class="p">,</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    <span class="n">GCRAAlgorithm</span><span class="p">,</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    <span class="n">LeakyBucketAlgorithm</span><span class="p">,</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="p">)</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="c1"># Default: Token Bucket (good for most cases)</span>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;100/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">TOKEN_BUCKET</span><span class="p">)</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="c1"># Strict: Sliding Window (no bursts, most accurate)</span>
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;100/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">SLIDING_WINDOW</span><span class="p">)</span>
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="c1"># Simple: Fixed Window (lowest memory)</span>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;100/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">FIXED_WINDOW</span><span class="p">)</span>
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a><span class="c1"># Smooth: GCRA (evenly spaced, no bursts)</span>
+<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;100/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">GCRA</span><span class="p">)</span>
+<a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>
+<a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a><span class="c1"># Constant: Leaky Bucket (smooth processing)</span>
+<a id="__codelineno-20-22" name="__codelineno-20-22" href="#__codelineno-20-22"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;100/minute&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmType</span><span class="o">.</span><span class="n">LEAKY_BUCKET</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="common-methods">Common methods<a class="headerlink" href="#common-methods" title="Permanent link">&para;</a></h2>
 <p>All algorithms share these methods:</p>
@@ -3141,34 +3727,34 @@
 <tbody>
 <tr>
 <td><code>acquire</code></td>
-<td><code>(key: str, cost: int = 1, block: bool = False, timeout: float \| None = None) -&gt; AcquireResult</code></td>
+<td><code>(key, cost=1, block=False, timeout=None)</code></td>
 <td>Try to acquire a slot</td>
 </tr>
 <tr>
 <td><code>peek</code></td>
-<td><code>(key: str) -&gt; AcquireResult</code></td>
+<td><code>(key)</code></td>
 <td>Check state without consuming</td>
 </tr>
 <tr>
 <td><code>reset</code></td>
-<td><code>(key: str) -&gt; None</code></td>
+<td><code>(key)</code></td>
 <td>Reset a key's state</td>
 </tr>
 </tbody>
 </table>
 <h2 id="blocking-mode">Blocking mode<a class="headerlink" href="#blocking-mode" title="Permanent link">&para;</a></h2>
 <p>Instead of denying immediately, wait for a slot:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Wait up to 5 seconds for a slot</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># If allowed immediately:</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># AcquireResult(allowed=True, remaining=0, ...)</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># If waited and got a slot:</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="c1"># AcquireResult(allowed=True, remaining=0, ...)</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># If timeout exceeded:</span>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="c1"># Raises TimeoutError</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Wait up to 5 seconds for a slot</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="s2">&quot;user123&quot;</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="c1"># If allowed immediately:</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="c1"># AcquireResult(allowed=True, remaining=9, ...)</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="c1"># If waited and got a slot:</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="c1"># AcquireResult(allowed=True, remaining=0, ...)</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="c1"># If timeout exceeded:</span>
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="c1"># AcquireResult(allowed=False, retry_after=3.2, ...)</span>
 </code></pre></div>
 
 
@@ -3176,6 +3762,9 @@
 
 
 
+
+  
+  
 
 
 
