@@ -8,7 +8,7 @@
 [![PyPI downloads](https://img.shields.io/pypi/dm/drogue.svg)](https://pypi.org/project/drogue/)
 [![Supported frameworks](https://img.shields.io/badge/frameworks-FastAPI%20%7C%20Django%20%7C%20Flask-lightgrey.svg)](#features)
 
-Rate limiting and DDoS protection for Python web applications. Clean APIs, WebSocket support, and built-in defense layers.
+Modern rate limiting and application-layer protection for Python. Clean APIs, WebSocket support, and built-in defense layers.
 
 **[Read the documentation](https://zlynv.github.io/drogue/)**
 
