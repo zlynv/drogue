@@ -79,6 +79,7 @@ nav:
     - Django: getting-started/django.md
     - Redis: getting-started/redis.md
     - MongoDB: getting-started/mongodb.md
+    - Compatibility Matrix: getting-started/compatibility.md
   - Concepts:
     - Architecture: concepts/architecture.md
     - Algorithms: concepts/algorithms.md
@@ -104,6 +105,8 @@ nav:
     - Logging: observability/logging.md
     - OpenTelemetry: observability/opentelemetry.md
   - Guides:
+    - Security Model: guides/security-model.md
+    - Real-World Examples: guides/real-world-examples.md
     - CDN vs Library-Level: guides/cdn-vs-library.md
     - Serverless: guides/serverless.md
     - Cloudflare: guides/cloudflare.md

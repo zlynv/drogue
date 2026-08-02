@@ -4,6 +4,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-131%20passing-brightgreen.svg)](#development)
+[![codecov](https://codecov.io/gh/zlynv/drogue/graph/badge.svg?token=2043208a-63ae-47b6-a039-f18c539f63e2)](https://codecov.io/gh/zlynv/drogue)
 [![PyPI version](https://img.shields.io/pypi/v/drogue.svg)](https://pypi.org/project/drogue/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/drogue.svg)](https://pypi.org/project/drogue/)
 [![Supported frameworks](https://img.shields.io/badge/frameworks-FastAPI%20%7C%20Django%20%7C%20Flask-lightgrey.svg)](#features)
@@ -236,9 +237,41 @@ async def get_data():
 
 ---
 
+## Compatibility
+
+| Component | Status | Min Version |
+|-----------|--------|-------------|
+| Python 3.10-3.13 | Stable | 3.10 |
+| FastAPI | Stable | >=0.100.0 |
+| Flask | Stable | >=3.0.0 |
+| Django | Stable | >=4.2 |
+| Django REST Framework | Stable | >=3.14 |
+| Memory Storage | Stable | -- |
+| Redis Storage | Stable | >=4.0 |
+| MongoDB Storage | Alpha | -- |
+
+See [full compatibility matrix](https://zlynv.github.io/drogue/getting-started/compatibility/) for details.
+
+---
+
 ## Security
 
-Report security vulnerabilities via GitHub's private vulnerability reporting. Do not open public issues for security bugs. Response time: 48 hours.
+Drogue handles rate limiting and application-layer protection. It does **not** solve SQL injection, XSS, CSRF, authentication, or authorization. Use a proper security stack.
+
+See [Security Model](https://zlynv.github.io/drogue/guides/security-model/) for details.
+
+Report security vulnerabilities via [GitHub's private vulnerability reporting](https://github.com/zlynv/drogue/security/advisories/new). Response time: 48 hours.
+
+---
+
+## Real-World Examples
+
+- [Login rate limiting](https://zlynv.github.io/drogue/guides/real-world-examples/#login-rate-limiting) -- Prevent brute force
+- [API key rate limiting](https://zlynv.github.io/drogue/guides/real-world-examples/#api-key-rate-limiting) -- Per-key quotas
+- [SaaS tier rate limiting](https://zlynv.github.io/drogue/guides/real-world-examples/#saas-tier-rate-limiting) -- Free vs paid plans
+- [WebSocket rate limiting](https://zlynv.github.io/drogue/guides/real-world-examples/#websocket-rate-limiting) -- Real-time protection
+- [Reverse proxy deployment](https://zlynv.github.io/drogue/guides/real-world-examples/#reverse-proxy-deployment) -- Nginx, Traefik, Cloudflare
+- [Microservices](https://zlynv.github.io/drogue/guides/real-world-examples/#microservices-rate-limiting) -- Internal service protection
 
 ---
 
