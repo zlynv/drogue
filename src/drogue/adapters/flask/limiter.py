@@ -41,6 +41,9 @@ _ALGORITHM_MAP: dict[AlgorithmType, type[Algorithm]] = {
     AlgorithmType.FIXED_WINDOW: FixedWindowAlgorithm,
 }
 
+# Key used to store pending headers in flask.g
+_G_DROGUE_HEADERS = "_drogue_pending_headers"
+
 
 class DrogueLimiter:
     """Main entry point for Flask rate limiting.
@@ -86,7 +89,7 @@ class DrogueLimiter:
             self.init_app(app)
 
     def init_app(self, app: Any) -> None:
-        """Register before_request hook with a Flask app."""
+        """Register before_request and after_request hooks with a Flask app."""
         limiter = self
 
         @app.before_request
@@ -115,6 +118,21 @@ class DrogueLimiter:
                 response.status_code = 429
                 response.headers["Retry-After"] = "1"
                 return response
+
+        @app.after_request
+        def _inject_rate_limit_headers(response: Any) -> Any:
+            """Inject rate limit headers into the response.
+
+            This runs AFTER the view function returns, so the response
+            is always a proper Response object (even for dict returns).
+            """
+            from flask import g
+
+            pending = getattr(g, "_drogue_pending_headers", None)
+            if pending:
+                for header, value in pending.items():
+                    response.headers[header] = value
+            return response
 
     def _get_algorithm(self, rule: RateLimitRule, route_key: str = "") -> Algorithm:
         """Get or create algorithm instance for a rule."""
@@ -175,7 +193,7 @@ class DrogueLimiter:
 
             @functools.wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> Any:
-                from flask import jsonify, request
+                from flask import g, jsonify, request
 
                 context = _request_to_context(request)
                 extractor = key_func or self.key_func
@@ -192,10 +210,10 @@ class DrogueLimiter:
 
                 response = func(*args, **kwargs)
 
-                # Inject headers from the rate limit check result
-                if rule.headers and result is not None and hasattr(response, "headers"):
-                    for header, value in result.headers.items():
-                        response.headers[header] = value
+                # Store headers in flask.g for after_request to inject
+                # This works for ALL response types: dicts, strings, Response objects
+                if rule.headers and result is not None:
+                    g._drogue_pending_headers = result.headers
 
                 return response
 
