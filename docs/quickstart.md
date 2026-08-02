@@ -109,6 +109,6 @@ from drogue.core.rules.rule import AlgorithmType
 
 ## Next steps
 
-- [Configuration](configuration.md) -- all available options
+- [Configuration](configuration/overview.md) -- all available options
 - [FastAPI guide](frameworks/fastapi.md) -- deep dive
 - [Protection](protection/ddos.md) -- DDoS detection, auto-ban, trust caching

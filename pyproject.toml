@@ -31,6 +31,7 @@ dependencies = []
 
 [project.optional-dependencies]
 redis = ["redis[hiredis]>=5.0.0"]
+mongodb = ["motor>=3.0.0"]
 fastapi = ["fastapi>=0.100.0", "starlette>=0.27.0"]
 django = ["django>=4.2"]
 flask = ["flask>=3.0.0"]
@@ -39,7 +40,7 @@ prometheus = ["prometheus-client>=0.17.0"]
 opentelemetry = ["opentelemetry-api>=1.0.0", "opentelemetry-sdk>=1.0.0"]
 adaptive = ["psutil>=5.0.0"]
 all = [
-    "drogue[redis,fastapi,django,flask,drf,prometheus,opentelemetry,adaptive]",
+    "drogue[redis,mongodb,fastapi,django,flask,drf,prometheus,opentelemetry,adaptive]",
 ]
 dev = [
     "pytest>=7.0",

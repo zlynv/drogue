@@ -78,6 +78,7 @@ nav:
     - Flask: getting-started/flask.md
     - Django: getting-started/django.md
     - Redis: getting-started/redis.md
+    - MongoDB: getting-started/mongodb.md
   - Concepts:
     - Architecture: concepts/architecture.md
     - Algorithms: concepts/algorithms.md
@@ -103,6 +104,7 @@ nav:
     - Logging: observability/logging.md
     - OpenTelemetry: observability/opentelemetry.md
   - Guides:
+    - CDN vs Library-Level: guides/cdn-vs-library.md
     - Serverless: guides/serverless.md
     - Cloudflare: guides/cloudflare.md
     - Shadow Mode: advanced/shadow.md
