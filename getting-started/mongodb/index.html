@@ -6,15 +6,19 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Production-ready rate limiting and DDoS protection for Python web frameworks. FastAPI, Django, Flask support with Redis backend.">
+        <meta name="description" content="Use MongoDB as a distributed storage backend for drogue rate limiting.">
       
       
         <meta name="author" content="Zlynv">
       
       
-        <link rel="canonical" href="https://zlynv.github.io/drogue/advanced/trust/">
+        <link rel="canonical" href="https://zlynv.github.io/drogue/getting-started/mongodb/">
       
       
+        <link rel="prev" href="../redis/">
+      
+      
+        <link rel="next" href="../../concepts/architecture/">
       
       
         
@@ -25,7 +29,7 @@
     
     
       
-        <title>Trust State Machine - drogue</title>
+        <title>MongoDB - drogue</title>
       
     
     
@@ -78,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#trust-state-machine" class="md-skip">
+        <a href="#mongodb-backend" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Trust State Machine
+              MongoDB
             
           </span>
         </div>
@@ -242,10 +246,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../../installation/" class="md-tabs__link">
           
   
@@ -493,26 +499,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -530,7 +541,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -604,7 +615,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/fastapi/" class="md-nav__link">
+      <a href="../fastapi/" class="md-nav__link">
         
   
   
@@ -632,7 +643,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/flask/" class="md-nav__link">
+      <a href="../flask/" class="md-nav__link">
         
   
   
@@ -660,7 +671,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/django/" class="md-nav__link">
+      <a href="../django/" class="md-nav__link">
         
   
   
@@ -688,7 +699,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/redis/" class="md-nav__link">
+      <a href="../redis/" class="md-nav__link">
         
   
   
@@ -713,10 +724,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../getting-started/mongodb/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MongoDB
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -732,6 +770,125 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mongodb-uri-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MongoDB URI Format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connection-pooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection Pooling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#distributed-rate-limiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distributed Rate Limiting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failover
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use MongoDB
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1683,7 +1840,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../shadow/" class="md-nav__link">
+      <a href="../../advanced/shadow/" class="md-nav__link">
         
   
   
@@ -1711,7 +1868,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../honeypots/" class="md-nav__link">
+      <a href="../../advanced/honeypots/" class="md-nav__link">
         
   
   
@@ -1739,7 +1896,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../probabilistic/" class="md-nav__link">
+      <a href="../../advanced/probabilistic/" class="md-nav__link">
         
   
   
@@ -1767,7 +1924,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../sentinel/" class="md-nav__link">
+      <a href="../../advanced/sentinel/" class="md-nav__link">
         
   
   
@@ -2247,10 +2404,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Installation
       
     </span>
   </a>
@@ -2258,43 +2415,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
+  <a href="#basic-usage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How It Works
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Usage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#integration-with-drogue" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Integration with drogue
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-impact" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Performance Impact
+        Basic Usage
       
     </span>
   </a>
@@ -2313,10 +2437,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#statistics" class="md-nav__link">
+  <a href="#mongodb-uri-format" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Statistics
+        MongoDB URI Format
       
     </span>
   </a>
@@ -2324,10 +2448,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#poison-pill" class="md-nav__link">
+  <a href="#connection-pooling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Poison Pill
+        Connection Pooling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#distributed-rate-limiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distributed Rate Limiting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failover
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-mongodb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use MongoDB
       
     </span>
   </a>
@@ -2352,6 +2520,46 @@
   
 
 
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../../installation/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
               
               <article class="md-content__inner md-typeset">
                 
@@ -2362,135 +2570,125 @@
   
 
 
-<h1 id="trust-state-machine">Trust State Machine<a class="headerlink" href="#trust-state-machine" title="Permanent link">&para;</a></h1>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>The Trust State Machine implements tiered processing where trusted users skip expensive evaluation steps, dramatically improving throughput.</p>
-<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p><strong>Trust states:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>UNKNOWN -&gt; [first request, full evaluation] -&gt; EVALUATED
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>EVALUATED -&gt; [score &lt; 0.2] -&gt; TRUSTED (cached 4h)
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>EVALUATED -&gt; [score 0.2-0.5] -&gt; STANDARD (cached 30min)
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>EVALUATED -&gt; [score &gt; 0.5] -&gt; SUSPICIOUS (never cached)
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>TRUSTED -&gt; [any anomaly] -&gt; POISONED -&gt; UNKNOWN
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>TRUSTED -&gt; [4h elapsed] -&gt; UNKNOWN (re-evaluate)
+<h1 id="mongodb-backend">MongoDB Backend<a class="headerlink" href="#mongodb-backend" title="Permanent link">&para;</a></h1>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>drogue<span class="o">[</span>mongodb<span class="o">]</span>
 </code></pre></div>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.protection.trust</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustManager</span><span class="p">,</span> <span class="n">TrustLevel</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">trust</span> <span class="o">=</span> <span class="n">TrustManager</span><span class="p">(</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">trusted_ttl</span><span class="o">=</span><span class="mi">14400</span><span class="p">,</span>  <span class="c1"># 4 hours</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">standard_ttl</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span>  <span class="c1"># 30 minutes</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">score_threshold_trusted</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">score_threshold_standard</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">max_fingerprints</span><span class="o">=</span><span class="mi">100_000</span><span class="p">,</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">)</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># Check trust level</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">level</span> <span class="o">=</span> <span class="n">trust</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="n">TrustLevel</span><span class="o">.</span><span class="n">TRUSTED</span><span class="p">:</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="c1"># Skip everything (~5 microseconds)</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="k">return</span> <span class="n">RateLimitResult</span><span class="p">(</span><span class="n">allowed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tier</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Update trust after full evaluation</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="n">score</span> <span class="o">=</span> <span class="n">compute_trust_score</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">trust</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="c1"># Instant invalidation on anomaly</span>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="n">trust</span><span class="o">.</span><span class="n">poison</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">)</span>
+<p>This installs <code>motor</code> (async MongoDB driver).</p>
+<h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.storage.mongo</span><span class="w"> </span><span class="kn">import</span> <span class="n">MongoDBStorage</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.adapters.fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">DrogueLimiter</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">storage</span> <span class="o">=</span> <span class="n">MongoDBStorage</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="s2">&quot;mongodb://localhost:27017&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">limiter</span> <span class="o">=</span> <span class="n">DrogueLimiter</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="integration-with-drogue">Integration with drogue<a class="headerlink" href="#integration-with-drogue" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DrogueLimiter</span><span class="p">:</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="n">fingerprint</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">identity</span><span class="o">.</span><span class="n">fingerprint</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="c1"># Tier 0: Trusted -- skip everything</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_manager</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_manager</span><span class="o">.</span><span class="n">is_trusted</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">):</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>            <span class="k">return</span> <span class="n">RateLimitResult</span><span class="p">(</span><span class="n">allowed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tier</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="c1"># Tier 1: Standard -- rate limit only</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_algorithm</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="c1"># After check: update trust score</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_manager</span><span class="p">:</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>            <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_trust_score</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">trust_manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>        <span class="k">return</span> <span class="n">result</span>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.storage.mongo</span><span class="w"> </span><span class="kn">import</span> <span class="n">MongoDBStorage</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">storage</span> <span class="o">=</span> <span class="n">MongoDBStorage</span><span class="p">(</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">uri</span><span class="o">=</span><span class="s2">&quot;mongodb://localhost:27017&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">database</span><span class="o">=</span><span class="s2">&quot;myapp&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">collection</span><span class="o">=</span><span class="s2">&quot;rate_limits&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">)</span>
 </code></pre></div>
-<h2 id="performance-impact">Performance Impact<a class="headerlink" href="#performance-impact" title="Permanent link">&para;</a></h2>
+<h2 id="mongodb-uri-format">MongoDB URI Format<a class="headerlink" href="#mongodb-uri-format" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Local MongoDB</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">MongoDBStorage</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="s2">&quot;mongodb://localhost:27017&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Remote MongoDB</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">MongoDBStorage</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="s2">&quot;mongodb://your-mongo-host:27017&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># MongoDB with authentication</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">MongoDBStorage</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="s2">&quot;mongodb://user:password@localhost:27017&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># MongoDB Atlas</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="n">MongoDBStorage</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="s2">&quot;mongodb+srv://user:password@cluster.mongodb.net&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="c1"># MongoDB with replica set</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="n">MongoDBStorage</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="s2">&quot;mongodb://host1:27017,host2:27017,host3:27017/?replicaSet=myReplicaSet&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="connection-pooling">Connection Pooling<a class="headerlink" href="#connection-pooling" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.storage.mongo</span><span class="w"> </span><span class="kn">import</span> <span class="n">MongoDBStorage</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">storage</span> <span class="o">=</span> <span class="n">MongoDBStorage</span><span class="p">(</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">uri</span><span class="o">=</span><span class="s2">&quot;mongodb://localhost:27017&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">database</span><span class="o">=</span><span class="s2">&quot;myapp&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">)</span>
+</code></pre></div>
+<p>Motor handles connection pooling automatically.</p>
+<h2 id="distributed-rate-limiting">Distributed Rate Limiting<a class="headerlink" href="#distributed-rate-limiting" title="Permanent link">&para;</a></h2>
+<p>MongoDB enables rate limiting across multiple workers:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.storage.mongo</span><span class="w"> </span><span class="kn">import</span> <span class="n">MongoDBStorage</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.adapters.fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">DrogueLimiter</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># All workers share the same MongoDB backend</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">storage</span> <span class="o">=</span> <span class="n">MongoDBStorage</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="s2">&quot;mongodb://localhost:27017&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Each worker creates its own limiter with shared storage</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">limiter</span> <span class="o">=</span> <span class="n">DrogueLimiter</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="performance">Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Trust Level</th>
+<th>Backend</th>
 <th>Latency</th>
 <th>Throughput</th>
+<th>Use Case</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>UNKNOWN</td>
-<td>~200 microseconds</td>
-<td>5K req/s</td>
+<td>Memory</td>
+<td>~1.4us</td>
+<td>700K req/s</td>
+<td>Single worker</td>
 </tr>
 <tr>
-<td>STANDARD</td>
-<td>~43 microseconds</td>
-<td>23K req/s</td>
+<td>Redis</td>
+<td>~1ms</td>
+<td>50K req/s</td>
+<td>Multi-worker</td>
 </tr>
 <tr>
-<td>TRUSTED</td>
-<td>~5 microseconds</td>
-<td>200K req/s</td>
+<td>MongoDB</td>
+<td>~2ms</td>
+<td>20K req/s</td>
+<td>Existing MongoDB infrastructure</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Impact:</strong> 60-70% of requests go from ~43 microseconds to ~5 microseconds (9x improvement).</p>
-<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">trust</span> <span class="o">=</span> <span class="n">TrustManager</span><span class="p">(</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">max_fingerprints</span><span class="o">=</span><span class="mi">100_000</span><span class="p">,</span>      <span class="c1"># Maximum cached fingerprints</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">trusted_ttl</span><span class="o">=</span><span class="mi">14400</span><span class="p">,</span>             <span class="c1"># 4 hours</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">standard_ttl</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span>             <span class="c1"># 30 minutes</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">score_threshold_trusted</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>   <span class="c1"># Score below which fingerprint is TRUSTED</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">score_threshold_standard</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># Score below which fingerprint is STANDARD</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">)</span>
+<h2 id="failover">Failover<a class="headerlink" href="#failover" title="Permanent link">&para;</a></h2>
+<p>MongoDBStorage handles connection failures gracefully:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">DrogueConfig</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">DrogueConfig</span><span class="p">(</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">default_fail_closed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Deny on MongoDB failure</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="p">)</span>
 </code></pre></div>
-<h2 id="statistics">Statistics<a class="headerlink" href="#statistics" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">trust</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1"># {</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">#     &quot;total_checks&quot;: 10000,</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1">#     &quot;trusted_hits&quot;: 7000,</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1">#     &quot;standard_hits&quot;: 2000,</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1">#     &quot;unknown_misses&quot;: 1000,</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1">#     &quot;poison_count&quot;: 5,</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1">#     &quot;trusted_rate&quot;: 0.7,</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="c1">#     &quot;cached_fingerprints&quot;: 50000,</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1">#     &quot;max_fingerprints&quot;: 100000,</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="c1"># }</span>
-</code></pre></div>
-<h2 id="poison-pill">Poison Pill<a class="headerlink" href="#poison-pill" title="Permanent link">&para;</a></h2>
-<p>When an anomaly is detected, the fingerprint is instantly invalidated:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Anomaly detected</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">trust</span><span class="o">.</span><span class="n">poison</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># All subsequent requests hit full pipeline</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">level</span> <span class="o">=</span> <span class="n">trust</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># Returns TrustLevel.UNKNOWN</span>
-</code></pre></div>
-<p><strong>Attack scenario:</strong></p>
-<ol>
-<li>Attacker spoofs trusted fingerprint</li>
-<li>First anomalous request poisons the cache</li>
-<li>All subsequent requests hit full pipeline</li>
-<li>Cost: one anomalous request slips through (low damage)</li>
-<li>Benefit: 10,000x reduction in processing for real users</li>
-</ol>
+<h2 id="when-to-use-mongodb">When to Use MongoDB<a class="headerlink" href="#when-to-use-mongodb" title="Permanent link">&para;</a></h2>
+<p>Use MongoDB storage when:</p>
+<ul>
+<li>Your application already uses MongoDB</li>
+<li>You want to avoid adding Redis as a dependency</li>
+<li>You need the flexibility of MongoDB's query language</li>
+<li>You're using MongoDB Atlas for managed hosting</li>
+</ul>
+<p>Use Redis when:</p>
+<ul>
+<li>You need lower latency (~1ms vs ~2ms)</li>
+<li>You need higher throughput (50K vs 20K req/s)</li>
+<li>You're using Redis for other purposes (caching, sessions)</li>
+</ul>
 
 
 
 
 
 
+
+  
+  
 
 
 

@@ -6,15 +6,19 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Production-ready rate limiting and DDoS protection for Python web frameworks. FastAPI, Django, Flask support with Redis backend.">
+        <meta name="description" content="CDN vs library-level rate limiting. When to use Cloudflare/AWS WAF vs drogue for API protection.">
       
       
         <meta name="author" content="Zlynv">
       
       
-        <link rel="canonical" href="https://zlynv.github.io/drogue/advanced/trust/">
+        <link rel="canonical" href="https://zlynv.github.io/drogue/guides/cdn-vs-library/">
       
       
+        <link rel="prev" href="../../observability/opentelemetry/">
+      
+      
+        <link rel="next" href="../serverless/">
       
       
         
@@ -25,7 +29,7 @@
     
     
       
-        <title>Trust State Machine - drogue</title>
+        <title>CDN vs Library-Level - drogue</title>
       
     
     
@@ -78,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#trust-state-machine" class="md-skip">
+        <a href="#cdn-vs-library-level-protection" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Trust State Machine
+              CDN vs Library-Level
             
           </span>
         </div>
@@ -342,11 +346,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../guides/cdn-vs-library/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -1544,26 +1550,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -1581,7 +1592,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1596,10 +1607,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../guides/cdn-vs-library/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CDN vs Library-Level
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1615,6 +1653,114 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-cdn-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What CDN Does
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-drogue-does-that-cdn-cant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What drogue Does That CDN Can't
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-cdn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use CDN
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-drogue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use drogue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-ideal-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Ideal Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-cloudflare-drogue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Cloudflare + drogue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost Comparison
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1627,7 +1773,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/serverless/" class="md-nav__link">
+      <a href="../serverless/" class="md-nav__link">
         
   
   
@@ -1655,7 +1801,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/cloudflare/" class="md-nav__link">
+      <a href="../cloudflare/" class="md-nav__link">
         
   
   
@@ -1683,7 +1829,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../shadow/" class="md-nav__link">
+      <a href="../../advanced/shadow/" class="md-nav__link">
         
   
   
@@ -1711,7 +1857,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../honeypots/" class="md-nav__link">
+      <a href="../../advanced/honeypots/" class="md-nav__link">
         
   
   
@@ -1739,7 +1885,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../probabilistic/" class="md-nav__link">
+      <a href="../../advanced/probabilistic/" class="md-nav__link">
         
   
   
@@ -1767,7 +1913,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../sentinel/" class="md-nav__link">
+      <a href="../../advanced/sentinel/" class="md-nav__link">
         
   
   
@@ -2247,10 +2393,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#what-cdn-does" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        What CDN Does
       
     </span>
   </a>
@@ -2258,10 +2404,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
+  <a href="#what-drogue-does-that-cdn-cant" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How It Works
+        What drogue Does That CDN Can't
       
     </span>
   </a>
@@ -2269,10 +2415,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#when-to-use-cdn" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        When to Use CDN
       
     </span>
   </a>
@@ -2280,10 +2426,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#integration-with-drogue" class="md-nav__link">
+  <a href="#when-to-use-drogue" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Integration with drogue
+        When to Use drogue
       
     </span>
   </a>
@@ -2291,10 +2437,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#performance-impact" class="md-nav__link">
+  <a href="#the-ideal-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Performance Impact
+        The Ideal Setup
       
     </span>
   </a>
@@ -2302,10 +2448,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
+  <a href="#example-cloudflare-drogue" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Configuration
+        Example: Cloudflare + drogue
       
     </span>
   </a>
@@ -2313,10 +2459,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#statistics" class="md-nav__link">
+  <a href="#cost-comparison" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Statistics
+        Cost Comparison
       
     </span>
   </a>
@@ -2324,10 +2470,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#poison-pill" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Poison Pill
+        Summary
       
     </span>
   </a>
@@ -2352,6 +2498,46 @@
   
 
 
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Guides
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
               
               <article class="md-content__inner md-typeset">
                 
@@ -2362,135 +2548,234 @@
   
 
 
-<h1 id="trust-state-machine">Trust State Machine<a class="headerlink" href="#trust-state-machine" title="Permanent link">&para;</a></h1>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>The Trust State Machine implements tiered processing where trusted users skip expensive evaluation steps, dramatically improving throughput.</p>
-<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p><strong>Trust states:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>UNKNOWN -&gt; [first request, full evaluation] -&gt; EVALUATED
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>EVALUATED -&gt; [score &lt; 0.2] -&gt; TRUSTED (cached 4h)
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>EVALUATED -&gt; [score 0.2-0.5] -&gt; STANDARD (cached 30min)
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>EVALUATED -&gt; [score &gt; 0.5] -&gt; SUSPICIOUS (never cached)
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>TRUSTED -&gt; [any anomaly] -&gt; POISONED -&gt; UNKNOWN
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>TRUSTED -&gt; [4h elapsed] -&gt; UNKNOWN (re-evaluate)
-</code></pre></div>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.protection.trust</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustManager</span><span class="p">,</span> <span class="n">TrustLevel</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">trust</span> <span class="o">=</span> <span class="n">TrustManager</span><span class="p">(</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">trusted_ttl</span><span class="o">=</span><span class="mi">14400</span><span class="p">,</span>  <span class="c1"># 4 hours</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">standard_ttl</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span>  <span class="c1"># 30 minutes</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">score_threshold_trusted</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">score_threshold_standard</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">max_fingerprints</span><span class="o">=</span><span class="mi">100_000</span><span class="p">,</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">)</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># Check trust level</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">level</span> <span class="o">=</span> <span class="n">trust</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="n">TrustLevel</span><span class="o">.</span><span class="n">TRUSTED</span><span class="p">:</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="c1"># Skip everything (~5 microseconds)</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="k">return</span> <span class="n">RateLimitResult</span><span class="p">(</span><span class="n">allowed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tier</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Update trust after full evaluation</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="n">score</span> <span class="o">=</span> <span class="n">compute_trust_score</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">trust</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="c1"># Instant invalidation on anomaly</span>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="n">trust</span><span class="o">.</span><span class="n">poison</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="integration-with-drogue">Integration with drogue<a class="headerlink" href="#integration-with-drogue" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DrogueLimiter</span><span class="p">:</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="n">fingerprint</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">identity</span><span class="o">.</span><span class="n">fingerprint</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="c1"># Tier 0: Trusted -- skip everything</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_manager</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_manager</span><span class="o">.</span><span class="n">is_trusted</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">):</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>            <span class="k">return</span> <span class="n">RateLimitResult</span><span class="p">(</span><span class="n">allowed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tier</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="c1"># Tier 1: Standard -- rate limit only</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_algorithm</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="c1"># After check: update trust score</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_manager</span><span class="p">:</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>            <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_trust_score</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">trust_manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>        <span class="k">return</span> <span class="n">result</span>
-</code></pre></div>
-<h2 id="performance-impact">Performance Impact<a class="headerlink" href="#performance-impact" title="Permanent link">&para;</a></h2>
+<h1 id="cdn-vs-library-level-protection">CDN vs Library-Level Protection<a class="headerlink" href="#cdn-vs-library-level-protection" title="Permanent link">&para;</a></h1>
+<p>CDN-level protection (Cloudflare, AWS WAF, Akamai) and library-level protection (drogue) solve different problems. They are complementary, not competing.</p>
+<h2 id="what-cdn-does">What CDN Does<a class="headerlink" href="#what-cdn-does" title="Permanent link">&para;</a></h2>
+<p>CDN stops floods at the edge, before traffic reaches your server.</p>
 <table>
 <thead>
 <tr>
-<th>Trust Level</th>
-<th>Latency</th>
-<th>Throughput</th>
+<th>Capability</th>
+<th>CDN</th>
+<th>drogue</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>UNKNOWN</td>
-<td>~200 microseconds</td>
-<td>5K req/s</td>
+<td>Volumetric DDoS (L3/L4)</td>
+<td>Yes</td>
+<td>No</td>
 </tr>
 <tr>
-<td>STANDARD</td>
-<td>~43 microseconds</td>
-<td>23K req/s</td>
+<td>HTTP flood (L7)</td>
+<td>Yes</td>
+<td>Yes</td>
 </tr>
 <tr>
-<td>TRUSTED</td>
-<td>~5 microseconds</td>
-<td>200K req/s</td>
+<td>Global traffic visibility</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Hardware-level absorption (Tbps)</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Bot behavioral scoring (ML)</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Managed threat intelligence</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>CAPTCHA/JS challenges</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Zero application changes</td>
+<td>Yes</td>
+<td>No</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Impact:</strong> 60-70% of requests go from ~43 microseconds to ~5 microseconds (9x improvement).</p>
-<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">trust</span> <span class="o">=</span> <span class="n">TrustManager</span><span class="p">(</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">max_fingerprints</span><span class="o">=</span><span class="mi">100_000</span><span class="p">,</span>      <span class="c1"># Maximum cached fingerprints</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">trusted_ttl</span><span class="o">=</span><span class="mi">14400</span><span class="p">,</span>             <span class="c1"># 4 hours</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">standard_ttl</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span>             <span class="c1"># 30 minutes</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">score_threshold_trusted</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>   <span class="c1"># Score below which fingerprint is TRUSTED</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">score_threshold_standard</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># Score below which fingerprint is STANDARD</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">)</span>
+<h2 id="what-drogue-does-that-cdn-cant">What drogue Does That CDN Can't<a class="headerlink" href="#what-drogue-does-that-cdn-cant" title="Permanent link">&para;</a></h2>
+<p>CDN sees IP addresses and HTTP headers. drogue sees your application logic.</p>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>CDN</th>
+<th>drogue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rate limit by <strong>user ID</strong></td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Rate limit by <strong>account tier</strong></td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Rate limit by <strong>subscription level</strong></td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Endpoint-specific rules with custom logic</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Internal service protection (microservices)</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>WebSocket rate limiting</td>
+<td>Limited</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Trust-based rate limiting</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Circuit breaker for backend failures</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Adaptive limits under system load</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Shadow mode (test without enforcement)</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>No vendor lock-in</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="when-to-use-cdn">When to Use CDN<a class="headerlink" href="#when-to-use-cdn" title="Permanent link">&para;</a></h2>
+<p>Use CDN-level protection when:</p>
+<ul>
+<li>You need to stop volumetric DDoS attacks (millions of requests per second)</li>
+<li>You want zero application code changes</li>
+<li>You need global traffic visibility across multiple domains</li>
+<li>You want managed threat intelligence and bot detection</li>
+<li>You need SLA-backed protection guarantees</li>
+</ul>
+<h2 id="when-to-use-drogue">When to Use drogue<a class="headerlink" href="#when-to-use-drogue" title="Permanent link">&para;</a></h2>
+<p>Use library-level protection when:</p>
+<ul>
+<li>You need to rate limit by <strong>business identity</strong> (user ID, account tier, API key)</li>
+<li>You have <strong>endpoint-specific rules</strong> (login: 5/min, API: 100/min, search: 10/min)</li>
+<li>You need to protect <strong>internal microservices</strong> from each other</li>
+<li>You want <strong>trust-based rate limiting</strong> (verified users get higher limits)</li>
+<li>You need <strong>circuit breaker</strong> patterns for downstream services</li>
+<li>You want <strong>adaptive limits</strong> that scale with system load</li>
+<li>You need <strong>shadow mode</strong> to test rules before enforcement</li>
+<li>You want <strong>no vendor lock-in</strong> (works with any hosting provider)</li>
+</ul>
+<h2 id="the-ideal-setup">The Ideal Setup<a class="headerlink" href="#the-ideal-setup" title="Permanent link">&para;</a></h2>
+<p>Use both together:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Internet → CDN (Cloudflare/AWS WAF) → Your Server (drogue) → Application
 </code></pre></div>
-<h2 id="statistics">Statistics<a class="headerlink" href="#statistics" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">trust</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1"># {</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">#     &quot;total_checks&quot;: 10000,</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1">#     &quot;trusted_hits&quot;: 7000,</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1">#     &quot;standard_hits&quot;: 2000,</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1">#     &quot;unknown_misses&quot;: 1000,</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1">#     &quot;poison_count&quot;: 5,</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1">#     &quot;trusted_rate&quot;: 0.7,</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="c1">#     &quot;cached_fingerprints&quot;: 50000,</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1">#     &quot;max_fingerprints&quot;: 100000,</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="c1"># }</span>
-</code></pre></div>
-<h2 id="poison-pill">Poison Pill<a class="headerlink" href="#poison-pill" title="Permanent link">&para;</a></h2>
-<p>When an anomaly is detected, the fingerprint is instantly invalidated:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Anomaly detected</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">trust</span><span class="o">.</span><span class="n">poison</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># All subsequent requests hit full pipeline</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">level</span> <span class="o">=</span> <span class="n">trust</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="s2">&quot;fingerprint_abc123&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># Returns TrustLevel.UNKNOWN</span>
-</code></pre></div>
-<p><strong>Attack scenario:</strong></p>
 <ol>
-<li>Attacker spoofs trusted fingerprint</li>
-<li>First anomalous request poisons the cache</li>
-<li>All subsequent requests hit full pipeline</li>
-<li>Cost: one anomalous request slips through (low damage)</li>
-<li>Benefit: 10,000x reduction in processing for real users</li>
+<li><strong>CDN</strong> stops volumetric attacks and known malicious IPs at the edge</li>
+<li><strong>drogue</strong> handles application-level rate limiting by user identity</li>
+<li><strong>drogue</strong> protects against attacks that bypass CDN (valid IPs, API key abuse)</li>
+<li><strong>drogue</strong> provides trust-based limits, circuit breakers, and adaptive behavior</li>
 </ol>
+<h2 id="example-cloudflare-drogue">Example: Cloudflare + drogue<a class="headerlink" href="#example-cloudflare-drogue" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drogue.adapters.fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">DrogueLimiter</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Cloudflare stops volumetric DDoS</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># drogue handles application-level rate limiting by user ID</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">limiter</span> <span class="o">=</span> <span class="n">DrogueLimiter</span><span class="p">(</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">app</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">rules</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;100/minute&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">trusted_proxies</span><span class="o">=</span><span class="p">[</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="s2">&quot;173.245.48.0/20&quot;</span><span class="p">,</span> <span class="s2">&quot;103.21.244.0/22&quot;</span><span class="p">,</span> <span class="s2">&quot;103.22.200.0/22&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="c1"># ... Cloudflare IP ranges</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="p">],</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/data&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="nd">@limiter</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="s2">&quot;10/second&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">():</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">}</span>
+</code></pre></div>
+<h2 id="cost-comparison">Cost Comparison<a class="headerlink" href="#cost-comparison" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Solution</th>
+<th>Cost</th>
+<th>Protection Level</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cloudflare Free</td>
+<td>$0/month</td>
+<td>Basic DDoS, CDN</td>
+</tr>
+<tr>
+<td>Cloudflare Pro</td>
+<td>$20/month</td>
+<td>Advanced DDoS, WAF</td>
+</tr>
+<tr>
+<td>AWS WAF</td>
+<td>~$5/month + $0.60/million requests</td>
+<td>Rate limiting, bot control</td>
+</tr>
+<tr>
+<td>drogue</td>
+<td>Free (open source)</td>
+<td>Application-level rate limiting</td>
+</tr>
+<tr>
+<td>drogue + Redis</td>
+<td>Free + Redis cost</td>
+<td>Distributed rate limiting</td>
+</tr>
+</tbody>
+</table>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>CDN</strong> = infrastructure protection (stops floods at edge)</li>
+<li><strong>drogue</strong> = application protection (rate limits by identity, adapts to load)</li>
+<li><strong>Use both</strong> for defense in depth</li>
+</ul>
 
 
 
 
 
 
+
+  
+  
 
 
 
