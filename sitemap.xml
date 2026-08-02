@@ -2,230 +2,210 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://zlynv.github.io/drogue/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/changelog/</loc>
-         <lastmod>2026-07-29</lastmod>
-    </url>
-    <url>
-         <loc>https://zlynv.github.io/drogue/configuration/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/contributing/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/faq/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/installation/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/quickstart/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/advanced/adaptive/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/advanced/cidr/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/advanced/honeypots/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/advanced/probabilistic/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/advanced/probes/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/advanced/randomizer/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/advanced/sentinel/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/advanced/shadow/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/advanced/trust/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/api/adapters/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/api/algorithms/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/api/core/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/api/observability/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/api/protection/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/api/storage/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/concepts/algorithms/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/concepts/architecture/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/concepts/identity/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/concepts/storage/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/configuration/algorithms/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/configuration/overview/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/configuration/rate-limit-strings/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/development/changelog/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/development/contributing/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/development/testing/</loc>
-         <lastmod>2026-07-29</lastmod>
-    </url>
-    <url>
-         <loc>https://zlynv.github.io/drogue/features/observability/</loc>
-         <lastmod>2026-07-29</lastmod>
-    </url>
-    <url>
-         <loc>https://zlynv.github.io/drogue/features/protection/</loc>
-         <lastmod>2026-07-29</lastmod>
-    </url>
-    <url>
-         <loc>https://zlynv.github.io/drogue/features/rate-limiting/</loc>
-         <lastmod>2026-07-29</lastmod>
-    </url>
-    <url>
-         <loc>https://zlynv.github.io/drogue/features/storage/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/frameworks/django/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/frameworks/fastapi/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/frameworks/flask/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/getting-started/django/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/getting-started/fastapi/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/getting-started/flask/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/getting-started/redis/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/guides/cloudflare/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/guides/serverless/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/migration/slowapi/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/observability/logging/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/observability/metrics/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/observability/opentelemetry/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/protection/adaptive/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/protection/ban/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/protection/cidr/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/protection/circuit/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/protection/ddos/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/protection/probes/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/protection/randomizer/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
     <url>
          <loc>https://zlynv.github.io/drogue/protection/trust/</loc>
-         <lastmod>2026-07-29</lastmod>
+         <lastmod>2026-08-02</lastmod>
     </url>
 </urlset>
