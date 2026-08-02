@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.2.0] - 2026-08-02
+
+### Added
+
+#### Core Engine
+- GCRA (Generic Cell Rate Algorithm) for telecom-grade smooth traffic
+- Leaky Bucket algorithm for constant-rate traffic
+- All 5 algorithms now support thread-safe CAS operations
+
+#### Storage
+- MongoDB storage backend using Motor async driver
+- TTL index for automatic key expiry
+- `pip install drogue[mongodb]` for MongoDB support
+
+#### Testing
+- Thread safety tests proving drogue is thread-safe under concurrent access
+- 174 unit tests passing (up from 131)
+- Benchmark suite with function-level and HTTP load tests
+- Locust load testing for throughput and latency measurement
+
+#### Documentation
+- CDN vs Library-Level protection guide
+- All 5 algorithms documented with visual ASCII diagrams
+- Benchmark documentation with results
+- Google site verification for SEO
+
+#### Adapters
+- Flask headers bug fixed — now works for dict-returning views
+- Flask adapter uses `after_request` hook instead of broken `hasattr` approach
+
+### Changed
+- Navigation reorganized from 14 to 10 tabs (merged related pages)
+- Algorithm comparison table updated with all 5 algorithms
+- README updated with benchmark results
+
+### Known Limitations
+- Ban state is in-memory only (Redis persistence planned for v0.3)
+- Trust cache is per-process (multi-worker needs separate state)
+
 ## [0.1.0] - 2026-01-XX
 
 ### Added
@@ -67,19 +106,10 @@
 - Circuit breaker assertion timing
 - Test isolation between storage backends
 
-### Known Limitations
-- Ban state is in-memory only (Redis persistence planned for v0.3)
-- Trust cache is per-process (multi-worker needs separate state)
-- Flask header injection for dict-returning views doesn't work
-
-## [0.2.0] - Planned
+## [0.3.0] - Planned
 
 ### Planned
 - WebSocket support for Django and Flask
 - Redis-backed ban state persistence
-
-## [0.3.0] - Planned
-
-### Planned
 - Trust cache cross-process sync
 - Advanced probe detection patterns
