@@ -99,6 +99,36 @@ No `request: Request` parameter. Rate limit headers are injected automatically. 
 
 *Measured on Intel Core Ultra 5 225F, Python 3.13, asyncio single-worker, in-memory storage, 100K iterations.*
 
+### Benchmarks
+
+Run the full benchmark suite:
+
+```bash
+pip install locust pytest-benchmark
+pip install -e ".[fastapi]"
+
+# Function-level benchmarks (no server needed)
+pytest benchmarks/test_algorithm_latency.py -v --benchmark-only
+pytest benchmarks/test_algorithm_throughput.py -v --benchmark-only
+pytest benchmarks/test_memory.py -v --benchmark-only
+
+# HTTP load test
+python -m uvicorn benchmarks.apps.fastapi_app:app --port 8000
+locust -f benchmarks/locustfile.py --headless -u 100 -r 10 --run-time 60s -H http://localhost:8000
+
+# DDoS protection test
+python -m uvicorn benchmarks.apps.ddos_app:app --port 8000
+locust -f benchmarks/ddos_locustfile.py --headless -u 100 -r 10 --run-time 60s -H http://localhost:8000
+```
+
+**Results (Windows, Python 3.13, MemoryStorage):**
+
+| Test | Result |
+|------|--------|
+| Function-level ops/sec | 80-88K acquire calls/sec |
+| HTTP throughput | 2,400+ req/sec |
+| DDoS protection | 97.8% attackers banned, p50: 5ms |
+
 ---
 
 ## Install
