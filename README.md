@@ -4,7 +4,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-131%20passing-brightgreen.svg)](#development)
-[![codecov](https://codecov.io/gh/zlynv/drogue/graph/badge.svg?token=2043208a-63ae-47b6-a039-f18c539f63e2)](https://codecov.io/gh/zlynv/drogue)
+[![codecov](https://codecov.io/github/zlynv/drogue/graph/badge.svg?token=VVJ3EEPOD7)](https://codecov.io/github/zlynv/drogue)
 [![PyPI version](https://img.shields.io/pypi/v/drogue.svg)](https://pypi.org/project/drogue/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/drogue.svg)](https://pypi.org/project/drogue/)
 [![Supported frameworks](https://img.shields.io/badge/frameworks-FastAPI%20%7C%20Django%20%7C%20Flask-lightgrey.svg)](#features)
