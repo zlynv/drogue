@@ -29,11 +29,12 @@ Drogue is an **application-layer protection library**. It defends against abuse 
 
 ### Distributed Attacks
 
-Drogue's key differentiator: it catches attacks where each client stays under the individual rate limit.
+Drogue's Z-score detector catches attacks where individual clients stand out from the crowd.
 
-- 50,000 IPs each sending 10 req/min = 500,000 req/min total
-- Traditional rate limiters see nothing wrong (each client is under limit)
-- Drogue's Z-score detector flags the anomalous traffic pattern
+- It compares each client's rate against the distribution of all client rates
+- A client sending 5x more than peers gets flagged
+- But if all clients behave the same (coordinated uniform attack), no one looks anomalous
+- That's a harder problem that needs global traffic analysis (not supported yet)
 
 ---
 

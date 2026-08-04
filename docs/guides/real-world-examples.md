@@ -89,48 +89,6 @@ async def heavy_computation():
 
 ---
 
-## SaaS Tier Rate Limiting
-
-Different limits for free, pro, and enterprise plans.
-
-### Strategy
-
-- Use trust state machine for tier differentiation
-- Different rate limits per plan
-- Adaptive limits under system load
-
-### FastAPI Example
-
-```python
-from fastapi import FastAPI, Request, Depends
-from drogue.adapters.fastapi import DrogueLimiter
-from drogue.protection.trust import TrustLevel
-
-app = FastAPI()
-limiter = DrogueLimiter(app)
-
-def get_user_plan(request: Request) -> str:
-    # Your plan lookup logic
-    return request.headers.get("X-Plan", "free")
-
-@app.get("/api/data")
-@limiter.limit("100/day", trust_level=TrustLevel.SUSPICIOUS)
-@limiter.limit("1000/day", trust_level=TrustLevel.STANDARD)
-@limiter.limit("10000/day", trust_level=TrustLevel.TRUSTED)
-async def get_data(request: Request):
-    return {"data": "value"}
-```
-
-### Plan Configuration
-
-| Plan | Trust Level | Rate Limit | Features |
-|------|-------------|------------|----------|
-| Free | Suspicious | 100/day | Basic API access |
-| Pro | Normal | 1,000/day | Priority support |
-| Enterprise | Trusted | 10,000/day | Unlimited, SLA |
-
----
-
 ## WebSocket Rate Limiting
 
 Protect WebSocket endpoints from abuse.
@@ -295,7 +253,6 @@ async def tenant_data():
 |----------|---------------|------------|------------------|
 | Login | IP | 5/minute | Brute force |
 | API Key | Header | 1000/day | Abuse |
-| SaaS Tiers | Trust level | Tier-based | Business logic |
 | WebSocket | Connection | 30/minute | Real-time abuse |
 | Reverse Proxy | X-Forwarded-For | Per-client | Network layer |
 | Microservices | Service name | Per-service | Internal abuse |
