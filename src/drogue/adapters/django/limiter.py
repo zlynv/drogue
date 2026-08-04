@@ -10,6 +10,8 @@ from django.utils.deprecation import MiddlewareMixin
 
 from drogue.core.algorithms import (
     FixedWindowAlgorithm,
+    GCRAAlgorithm,
+    LeakyBucketAlgorithm,
     SlidingWindowAlgorithm,
     TokenBucketAlgorithm,
 )
@@ -31,6 +33,8 @@ _ALGORITHM_MAP: dict[AlgorithmType, type[Algorithm]] = {
     AlgorithmType.TOKEN_BUCKET: TokenBucketAlgorithm,
     AlgorithmType.SLIDING_WINDOW: SlidingWindowAlgorithm,
     AlgorithmType.FIXED_WINDOW: FixedWindowAlgorithm,
+    AlgorithmType.GCRA: GCRAAlgorithm,
+    AlgorithmType.LEAKY_BUCKET: LeakyBucketAlgorithm,
 }
 
 # Thread-local storage for limiter instance

@@ -1,7 +1,7 @@
 """Progressive auto-ban system.
 
 Automatically bans clients that repeatedly exceed rate limits,
-with escalating ban durations: 1min -> 10min -> 1hr -> 24hr -> permanent.
+with escalating ban durations: 1min -> 10min -> 1hr -> 24hr.
 """
 from __future__ import annotations
 
@@ -30,7 +30,6 @@ class ProgressiveBanManager:
         2: 10 minutes
         3: 1 hour
         4: 24 hours
-        5: Permanent
 
     Usage:
         ban = ProgressiveBanManager()

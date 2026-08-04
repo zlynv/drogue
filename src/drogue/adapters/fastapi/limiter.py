@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, Any
 
 from drogue.core.algorithms import (
     FixedWindowAlgorithm,
+    GCRAAlgorithm,
+    LeakyBucketAlgorithm,
     SlidingWindowAlgorithm,
     TokenBucketAlgorithm,
 )
@@ -29,6 +31,8 @@ _ALGORITHM_MAP: dict[AlgorithmType, type[Algorithm]] = {
     AlgorithmType.TOKEN_BUCKET: TokenBucketAlgorithm,
     AlgorithmType.SLIDING_WINDOW: SlidingWindowAlgorithm,
     AlgorithmType.FIXED_WINDOW: FixedWindowAlgorithm,
+    AlgorithmType.GCRA: GCRAAlgorithm,
+    AlgorithmType.LEAKY_BUCKET: LeakyBucketAlgorithm,
 }
 
 # Stores the last AcquireResult for each request so the middleware can inject
@@ -59,6 +63,7 @@ class DrogueLimiter:
         key_func: IdentityExtractor | None = None,
         config: DrogueConfig | None = None,
         default_limits: list[str] | None = None,
+        pipeline: Any | None = None,
     ) -> None:
         self.config = config or DrogueConfig()
         self.storage = storage if storage is not None else MemoryStorage()
@@ -70,6 +75,7 @@ class DrogueLimiter:
         self._route_rules: dict[str, list[RateLimitRule]] = {}
         self._initialized = False
         self._app: Any = None
+        self._pipeline = pipeline
 
         # Global rules (applied to all routes via middleware)
         self._global_rules: list[RateLimitRule] = list(rules or [])
@@ -163,6 +169,32 @@ class DrogueLimiter:
                 try:
                     context = _request_to_context(request)
                     key = await limiter.key_func.extract(context)
+
+                    # Pipeline check (ban + DDoS + circuit breaker)
+                    if limiter._pipeline is not None:
+                        result = await limiter._pipeline.check(
+                            key=key,
+                            context=context,
+                        )
+                        if not result.allowed:
+                            import json as _json
+                            body = _json.dumps({
+                                "error": result.reason,
+                                "retry_after": result.retry_after,
+                            }).encode()
+                            await send({
+                                "type": "http.response.start",
+                                "status": result.status_code,
+                                "headers": [
+                                    [b"content-type", b"application/json"],
+                                    [b"content-length", str(len(body)).encode()],
+                                ],
+                            })
+                            await send({
+                                "type": "http.response.body",
+                                "body": body,
+                            })
+                            return
 
                     # Check global rules
                     global_result = None
@@ -306,6 +338,10 @@ class DrogueLimiter:
         rule_id = f"{rule.algorithm.value}:{rule.limit}:{rule.window}"
         storage_key = f"{route_key}:{rule_id}:{key}" if route_key else key
         result = await algo.acquire(storage_key, cost=cost, block=rule.block, timeout=rule.timeout)
+
+        # Record violation for pipeline ban tracking
+        if not result.allowed and self._pipeline is not None:
+            self._pipeline.record_violation(key)
 
         # Shadow mode: log but don't enforce
         if rule.shadow or self.config.shadow_enabled:

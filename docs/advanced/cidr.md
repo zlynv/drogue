@@ -82,7 +82,6 @@ class DrogueLimiter:
                     limit=rule.limit,
                     remaining=0,
                     retry_after=0,
-                    headers={},
                 )
 
         # Continue with rate limit check

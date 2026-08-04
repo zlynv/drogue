@@ -221,12 +221,12 @@ class TestRetryAfterNoPadding:
 # P2#9: DDoS _client_counts memory cap
 # ============================================================================
 class TestDDoSMemoryCap:
-    """Before fix: _client_counts grew unbounded. After fix: capped at max_clients."""
+    """Before fix: _client_buckets grew unbounded. After fix: capped at max_clients."""
 
     def test_max_clients_enforced(self) -> None:
         from drogue.protection.ddos import DDoSDetector
 
-        detector = DDoSDetector(window=60.0, min_samples=1, max_clients=50)
+        detector = DDoSDetector(window=60.0, min_rate_samples=1, max_clients=50)
 
         # Add 100 unique clients (all in same bucket)
         for i in range(100):
@@ -235,7 +235,7 @@ class TestDDoSMemoryCap:
         # Force cleanup: mark as needing cleanup and ensure buckets are old enough
         detector._last_cleanup = 0.0
         # Expire all buckets by setting them far in the past
-        for _, buckets in detector._client_counts.items():
+        for _, buckets in detector._client_buckets.items():
             for j in range(len(buckets)):
                 buckets[j] = type(buckets[j])(timestamp=0, count=buckets[j].count)
 
@@ -243,24 +243,30 @@ class TestDDoSMemoryCap:
         detector.record("__trigger__")
 
         # Should be capped at max_clients
-        assert len(detector._client_counts) <= 51  # max_clients + trigger
+        assert len(detector._client_buckets) <= 51  # max_clients + trigger
 
-    def test_low_sample_clients_evicted(self) -> None:
-        from drogue.protection.ddos import DDoSDetector
+    def test_empty_clients_evicted(self) -> None:
+        from drogue.protection.ddos import DDoSDetector, TrafficSample
 
-        detector = DDoSDetector(window=1.0, min_samples=5, max_clients=100)
+        detector = DDoSDetector(window=60.0, min_rate_samples=5, max_clients=100)
 
-        # Add clients with only 1 sample each (below min_samples)
+        # Add clients with only 1 sample each
         for i in range(20):
             detector.record(f"client_{i}")
 
-        # Trigger cleanup by advancing time conceptually
-        # Force cleanup by manipulating _last_cleanup
+        # Force cleanup: set _last_cleanup to 0 so cleanup triggers,
+        # and set all bucket timestamps far in the past so they expire
         detector._last_cleanup = 0.0
+        cutoff_bucket = int((time.monotonic() - 60.0) / detector.bucket_size) - 1
+        for _, buckets in detector._client_buckets.items():
+            for j in range(len(buckets)):
+                buckets[j] = TrafficSample(timestamp=float(cutoff_bucket - 1), count=1)
+
+        # Trigger cleanup via a new record
         detector.record("trigger_cleanup")
 
-        # Clients below min_samples should be evicted
-        assert len(detector._client_counts) <= 1
+        # Clients with expired buckets should be evicted
+        assert len(detector._client_buckets) <= 1
 
 
 # ============================================================================

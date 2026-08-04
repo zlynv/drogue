@@ -38,7 +38,7 @@ locust -f benchmarks/ddos_locustfile.py --headless -u 50 -r 10 --run-time 20s -H
 ### How It Works
 
 1. **DDoS Detection** — Z-score anomaly detection monitors request rates per client
-2. **Progressive Bans** — After 5 violations: 1min → 10min → 1hr → 24hr → permanent
+2. **Progressive Bans** — After 5 violations: 1min → 10min → 1hr → 24hr
 3. **Rate Limiting** — Token Bucket (100/sec) and Sliding Window (50/sec) per endpoint
 
 ### Key Findings
@@ -80,6 +80,6 @@ Request → [DDoS Detector] → [Ban Check] → [Rate Limiter] → Response
 
 ```bash
 # Production config
-ddos = DDoSDetector(window=60.0, z_threshold=3.0, min_samples=100)
+ddos = DDoSDetector(window=60.0, z_threshold=3.0, min_clients=10)
 ban = ProgressiveBanManager(threshold=5, window=300.0)
 ```

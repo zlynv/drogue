@@ -22,12 +22,12 @@ prometheus_output = metrics.to_prometheus()  # Prometheus text format
 summary = metrics.get_summary()              # dict with all counts
 ```
 
-## DrogueLogger
+## StructuredRateLimitLogger
 
 ```python
-from drogue.observability.logging import DrogueLogger
+from drogue.observability.logging import StructuredRateLimitLogger
 
-logger = DrogueLogger(
+logger = StructuredRateLimitLogger(
     level="INFO",
     json_format=True,
     include_client_ip=True,

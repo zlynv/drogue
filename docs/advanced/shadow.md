@@ -77,7 +77,7 @@ class DrogueLimiter:
                 limit=result.limit,
                 remaining=result.remaining,
                 retry_after=0,
-                headers=result.headers,
+                reset_at=result.reset_at,
             )
 
         return result

@@ -26,7 +26,7 @@ config = DrogueConfig(
     # DDoS detection
     ddos_enabled=True,
     ddos_z_score_threshold=3.0,
-    ddos_min_samples=100,
+    ddos_min_clients=10,
     ddos_window=60.0,
 
     # Circuit breaker
@@ -86,6 +86,8 @@ from drogue.core.rules.rule import AlgorithmType
 AlgorithmType.TOKEN_BUCKET
 AlgorithmType.SLIDING_WINDOW
 AlgorithmType.FIXED_WINDOW
+AlgorithmType.GCRA
+AlgorithmType.LEAKY_BUCKET
 ```
 
 ## AcquireResult
@@ -98,8 +100,12 @@ result = AcquireResult(
     limit=100,
     remaining=99,
     retry_after=0,
-    headers={"X-RateLimit-Limit": "100"},
+    reset_at=1690000060.0,
 )
+
+# Headers are auto-generated from fields
+result.headers
+# {"X-RateLimit-Limit": "100", "X-RateLimit-Remaining": "99", "X-RateLimit-Reset": "1690000060"}
 ```
 
 ## Exceptions

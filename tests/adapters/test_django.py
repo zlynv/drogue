@@ -101,7 +101,13 @@ class TestBasicRateLimiting(_BaseDjangoTest):
         assert view_b(self._make_request()).status_code == 200
 
     def test_different_algorithms(self) -> None:
-        for algo in [AlgorithmType.TOKEN_BUCKET, AlgorithmType.SLIDING_WINDOW, AlgorithmType.FIXED_WINDOW]:
+        for algo in [
+            AlgorithmType.TOKEN_BUCKET,
+            AlgorithmType.SLIDING_WINDOW,
+            AlgorithmType.FIXED_WINDOW,
+            AlgorithmType.GCRA,
+            AlgorithmType.LEAKY_BUCKET,
+        ]:
             limiter = DrogueRateLimiter(storage=MemoryStorage())
             current_algo = algo
 

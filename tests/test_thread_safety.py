@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import asyncio
 import threading
-import time
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest

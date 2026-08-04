@@ -48,10 +48,7 @@ telemetry.record_active_keys(150)
 ## Configuration
 
 ```python
-from drogue.core.config import DrogueConfig
+from drogue.observability.opentelemetry import DrogueTelemetry
 
-config = DrogueConfig(
-    telemetry_enabled=True,
-    telemetry_service_name="my-api",
-)
+telemetry = DrogueTelemetry(service_name="my-api")
 ```

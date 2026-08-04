@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0
+
+- Added GCRA and Leaky Bucket algorithms (5 total)
+- ProtectionPipeline: unified ban → DDoS → circuit breaker pipeline
+- Flask headers bug fixed (after_request hook)
+- Thread safety tests for all algorithms
+- DDoS detector Z-score fix: compares across client rate distribution
+- Trust state machine cleanup (removed dead EVALUATED/POISONED states)
+- Progressive ban: 4 levels (1min → 10min → 1hr → 24hr)
+- CI workflow with Codecov integration
+- Documentation site with security model, real-world examples, compatibility matrix
+
 ## 0.1.1
 
 - Fix README accuracy: memory claims, author consistency, broken links

@@ -48,7 +48,7 @@ from drogue.protection.ddos import DDoSDetector
 detector = DDoSDetector(
     window=60.0,            # Sliding window (seconds)
     z_threshold=3.0,        # Z-score threshold for anomaly
-    min_samples=100,        # Min samples before detection activates
+    min_clients=10,           # Min clients before detection activates
     bucket_size=1.0,        # Time bucket size (seconds)
     max_clients=10000,      # Max clients to track
 )
@@ -80,14 +80,16 @@ global_rate = detector.get_global_rate()  # e.g., 500.0 requests/second
 ```python
 stats = detector.get_stats()
 # {
-#     "http_clients": 150,           # Number of HTTP clients tracked
-#     "ws_clients": 10,              # Number of WebSocket clients tracked
-#     "http_global_rate": 500.0,     # Global HTTP requests/second
-#     "http_mean": 3.33,             # Mean rate per client
-#     "http_std": 1.2,               # Standard deviation
-#     "ws_global_rate": 50.0,        # Global WS messages/second
-#     "ws_mean": 5.0,                # Mean WS rate per client
-#     "ws_std": 1.5,                 # WS standard deviation
+#     "http_clients": 150,                    # Number of HTTP clients tracked
+#     "ws_clients": 10,                       # Number of WebSocket clients tracked
+#     "http_distribution_clients": 150,       # Clients in distribution stats
+#     "http_distribution_mean": 3.33,         # Mean rate per client
+#     "http_distribution_std": 1.2,           # Standard deviation
+#     "http_global_rate": 500.0,              # Global HTTP requests/second
+#     "ws_distribution_clients": 10,          # WS clients in distribution
+#     "ws_distribution_mean": 5.0,            # Mean WS rate per client
+#     "ws_distribution_std": 1.5,             # WS standard deviation
+#     "ws_global_rate": 50.0,                 # Global WS messages/second
 # }
 ```
 
@@ -114,7 +116,7 @@ from drogue.core.config import DrogueConfig
 config = DrogueConfig(
     ddos_enabled=True,
     ddos_z_score_threshold=3.0,   # Lower = more sensitive
-    ddos_min_samples=100,         # Min samples before detection
+    ddos_min_clients=10,           # Min clients before detection
     ddos_window=60.0,             # Sliding window size
 )
 ```

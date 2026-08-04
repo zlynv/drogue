@@ -64,8 +64,8 @@ drogue supports multiple Python versions, frameworks, and storage backends. This
 |---------|--------|-------|
 | Rate limiting | Stable | All 5 algorithms |
 | DDoS detection | Stable | Z-score anomaly detection |
-| Progressive auto-ban | Stable | 5 escalating levels |
-| Trust state machine | Stable | 7 states |
+| Progressive auto-ban | Stable | 4 escalating levels (1min–24hr) |
+| Trust state machine | Stable | 5 states (UNKNOWN/TRUSTED/STANDARD/SUSPICIOUS/BANNED) |
 | Circuit breaker | Stable | Closed/Open/HalfOpen |
 | Adaptive limits | Stable | CPU/memory-aware |
 | CIDR filtering | Stable | IPv4 and IPv6 |

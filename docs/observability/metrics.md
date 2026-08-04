@@ -81,7 +81,6 @@ from drogue.core.config import DrogueConfig
 
 config = DrogueConfig(
     metrics_enabled=True,
-    metrics_max_routes=500,
 )
 ```
 

@@ -35,12 +35,12 @@ from drogue.protection.trust import TrustManager
 
 manager = TrustManager()
 
-# Update trust score (negative = good, positive = bad)
-level = manager.update("fingerprint_abc", score=-0.1)
-# TrustLevel.TRUSTED (score went down)
+# Update trust score (0.0 = fully trusted, 1.0 = fully suspicious)
+level = manager.update("fingerprint_abc", score=0.1)
+# TrustLevel.TRUSTED (score < 0.2)
 
-level = manager.update("fingerprint_abc", score=0.3)
-# TrustLevel.SUSPICIOUS (score went up)
+level = manager.update("fingerprint_abc", score=0.6)
+# TrustLevel.SUSPICIOUS (score > 0.5)
 
 # Check trust level
 level = manager.check("fingerprint_abc")
@@ -72,11 +72,14 @@ state = manager.get_state("fingerprint_abc")
 ```python
 stats = manager.get_stats()
 # {
-#     "total_fingerprints": 1500,
-#     "trusted": 200,
-#     "standard": 1100,
-#     "suspicious": 150,
-#     "banned": 50,
+#     "total_checks": 1500,
+#     "trusted_hits": 200,
+#     "standard_hits": 1100,
+#     "unknown_misses": 150,
+#     "poison_count": 5,
+#     "trusted_rate": 0.133,
+#     "cached_fingerprints": 1500,
+#     "max_fingerprints": 100000,
 # }
 ```
 
@@ -102,15 +105,14 @@ count = manager.clear()  # Returns number of cleared entries
 ## Configuration
 
 ```python
-from drogue.core.config import DrogueConfig
+from drogue.protection.trust import TrustManager
 
-config = DrogueConfig(
-    trust_enabled=True,
-    trust_max_fingerprints=100000,
-    trust_trusted_ttl=14400.0,      # 4 hours
-    trust_standard_ttl=1800.0,       # 30 minutes
-    trust_score_threshold_trusted=0.2,
-    trust_score_threshold_standard=0.5,
+trust = TrustManager(
+    max_fingerprints=100000,
+    trusted_ttl=14400.0,       # 4 hours
+    standard_ttl=1800.0,       # 30 minutes
+    score_threshold_trusted=0.2,
+    score_threshold_standard=0.5,
 )
 ```
 

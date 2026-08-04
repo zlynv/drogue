@@ -28,6 +28,8 @@ from rest_framework.throttling import BaseThrottle
 
 from drogue.core.algorithms import (
     FixedWindowAlgorithm,
+    GCRAAlgorithm,
+    LeakyBucketAlgorithm,
     SlidingWindowAlgorithm,
     TokenBucketAlgorithm,
 )
@@ -41,6 +43,8 @@ _ALGORITHM_MAP: dict[AlgorithmType, type[Algorithm]] = {
     AlgorithmType.TOKEN_BUCKET: TokenBucketAlgorithm,
     AlgorithmType.SLIDING_WINDOW: SlidingWindowAlgorithm,
     AlgorithmType.FIXED_WINDOW: FixedWindowAlgorithm,
+    AlgorithmType.GCRA: GCRAAlgorithm,
+    AlgorithmType.LEAKY_BUCKET: LeakyBucketAlgorithm,
 }
 
 # Shared storage and algorithms across throttle instances

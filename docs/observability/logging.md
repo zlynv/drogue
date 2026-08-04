@@ -3,9 +3,9 @@
 ## Setup
 
 ```python
-from drogue.observability.logging import DrogueLogger
+from drogue.observability.logging import StructuredRateLimitLogger
 
-logger = DrogueLogger(
+logger = StructuredRateLimitLogger(
     level="INFO",
     json_format=True,
     include_client_ip=True,
@@ -44,9 +44,9 @@ logger = DrogueLogger(
 ## Integration
 
 ```python
-from drogue.observability.logging import DrogueLogger
+from drogue.observability.logging import StructuredRateLimitLogger
 from drogue.core.config import DrogueConfig
 
-logger = DrogueLogger(level="INFO")
-config = DrogueConfig(log_logger=logger)
+logger = StructuredRateLimitLogger(level="INFO")
+config = DrogueConfig(log_level="info")
 ```

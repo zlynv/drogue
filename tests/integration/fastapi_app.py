@@ -12,7 +12,7 @@ from drogue.protection.circuit import CircuitBreaker
 from drogue.protection.ddos import DDoSDetector
 
 config = DrogueConfig()
-ddos = DDoSDetector(window=60.0, z_threshold=3.0, min_samples=5)
+ddos = DDoSDetector(window=60.0, z_threshold=3.0, min_clients=5)
 ban = ProgressiveBanManager(threshold=5, window=60.0)
 circuit = CircuitBreaker(failure_threshold=3, recovery_timeout=5.0)
 

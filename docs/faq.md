@@ -34,12 +34,9 @@ Shadow mode tests new rate limit rules without enforcing them. Requests are proc
 from drogue.core.config import DrogueConfig
 
 config = DrogueConfig(
-    storage_url="redis://localhost:6379",
-    trust_enabled=True,
+    redis_url="redis://localhost:6379",
     ddos_enabled=True,
     ban_enabled=True,
-    telemetry_enabled=True,
-    telemetry_service_name="my-api",
 )
 ```
 

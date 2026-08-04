@@ -14,6 +14,7 @@ from fastapi.testclient import TestClient
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+from drogue.adapters.fastapi.limiter import _last_result as _drogue_last_result
 from tests.integration.fastapi_app import (
     app as fastapi_app,
 )
@@ -23,7 +24,6 @@ from tests.integration.fastapi_app import (
 from tests.integration.fastapi_app import (
     storage as fastapi_storage,
 )
-from drogue.adapters.fastapi.limiter import _last_result as _drogue_last_result
 
 # ============================================================================
 # FastAPI Tests

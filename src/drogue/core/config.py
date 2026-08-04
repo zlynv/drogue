@@ -29,7 +29,7 @@ class DrogueConfig:
     # DDoS detection
     ddos_enabled: bool = False
     ddos_z_score_threshold: float = 3.0
-    ddos_min_samples: int = 100
+    ddos_min_clients: int = 10
     ddos_window: float = 60.0
 
     # Circuit breaker

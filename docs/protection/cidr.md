@@ -98,7 +98,6 @@ cidr.remove_from_denylist("185.220.101.0/24")
 from drogue.core.config import DrogueConfig
 
 config = DrogueConfig(
-    cidr_enabled=True,
     cidr_allowlist=["192.168.0.0/16", "10.0.0.0/8"],
     cidr_denylist=["185.220.101.0/24"],
 )

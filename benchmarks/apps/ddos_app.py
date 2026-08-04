@@ -29,7 +29,7 @@ limiter = DrogueLimiter(
 )
 
 # DDoS protection components
-ddos = DDoSDetector(window=60.0, z_threshold=3.0, min_samples=10)
+ddos = DDoSDetector(window=60.0, z_threshold=3.0, min_clients=10)
 ban = ProgressiveBanManager(threshold=5, window=60.0)
 circuit = CircuitBreaker(failure_threshold=5, recovery_timeout=10.0)
 

@@ -67,7 +67,7 @@
 - Progressive auto-ban with escalating durations
 - DDoS detection using Z-score anomaly analysis
 - WebSocket DDoS detection
-- Trust State Machine with 7 states (UNKNOWN → TRUSTED)
+- Trust State Machine with 5 states (UNKNOWN → TRUSTED/STANDARD/SUSPICIOUS/BANNED)
 - Sentinel Model (Half-Space Trees) for streaming anomaly detection
 - Probe Pattern Detector for early attack warning
 - CIDR filtering with IPv4/IPv6 support

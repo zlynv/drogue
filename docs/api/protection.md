@@ -13,9 +13,9 @@ manager = TrustManager(
     score_threshold_standard=0.5,
 )
 
-# Update trust score (negative = suspicious, positive = good)
-level = manager.update("fingerprint_abc", score=-0.1)
-# TrustLevel.TRUSTED / STANDARD / SUSPICIOUS / BANNED
+# Update trust score (0.0 = fully trusted, 1.0 = fully suspicious)
+level = manager.update("fingerprint_abc", score=0.1)
+# TrustLevel.TRUSTED (score < 0.2)
 
 # Check trust level
 level = manager.check("fingerprint_abc")
@@ -47,7 +47,7 @@ manager = ProgressiveBanManager(
     threshold=5,           # violations before ban
     window=300.0,          # violation window (seconds)
     max_violations=20,
-    escalation=[60, 300, 900, 3600, 7200, 14400],  # durations per level
+    escalation=[0, 60, 600, 3600, 86400],  # durations per level
 )
 
 # Record a violation
@@ -104,7 +104,7 @@ from drogue.protection.ddos import DDoSDetector
 detector = DDoSDetector(
     window=60.0,
     z_threshold=3.0,
-    min_samples=100,
+    min_clients=10,
     bucket_size=1.0,
     max_clients=10000,
 )
@@ -205,5 +205,5 @@ limiter.record_latency(0.05)
 
 # Get current metrics
 metrics = limiter.get_metrics()
-# {"cpu_percent": 65.2, "memory_percent": 72.1, ...}
+# {"cpu_usage": 65.2, "memory_usage": 72.1, ...}
 ```

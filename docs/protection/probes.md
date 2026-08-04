@@ -56,13 +56,13 @@ is_probing = detector.is_probing("scanner.ip")  # True or False
 signal = detector.get_signal("scanner.ip")
 # ProbeSignal(
 #     client_id='scanner.ip',
-#     sequential_paths=True,
-#     high_error_rate=True,
-#     timing_regularity=False,
-#     first_seen=1690000000.0,
-#     last_seen=1690000010.0,
-#     request_count=3,
-#     error_count=1,
+#     unique_paths=3,            # Number of unique paths visited
+#     high_error_rate=True,      # Detected high errors
+#     total_count=3,             # Total requests
+#     time_span=10.0,            # Time span of requests
+#     threat_boost=0.6,          # Accumulated threat score
+#     detected_at=1690000000.0,  # When probe was detected
+#     error_count=1,             # Error responses (4xx/5xx)
 # )
 
 # Get threat boost (used by trust system)
@@ -78,13 +78,13 @@ boost = detector.get_threat_boost("scanner.ip")
 signal = detector.get_signal("scanner.ip")
 # ProbeSignal(
 #     client_id='scanner.ip',
-#     sequential_paths=True,       # Detected path sequence
-#     high_error_rate=True,        # Detected high errors
-#     timing_regularity=False,     # No timing pattern
-#     first_seen=1690000000.0,     # First request timestamp
-#     last_seen=1690000010.0,      # Last request timestamp
-#     request_count=3,             # Total requests
-#     error_count=1,               # Error responses (4xx/5xx)
+#     unique_paths=3,            # Number of unique paths visited
+#     high_error_rate=True,      # Detected high errors
+#     total_count=3,             # Total requests
+#     time_span=10.0,            # Time span of requests
+#     threat_boost=0.6,          # Accumulated threat score
+#     detected_at=1690000000.0,  # When probe was detected
+#     error_count=1,             # Error responses (4xx/5xx)
 # )
 
 # Or None if no signal detected
@@ -96,10 +96,10 @@ signal = detector.get_signal("normal_user")  # None
 ```python
 stats = detector.get_stats()
 # {
-#     "total_clients": 150,
-#     "probing_clients": 5,
 #     "total_requests": 5000,
-#     "probe_signals": 12,
+#     "probes_detected": 12,
+#     "active_probes": 5,
+#     "clients_tracked": 150,
 # }
 ```
 
@@ -126,13 +126,12 @@ count = detector.clear_all()  # Returns number of cleared clients
 ## Configuration
 
 ```python
-from drogue.core.config import DrogueConfig
+from drogue.protection.probes import ProbeDetector
 
-config = DrogueConfig(
-    probes_enabled=True,
-    probes_window=300.0,
-    probes_probe_threshold=3,
-    probes_min_error_rate=0.5,
-    probes_max_time_span=60.0,
+detector = ProbeDetector(
+    window=300.0,
+    probe_threshold=3,
+    min_error_rate=0.5,
+    max_time_span=60.0,
 )
 ```

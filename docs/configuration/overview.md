@@ -28,7 +28,7 @@ config = DrogueConfig(
     # DDoS detection
     ddos_enabled=True,
     ddos_z_score_threshold=3.0,
-    ddos_min_samples=100,
+    ddos_min_clients=10,
     ddos_window=60.0,
 
     # Circuit breaker
@@ -95,7 +95,7 @@ config = DrogueConfig(
 |---------|---------|-------------|
 | `ddos_enabled` | `False` | Enable DDoS detection |
 | `ddos_z_score_threshold` | `3.0` | Z-score threshold |
-| `ddos_min_samples` | `100` | Minimum samples before detection |
+| `ddos_min_clients` | `10` | Minimum clients before detection activates |
 | `ddos_window` | `60.0` | Detection window (seconds) |
 
 ### Circuit Breaker

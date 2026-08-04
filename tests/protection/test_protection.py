@@ -12,15 +12,48 @@ class TestDDoSDetector:
     """Test Z-score anomaly detection."""
 
     def test_record_and_rate(self) -> None:
-        det = DDoSDetector(window=60.0, bucket_size=0.1)
+        det = DDoSDetector(window=60.0, bucket_size=0.1, min_rate_samples=1)
         for _ in range(10):
             det.record("client1")
         rate = det.get_client_rate("client1")
         assert rate > 0
 
-    def test_not_anomalous_with_few_samples(self) -> None:
-        det = DDoSDetector(min_samples=100)
+    def test_not_anomalous_with_few_clients(self) -> None:
+        det = DDoSDetector(min_clients=10, min_rate_samples=1)
         det.record("attacker")
+        assert det.is_anomalous("attacker") is False
+
+    def test_not_anomalous_single_client(self) -> None:
+        det = DDoSDetector(min_clients=10, min_rate_samples=1, bucket_size=0.1)
+        for _ in range(100):
+            det.record("attacker")
+        det._maybe_recompute(time.monotonic())
+        assert det.is_anomalous("attacker") is False
+
+    def test_detects_high_rate_client(self) -> None:
+        det = DDoSDetector(
+            window=60.0, bucket_size=0.1, min_clients=3,
+            min_rate_samples=1, z_threshold=2.0, recompute_interval=0.0,
+        )
+        for _ in range(500):
+            det.record("attacker")
+        for i in range(5):
+            for _ in range(3):
+                det.record(f"normal{i}")
+        det._maybe_recompute(time.monotonic())
+        assert det.is_anomalous("attacker") is True
+
+    def test_normal_client_not_flagged(self) -> None:
+        det = DDoSDetector(
+            window=60.0, bucket_size=0.1, min_clients=3,
+            min_rate_samples=1, z_threshold=3.0, recompute_interval=0.0,
+        )
+        for _ in range(30):
+            det.record("attacker")
+        for i in range(5):
+            for _ in range(25):
+                det.record(f"normal{i}")
+        det._maybe_recompute(time.monotonic())
         assert det.is_anomalous("attacker") is False
 
     def test_global_rate(self) -> None:
@@ -36,6 +69,8 @@ class TestDDoSDetector:
             det.record("c1")
         stats = det.get_stats()
         assert stats["http_clients"] >= 1
+        assert "http_distribution_mean" in stats
+        assert "http_distribution_std" in stats
 
 
 class TestProgressiveBanManager:
@@ -164,3 +199,82 @@ class TestCircuitBreaker:
         assert cb.state == CircuitState.OPEN
         cb.reset()
         assert cb.state == CircuitState.CLOSED
+
+
+class TestProtectionPipeline:
+    """Test the unified protection pipeline."""
+
+    def test_allows_normal_request(self) -> None:
+        from drogue.protection.pipeline import ProtectionPipeline
+
+        pipeline = ProtectionPipeline()
+        import asyncio
+        result = asyncio.run(
+            pipeline.check("client1", {"client": {"host": "127.0.0.1"}})
+        )
+        assert result.allowed is True
+
+    def test_blocks_banned_client(self) -> None:
+        from drogue.protection.pipeline import ProtectionPipeline
+
+        ban = ProgressiveBanManager(threshold=1, window=60.0)
+        pipeline = ProtectionPipeline(ban=ban)
+        ban.record_violation("bad_client")
+        assert ban.is_banned("bad_client")
+
+        import asyncio
+        result = asyncio.run(
+            pipeline.check("bad_client", {"client": {"host": "127.0.0.1"}})
+        )
+        assert result.allowed is False
+        assert result.reason == "banned"
+        assert result.status_code == 403
+
+    def test_blocks_when_circuit_open(self) -> None:
+        from drogue.protection.pipeline import ProtectionPipeline
+
+        cb = CircuitBreaker(failure_threshold=2, recovery_timeout=60.0)
+        pipeline = ProtectionPipeline(circuit=cb)
+        cb.record_failure()
+        cb.record_failure()
+        assert cb.state == CircuitState.OPEN
+
+        import asyncio
+        result = asyncio.run(
+            pipeline.check("client1", {"client": {"host": "127.0.0.1"}})
+        )
+        assert result.allowed is False
+        assert result.reason == "circuit_open"
+        assert result.status_code == 503
+
+    def test_records_violation(self) -> None:
+        from drogue.protection.pipeline import ProtectionPipeline
+
+        ban = ProgressiveBanManager(threshold=2, window=60.0)
+        pipeline = ProtectionPipeline(ban=ban)
+        pipeline.record_violation("client1")
+        pipeline.record_violation("client1")
+        assert ban.is_banned("client1")
+
+    def test_records_success_for_circuit(self) -> None:
+        from drogue.protection.pipeline import ProtectionPipeline
+
+        cb = CircuitBreaker(failure_threshold=3)
+        pipeline = ProtectionPipeline(circuit=cb)
+        for _ in range(5):
+            pipeline.record_success("client1")
+        status = cb.get_status()
+        assert status["failure_count"] == 0
+        assert status["state"] == "closed"
+
+    def test_get_stats(self) -> None:
+        from drogue.protection.pipeline import ProtectionPipeline
+
+        ddos = DDoSDetector(window=60.0, min_rate_samples=1)
+        ban = ProgressiveBanManager(threshold=5, window=60.0)
+        cb = CircuitBreaker(failure_threshold=3)
+        pipeline = ProtectionPipeline(ddos=ddos, ban=ban, circuit=cb)
+        stats = pipeline.get_stats()
+        assert "ddos" in stats
+        assert "ban" in stats
+        assert "circuit" in stats

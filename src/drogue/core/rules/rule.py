@@ -15,6 +15,8 @@ class AlgorithmType(Enum):
     TOKEN_BUCKET = "token_bucket"
     SLIDING_WINDOW = "sliding_window"
     FIXED_WINDOW = "fixed_window"
+    GCRA = "gcra"
+    LEAKY_BUCKET = "leaky_bucket"
 
 
 @dataclass(frozen=True)

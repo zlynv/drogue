@@ -37,12 +37,17 @@ limiter.record_latency(0.05)  # 50ms request latency
 # Get current metrics
 metrics = limiter.get_metrics()
 # {
-#     "cpu_percent": 65.2,
-#     "memory_percent": 72.1,
-#     "event_loop_latency": 0.012,
-#     "effective_scale": 0.85,
-#     "base_limit": 1000,
-#     "effective_limit": 850,
+#     "cpu_usage": 65.2,
+#     "memory_usage": 72.1,
+#     "cpu_threshold": 0.8,
+#     "memory_threshold": 0.8,
+#     "cpu_reduction": 0.0,
+#     "memory_reduction": 0.0,
+#     "latency_reduction": 0.0,
+#     "latency_p50": 0.012,
+#     "latency_p95": 0.025,
+#     "latency_p99": 0.050,
+#     "latency_samples": 150,
 # }
 ```
 
@@ -69,12 +74,17 @@ limit = limiter.get_effective_limit(1000)
 ```python
 metrics = limiter.get_metrics()
 # {
-#     "cpu_percent": 65.2,           # Current CPU usage
-#     "memory_percent": 72.1,        # Current memory usage
-#     "event_loop_latency": 0.012,   # Async event loop latency (seconds)
-#     "scale_factor": 0.5,           # Configured scale factor
-#     "cpu_threshold": 0.8,          # CPU threshold
-#     "memory_threshold": 0.8,       # Memory threshold
+#     "cpu_usage": 65.2,              # Current CPU usage
+#     "memory_usage": 72.1,           # Current memory usage
+#     "cpu_threshold": 0.8,           # CPU threshold
+#     "memory_threshold": 0.8,        # Memory threshold
+#     "cpu_reduction": 0.0,           # CPU-based reduction factor
+#     "memory_reduction": 0.0,        # Memory-based reduction factor
+#     "latency_reduction": 0.0,       # Latency-based reduction factor
+#     "latency_p50": 0.012,           # 50th percentile latency (seconds)
+#     "latency_p95": 0.025,           # 95th percentile latency
+#     "latency_p99": 0.050,           # 99th percentile latency
+#     "latency_samples": 150,         # Number of latency samples
 # }
 ```
 

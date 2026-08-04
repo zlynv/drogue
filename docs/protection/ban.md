@@ -11,11 +11,9 @@ Auto-ban automatically blocks clients that repeatedly violate rate limits. Unlik
 2. If violations reach threshold within the window, client is banned
 3. Ban duration escalates with each level:
    - Level 1: 1 minute
-   - Level 2: 5 minutes
-   - Level 3: 15 minutes
-   - Level 4: 1 hour
-   - Level 5: 2 hours
-   - Level 6: 4 hours
+   - Level 2: 10 minutes
+   - Level 3: 1 hour
+   - Level 4: 24 hours
 4. Violations expire after the window elapses
 5. Ban expires after the duration elapses
 ```
@@ -29,7 +27,7 @@ manager = ProgressiveBanManager(
     threshold=5,           # Violations before ban
     window=300.0,          # Violation window (5 minutes)
     max_violations=20,     # Max violations to track
-    escalation=[60, 300, 900, 3600, 7200, 14400],  # Duration per level
+    escalation=[0, 60, 600, 3600, 86400],  # Duration per level
 )
 
 # Record a violation
@@ -109,6 +107,6 @@ config = DrogueConfig(
     ban_enabled=True,
     ban_threshold=5,           # Violations before ban
     ban_window=300.0,          # Violation window (seconds)
-    ban_escalation=[60, 300, 900, 3600, 7200, 14400],
+    ban_escalation=[0, 60, 600, 3600, 86400],
 )
 ```

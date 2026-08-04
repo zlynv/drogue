@@ -2,7 +2,7 @@
 
 ## Overview
 
-drogue is a drop-in replacement for slowapi with additional features like DDoS detection, WebSocket support, and trust caching.
+drogue provides rate limiting and DDoS protection for FastAPI with additional features like WebSocket support, trust caching, and a protection pipeline. If you're migrating from slowapi, the API is similar but not identical.
 
 ## Before (slowapi)
 
@@ -101,7 +101,7 @@ limiter = DrogueLimiter(app, storage=storage)
 | WebSocket | Not supported | Supported |
 | DDoS detection | Not available | Z-score + streaming |
 | Trust caching | Not available | 9x throughput |
-| Algorithms | Token Bucket | Token Bucket, Sliding Window, Fixed Window |
+| Algorithms | Token Bucket | Token Bucket, Sliding Window, Fixed Window, GCRA, Leaky Bucket |
 | Storage | Redis, Memcached | Memory, Redis, Count-Min Sketch |
 
 ## Additional Features

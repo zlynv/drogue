@@ -67,12 +67,12 @@ Enforce per-key quotas for API access.
 ```python
 from fastapi import FastAPI, Request
 from drogue.adapters.fastapi import DrogueLimiter
-from drogue.core.identity import Header
+from drogue.core.identity import HeaderExtractor
 
 app = FastAPI()
 limiter = DrogueLimiter(
     app,
-    key_extractor=Header("X-API-Key")  # Extract from API key header
+    key_func=HeaderExtractor("X-API-Key")  # Extract from API key header
 )
 
 @app.get("/api/data")
@@ -115,7 +115,7 @@ def get_user_plan(request: Request) -> str:
 
 @app.get("/api/data")
 @limiter.limit("100/day", trust_level=TrustLevel.SUSPICIOUS)
-@limiter.limit("1000/day", trust_level=TrustLevel.NORMAL)
+@limiter.limit("1000/day", trust_level=TrustLevel.STANDARD)
 @limiter.limit("10000/day", trust_level=TrustLevel.TRUSTED)
 async def get_data(request: Request):
     return {"data": "value"}
@@ -248,12 +248,12 @@ Rate limiting internal service-to-service communication.
 ```python
 from fastapi import FastAPI, Request
 from drogue.adapters.fastapi import DrogueLimiter
-from drogue.core.identity import Header
+from drogue.core.identity import HeaderExtractor
 
 app = FastAPI()
 limiter = DrogueLimiter(
     app,
-    key_extractor=Header("X-Service-Name")  # Identify by service name
+    key_func=HeaderExtractor("X-Service-Name")  # Identify by service name
 )
 
 @app.get("/api/internal/data")
@@ -273,12 +273,12 @@ async def heavy_internal():
 ```python
 from fastapi import FastAPI, Request
 from drogue.adapters.fastapi import DrogueLimiter
-from drogue.core.identity import Header
+from drogue.core.identity import HeaderExtractor
 
 app = FastAPI()
 limiter = DrogueLimiter(
     app,
-    key_extractor=Header("X-Tenant-ID")  # Identify by tenant
+    key_func=HeaderExtractor("X-Tenant-ID")  # Identify by tenant
 )
 
 @app.get("/api/tenant/data")
