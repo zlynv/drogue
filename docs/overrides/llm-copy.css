@@ -1,0 +1,97 @@
+/* LLM Copy Bar Styles */
+.llm-copy-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+.llm-copy-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 6px;
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.llm-copy-bar button:hover {
+  background: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+  border-color: var(--md-accent-fg-color);
+}
+
+.llm-copy-bar button svg {
+  flex-shrink: 0;
+}
+
+.llm-copy-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--md-default-fg-color--lightest);
+  margin: 0 4px;
+}
+
+/* Toast notifications */
+.llm-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 10000;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.llm-toast-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.llm-toast-success {
+  background: #10b981;
+  color: white;
+}
+
+.llm-toast-error {
+  background: #ef4444;
+  color: white;
+}
+
+.llm-toast-info {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .llm-copy-bar {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .llm-copy-bar button span:not(.llm-copy-divider) {
+    display: none;
+  }
+
+  .llm-copy-bar button {
+    padding: 6px;
+  }
+}

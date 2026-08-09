@@ -2,4 +2,10 @@
 
 {% block extrahead %}
 <meta name="google-site-verification" content="l_5A2uIR47ay8i4TTWUR0D-roBXqKpyMXOT2KNQqSq8" />
+<link rel="stylesheet" href="{{ 'overrides/llm-copy.css' | url }}" />
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ 'overrides/llm-copy.js' | url }}"></script>
 {% endblock %}

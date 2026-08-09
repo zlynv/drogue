@@ -47,6 +47,10 @@ extra:
 
 extra_javascript:
   - https://unpkg.com/mermaid/dist/mermaid.min.js
+  - overrides/llm-copy.js
+
+extra_css:
+  - overrides/llm-copy.css
 
 plugins:
   - search
