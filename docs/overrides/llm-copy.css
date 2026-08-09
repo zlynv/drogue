@@ -1,47 +1,116 @@
-/* LLM Copy Bar Styles */
-.llm-copy-bar {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
+/* LLM Copy Dropdown Styles */
+.llm-copy-wrapper {
+  position: relative;
   margin-bottom: 16px;
-  background: var(--md-default-bg-color);
-  border: 1px solid var(--md-default-fg-color--lightest);
-  border-radius: 8px;
-  font-size: 12px;
-  flex-wrap: wrap;
 }
 
-.llm-copy-bar button {
+.llm-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Trigger Button */
+.llm-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: 6px;
+  padding: 6px 12px;
   border: 1px solid var(--md-default-fg-color--lightest);
   border-radius: 6px;
   background: var(--md-default-bg-color);
   color: var(--md-default-fg-color);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
-  white-space: nowrap;
+  font-family: inherit;
 }
 
-.llm-copy-bar button:hover {
+.llm-trigger:hover {
   background: var(--md-accent-fg-color);
   color: var(--md-accent-bg-color);
   border-color: var(--md-accent-fg-color);
 }
 
-.llm-copy-bar button svg {
-  flex-shrink: 0;
+.llm-trigger svg.llm-chevron {
+  transition: transform 0.2s ease;
 }
 
-.llm-copy-divider {
-  width: 1px;
-  height: 20px;
+.llm-dropdown-open .llm-trigger svg.llm-chevron {
+  transform: rotate(180deg);
+}
+
+/* Menu */
+.llm-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: all 0.15s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.llm-dropdown-open .llm-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Menu Sections */
+.llm-menu-section {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--md-default-fg-color--light);
+  user-select: none;
+}
+
+/* Menu Items */
+.llm-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  color: var(--md-default-fg-color);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  text-align: left;
+}
+
+.llm-menu-item:hover {
+  background: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+}
+
+.llm-menu-item svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.llm-menu-item:hover svg {
+  opacity: 1;
+}
+
+/* Divider */
+.llm-menu-divider {
+  height: 1px;
   background: var(--md-default-fg-color--lightest);
-  margin: 0 4px;
+  margin: 4px 0;
 }
 
 /* Toast notifications */
@@ -80,18 +149,23 @@
   color: white;
 }
 
+/* Dark mode adjustments */
+[data-md-color-scheme="slate"] .llm-menu {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-  .llm-copy-bar {
-    padding: 6px 8px;
-    gap: 4px;
-  }
-
-  .llm-copy-bar button span:not(.llm-copy-divider) {
+  .llm-trigger span {
     display: none;
   }
 
-  .llm-copy-bar button {
-    padding: 6px;
+  .llm-trigger {
+    padding: 8px;
+  }
+
+  .llm-menu {
+    right: 0;
+    left: auto;
   }
 }
