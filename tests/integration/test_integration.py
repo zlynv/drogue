@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from drogue.adapters.fastapi.limiter import _last_result as _drogue_last_result
+from drogue.adapters.fastapi.limiter import _route_result as _drogue_route_result
 from tests.integration.fastapi_app import (
     app as fastapi_app,
 )
@@ -34,7 +34,7 @@ class TestFastAPIHeaders:
 
     def setup_method(self) -> None:
         fastapi_storage._store.clear()
-        _drogue_last_result.clear()
+        _drogue_route_result.set(None)
         self.client = TestClient(fastapi_app)
 
     def test_ping_returns_rate_limit_headers(self) -> None:
@@ -79,7 +79,7 @@ class TestFastAPIAlgorithms:
 
     def setup_method(self) -> None:
         fastapi_storage._store.clear()
-        _drogue_last_result.clear()
+        _drogue_route_result.set(None)
         self.client = TestClient(fastapi_app)
 
     def test_token_bucket(self) -> None:
@@ -103,7 +103,7 @@ class TestFastAPIDDoSDetection:
 
     def setup_method(self) -> None:
         fastapi_storage._store.clear()
-        _drogue_last_result.clear()
+        _drogue_route_result.set(None)
         self.client = TestClient(fastapi_app)
 
     def test_ddos_check_returns_stats(self) -> None:
@@ -185,7 +185,8 @@ class TestFastAPICircuitBreaker:
     def test_success_resets_circuit(self) -> None:
         for _ in range(3):
             self.client.post("/api/circuit-fail")
-        circuit._last_failure_time = time.monotonic() - 10
+        # Force the sampled recovery deadline into the past
+        circuit._recovery_deadline = time.monotonic() - 1
         self.client.get("/api/circuit-check")
         self.client.post("/api/circuit-success")
         resp = self.client.get("/api/circuit-check")
@@ -201,7 +202,7 @@ class TestFastAPIMultipleLimits:
 
     def setup_method(self) -> None:
         fastapi_storage._store.clear()
-        _drogue_last_result.clear()
+        _drogue_route_result.set(None)
         self.client = TestClient(fastapi_app)
 
     def test_second_limit_applies(self) -> None:
@@ -216,7 +217,7 @@ class TestFastAPIDependencyInjection:
 
     def setup_method(self) -> None:
         fastapi_storage._store.clear()
-        _drogue_last_result.clear()
+        _drogue_route_result.set(None)
         self.client = TestClient(fastapi_app)
 
     def test_dep_rate_limit(self) -> None:
@@ -230,7 +231,7 @@ class TestFastAPIErrorHandling:
 
     def setup_method(self) -> None:
         fastapi_storage._store.clear()
-        _drogue_last_result.clear()
+        _drogue_route_result.set(None)
         self.client = TestClient(fastapi_app)
 
     def test_500_on_unhandled_error(self) -> None:
@@ -248,7 +249,7 @@ class TestDDoSSimulation:
 
     def setup_method(self) -> None:
         fastapi_storage._store.clear()
-        _drogue_last_result.clear()
+        _drogue_route_result.set(None)
         self.client = TestClient(fastapi_app)
 
     def test_burst_100_requests(self) -> None:
@@ -375,7 +376,7 @@ class TestFailClosed:
 
     def setup_method(self) -> None:
         fastapi_storage._store.clear()
-        _drogue_last_result.clear()
+        _drogue_route_result.set(None)
 
     def test_fastapi_fail_closed(self) -> None:
         from unittest.mock import patch

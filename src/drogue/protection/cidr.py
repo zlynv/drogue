@@ -63,6 +63,11 @@ class CIDRFilter:
             logger.warning("Invalid IP address: %s", ip)
             return False
 
+        # Normalize IPv4-mapped IPv6 (::ffff:192.168.1.1) to plain IPv4 so
+        # denylist/allowlist rules written for IPv4 still match.
+        if addr.version == 6 and addr.ipv4_mapped is not None:
+            addr = addr.ipv4_mapped
+
         # Check denylist first
         if self._is_in_networks(addr, self._deny_networks):
             return False

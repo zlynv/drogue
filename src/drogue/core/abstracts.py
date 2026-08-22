@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
@@ -25,7 +26,8 @@ class AcquireResult:
         if self.reset_at is not None:
             headers["X-RateLimit-Reset"] = str(int(self.reset_at))
         if not self.allowed and self.retry_after is not None:
-            headers["Retry-After"] = str(int(self.retry_after))
+            # Round up so clients never see Retry-After: 0 for a fractional wait
+            headers["Retry-After"] = str(max(1, math.ceil(self.retry_after)))
         return headers
 
 

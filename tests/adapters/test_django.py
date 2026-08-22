@@ -36,27 +36,27 @@ class TestRequestToContext(_BaseDjangoTest):
         assert ctx["path"] == "/api/data"
         assert ctx["method"] == "GET"
 
-    def test_x_forwarded_for(self) -> None:
+    def test_x_forwarded_for_not_trusted(self) -> None:
+        # SECURITY: context builder must use REMOTE_ADDR; forwarded headers
+        # are only honored by the extractor for trusted proxies.
         request = self._make_request(
             "/api/data",
             HTTP_X_FORWARDED_FOR="203.0.113.50, 70.41.3.18",
+            REMOTE_ADDR="10.0.0.1",
         )
         ctx = _request_to_context(request)
-        assert ctx["client"]["host"] == "203.0.113.50"
+        assert ctx["client"]["host"] == "10.0.0.1"
+        assert "x_forwarded_for" in ctx["headers"]
 
-    def test_x_real_ip(self) -> None:
-        request = self._make_request("/api/data", HTTP_X_REAL_IP="198.51.100.42")
-        ctx = _request_to_context(request)
-        assert ctx["client"]["host"] == "198.51.100.42"
-
-    def test_x_real_ip_takes_precedence(self) -> None:
+    def test_x_real_ip_not_trusted(self) -> None:
         request = self._make_request(
             "/api/data",
             HTTP_X_REAL_IP="198.51.100.42",
-            HTTP_X_FORWARDED_FOR="203.0.113.50",
+            REMOTE_ADDR="10.0.0.1",
         )
         ctx = _request_to_context(request)
-        assert ctx["client"]["host"] == "198.51.100.42"
+        assert ctx["client"]["host"] == "10.0.0.1"
+        assert "x_real_ip" in ctx["headers"]
 
 
 class TestBasicRateLimiting(_BaseDjangoTest):

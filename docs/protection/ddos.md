@@ -6,24 +6,18 @@ DDoS (Distributed Denial of Service) attacks use many clients to overwhelm your 
 
 ## How it works
 
-### Z-Score Analysis
+### Leave-One-Out Z-Score Analysis
 
 ```
-1. Track request rates for each client over time
-2. Calculate the mean (average) and standard deviation of all client rates
-3. For each new request, calculate the Z-score:
-   Z = (client_rate - mean_rate) / standard_deviation
+1. Track request rates for each client over a sliding time window
+2. Compute the mean and standard deviation of ALL client rates
+3. For each new request, compute a LEAVE-ONE-OUT Z-score:
+   - Exclude the client's own rate from the distribution
+   - Z = (client_rate - peer_mean) / peer_std
 4. If Z > threshold (default 3.0), the client is anomalous
 ```
 
-**What is a Z-score?**
-
-A Z-score tells you how many standard deviations a value is from the mean:
-- Z = 0: exactly average
-- Z = 1: slightly above average
-- Z = 2: notably above average
-- Z = 3: significantly above average (anomalous)
-- Z = 4+: extremely high (attack)
+**Why leave-one-out?** In the original implementation, the client being tested was included in the distribution it was compared against. A single flooder among 10 clients inflates the mean and std, mathematically capping its Z-score at ~√n — a lone flooder could never be detected. By excluding the client under test, a single attacker sending 50× the peer rate gets flagged immediately.
 
 ### Example scenario
 

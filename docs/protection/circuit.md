@@ -120,6 +120,10 @@ config = DrogueConfig(
 )
 ```
 
+**Jitter behavior (fixed in v0.2.1):** The jitter is now sampled **once** when the circuit opens, and stored as a fixed recovery deadline. This prevents the thundering herd problem that occurred when the jitter was re-rolled on every `allow_request()` call — polling the circuit would have effectively eroded the timeout, causing all clients to recover nearly simultaneously.
+
+**Thread safety (added in v0.2.1):** All state transitions are now protected by an internal lock, making `CircuitBreaker` safe for concurrent use across threads/tasks.
+
 ## Example: External API protection
 
 ```python

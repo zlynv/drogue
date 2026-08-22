@@ -58,6 +58,8 @@ class GCRAAlgorithm(Algorithm):
         window: float,
     ) -> None:
         self.storage = storage
+        if limit < 1:
+            raise ValueError(f"limit must be >= 1, got {limit}")
         self.limit = limit
         self.window = window
         self.emission_interval = window / limit  # time between allowed requests
@@ -99,17 +101,28 @@ class GCRAAlgorithm(Algorithm):
             tat = await self.storage.get(storage_key)
 
             if tat is None:
+                if cost > self.burst:
+                    # Impossible to ever satisfy: deny without storing state
+                    return AcquireResult(
+                        allowed=False,
+                        remaining=self.limit,
+                        limit=self.limit,
+                        retry_after=0.0,
+                    )
                 new_tat = now + cost * self.emission_interval
-                try:
-                    await self.storage.set(storage_key, new_tat, self.window)
+                # Initialize atomically (CAS against absent key) so
+                # concurrent first requests can't each over-admit.
+                if await self.storage.compare_and_swap(
+                    storage_key, None, float(new_tat), self.window
+                ):
                     return AcquireResult(
                         allowed=True,
                         remaining=self.limit - cost,
                         limit=self.limit,
                         reset_at=new_tat,
                     )
-                except Exception:
-                    continue
+                # Another request initialized state; retry
+                continue
 
             # tat is the previous theoretical arrival time
             try:

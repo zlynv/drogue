@@ -62,6 +62,8 @@ class LeakyBucketAlgorithm(Algorithm):
         window: float,
     ) -> None:
         self.storage = storage
+        if limit < 1:
+            raise ValueError(f"limit must be >= 1, got {limit}")
         self.limit = limit
         self.window = window
         self.leak_rate = limit / window  # requests leaked per second
@@ -102,7 +104,9 @@ class LeakyBucketAlgorithm(Algorithm):
             state = await self.storage.get(storage_key)
 
             if state is None:
-                # First request: bucket is empty
+                # First request: bucket is empty. Initialize atomically
+                # (CAS against absent key) so concurrent first requests
+                # can't each over-admit.
                 water = float(cost)
                 if water > self.limit:
                     wait_time = (water - self.limit) / self.leak_rate
@@ -112,18 +116,17 @@ class LeakyBucketAlgorithm(Algorithm):
                         limit=self.limit,
                         retry_after=wait_time,
                     )
-                try:
-                    await self.storage.set(
-                        storage_key, (water, now), self.window
-                    )
+                if await self.storage.compare_and_swap(
+                    storage_key, None, (water, now), self.window
+                ):
                     return AcquireResult(
                         allowed=True,
                         remaining=self.limit - int(water),
                         limit=self.limit,
                         reset_at=now + self.window,
                     )
-                except Exception:
-                    continue
+                # Another request initialized the bucket first; retry
+                continue
 
             # Unpack stored state
             stored_water: float

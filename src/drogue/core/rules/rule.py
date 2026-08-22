@@ -52,8 +52,8 @@ class RateLimitRule:
     exempt_paths: list[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        if self.limit < 0:
-            raise ValueError(f"limit must be >= 0, got {self.limit}")
+        if self.limit < 1:
+            raise ValueError(f"limit must be >= 1, got {self.limit}")
         if self.window <= 0:
             raise ValueError(f"window must be > 0, got {self.window}")
 
@@ -107,7 +107,11 @@ def parse_rule_string(
 
     limit = int(match.group("limit"))
     unit = match.group("unit")
+    window_digits = match.group("window")
     window = _WINDOW_MULTIPLIERS[unit]
+    if window_digits:
+        # Support combined windows like "100/30s", "50/15m"
+        window = int(window_digits) * window
 
     return RateLimitRule(
         limit=limit,

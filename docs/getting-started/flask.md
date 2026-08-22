@@ -48,6 +48,28 @@ def get_data():
     return jsonify({"data": "value"})
 ```
 
+## Behind a Reverse Proxy
+
+When running behind a proxy, configure `trusted_proxies`:
+
+```python
+from flask import Flask, jsonify
+from drogue.adapters.flask import DrogueLimiter
+from drogue.core.config import DrogueConfig
+
+app = Flask(__name__)
+
+config = DrogueConfig(
+    trusted_proxies=["10.0.0.0/8", "172.16.0.0/12"],
+    proxy_header="x-forwarded-for",
+    trust_x_real_ip=True,
+)
+
+limiter = DrogueLimiter(app, config=config)
+```
+
+**Security note:** Without `trusted_proxies` configured, `X-Forwarded-For` and `X-Real-IP` headers are **completely ignored**. Clients cannot spoof their identity by sending these headers directly.
+
 ## Global Rate Limiting
 
 The `before_request` hook applies global rate limits to all routes:

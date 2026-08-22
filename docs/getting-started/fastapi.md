@@ -73,6 +73,28 @@ limiter = DrogueLimiter(
 )
 ```
 
+## Behind a Reverse Proxy (nginx, Traefik, Cloudflare)
+
+When running behind a proxy, **you must configure `trusted_proxies`** to correctly identify clients. Without it, forwarded headers are ignored and all requests appear to come from the proxy itself.
+
+```python
+from fastapi import FastAPI
+from drogue.adapters.fastapi import DrogueLimiter
+from drogue.core.config import DrogueConfig
+
+app = FastAPI()
+
+config = DrogueConfig(
+    trusted_proxies=["10.0.0.0/8", "172.16.0.0/12"],  # your proxy CIDR ranges
+    proxy_header="x-forwarded-for",
+    trust_x_real_ip=True,
+)
+
+limiter = DrogueLimiter(app, config=config)
+```
+
+**Security note:** Without `trusted_proxies` configured, `X-Forwarded-For` and `X-Real-IP` headers are **completely ignored**. Clients cannot spoof their identity by sending these headers directly to your application.
+
 ## Shadow Mode
 
 Test rules without enforcing:

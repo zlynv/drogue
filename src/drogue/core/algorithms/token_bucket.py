@@ -55,6 +55,8 @@ class TokenBucketAlgorithm(Algorithm):
         window: float,
     ) -> None:
         self.storage = storage
+        if limit < 1:
+            raise ValueError(f"limit must be >= 1, got {limit}")
         self.limit = limit
         self.window = window
         self.refill_rate = limit / window  # tokens per second
@@ -102,7 +104,8 @@ class TokenBucketAlgorithm(Algorithm):
             state = await self.storage.get(storage_key)
 
             if state is None:
-                # First request: initialize bucket with full capacity
+                # First request: initialize atomically (CAS against absent key)
+                # so concurrent first requests can't each over-admit.
                 remaining = self.limit - cost
                 if remaining < 0:
                     return AcquireResult(
@@ -111,18 +114,18 @@ class TokenBucketAlgorithm(Algorithm):
                         limit=self.limit,
                         retry_after=abs(remaining) / self.refill_rate,
                     )
-                try:
-                    await self.storage.set(
-                        storage_key, (float(remaining), now), self.window
-                    )
+                new_state: tuple[float, float] = (float(remaining), now)
+                if await self.storage.compare_and_swap(
+                    storage_key, None, new_state, self.window
+                ):
                     return AcquireResult(
                         allowed=True,
                         remaining=remaining,
                         limit=self.limit,
                         reset_at=now + self.window,
                     )
-                except Exception:
-                    continue
+                # Another request initialized the bucket first; retry
+                continue
 
             # Unpack stored state
             stored_tokens: float

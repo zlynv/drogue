@@ -353,3 +353,181 @@ class TestTokenBucketNoDeadLock:
 
         algo = TokenBucketAlgorithm(storage=MemoryStorage(), limit=10, window=1.0)
         assert not hasattr(algo, "_lock")
+
+
+# ============================================================================
+# SEC#1: Concurrent first requests must not over-admit (CAS init race)
+# ============================================================================
+class TestBucketInitRace:
+    """Before fix: first request used plain set() — concurrent initializers
+    each overwrote the bucket, admitting N requests at limit cost."""
+
+    def test_concurrent_first_requests_capped(self) -> None:
+        import asyncio
+
+        from drogue.core.algorithms.token_bucket import TokenBucketAlgorithm
+        from drogue.core.storage.memory import MemoryStorage
+
+        async def run() -> int:
+            storage = MemoryStorage()
+            algo = TokenBucketAlgorithm(storage=storage, limit=5, window=60.0)
+            results = await asyncio.gather(*[algo.acquire("k") for _ in range(20)])
+            return sum(1 for r in results if r.allowed)
+
+        allowed = asyncio.run(run())
+        assert allowed <= 5
+
+    def test_cas_create_if_absent(self) -> None:
+        import asyncio
+
+        from drogue.core.storage.memory import MemoryStorage
+
+        async def run() -> None:
+            s = MemoryStorage()
+            assert await s.compare_and_swap("k", None, "v1", 60) is True
+            # Key now exists — create-if-absent must fail
+            assert await s.compare_and_swap("k", None, "v2", 60) is False
+
+        asyncio.run(run())
+
+
+# ============================================================================
+# SEC#2: DDoS leave-one-out Z-score detects lone flooder
+# ============================================================================
+class TestDDoSLeaveOneOut:
+    """Before fix: client compared against distribution including itself,
+    capping Z at ~sqrt(n) — a single flooder was undetectable at defaults."""
+
+    def test_lone_flooder_detected(self) -> None:
+        from collections import deque
+
+        from drogue.protection.ddos import DDoSDetector, TrafficSample
+
+        d = DDoSDetector(window=60.0, z_threshold=3.0, min_clients=10)
+        now = time.monotonic()
+
+        for i in range(15):
+            d._client_buckets[f"normal{i}"] = deque(
+                TrafficSample(timestamp=now - 60 + t, count=1)
+                for t in range(0, 60, 2)
+            )
+        d._client_buckets["flooder"] = deque(
+            TrafficSample(timestamp=now - 60 + t, count=20) for t in range(60)
+        )
+        d._recompute_http_distribution(now)
+
+        assert d.is_http_anomalous("flooder") is True
+        assert d.is_http_anomalous("normal0") is False
+
+
+# ============================================================================
+# SEC#3: Forwarded headers ignored without trusted proxies
+# ============================================================================
+class TestProxyHeaderSpoofing:
+    """Before fix: X-Real-IP / X-Forwarded-For were trusted unconditionally,
+    letting clients rotate identity per request and bypass rate limits."""
+
+    def test_spoofed_x_real_ip_ignored(self) -> None:
+        import asyncio
+
+        from drogue.core.identity.key import RemoteAddressExtractor
+
+        async def run() -> str:
+            ext = RemoteAddressExtractor()
+            return await ext.extract(
+                {
+                    "client": {"host": "6.6.6.6"},
+                    "headers": {"x-real-ip": "1.2.3.4"},
+                }
+            )
+
+        assert asyncio.run(run()) == "6.6.6.6"
+
+    def test_junk_header_falls_back_to_peer(self) -> None:
+        import asyncio
+
+        from drogue.core.identity.key import RemoteAddressExtractor
+
+        async def run() -> str:
+            ext = RemoteAddressExtractor(trusted_proxies=["10.0.0.5"])
+            return await ext.extract(
+                {
+                    "client": {"host": "10.0.0.5"},
+                    "headers": {"x-real-ip": "<script>not-an-ip"},
+                }
+            )
+
+        assert asyncio.run(run()) == "10.0.0.5"
+
+
+# ============================================================================
+# SEC#4: Ban escalation not reset by dropped violation
+# ============================================================================
+class TestBanViolationAlwaysRecorded:
+    """Before fix: when all prior violations aged out, the current one was
+    silently dropped and escalation restarted from zero."""
+
+    def test_violation_recorded_after_window_expiry(self) -> None:
+        from drogue.protection.ban import ProgressiveBanManager
+
+        ban = ProgressiveBanManager(threshold=3, window=0.05)
+
+        ban.record_violation("k")
+        ban.record_violation("k")
+        time.sleep(0.1)  # all violations age out
+
+        level = ban.record_violation("k")
+
+        # The new violation must be recorded (count == 1), not dropped
+        assert len(ban._violations["k"]) == 1
+        assert level == 0
+
+
+# ============================================================================
+# SEC#5: CIDR filter handles IPv4-mapped IPv6 addresses
+# ============================================================================
+class TestCIDRMappedIPv6:
+    """Before fix: ::ffff:192.168.1.1 bypassed IPv4 denylist rules."""
+
+    def test_mapped_ipv6_matches_ipv4_denylist(self) -> None:
+        from drogue.protection.cidr import CIDRFilter
+
+        f = CIDRFilter(denylist=["192.168.1.0/24"])
+        assert f.is_denied("::ffff:192.168.1.100") is True
+        assert f.is_allowed("::ffff:8.8.8.8") is True
+
+
+# ============================================================================
+# SEC#6: Retry-After rounds up (never 0 for fractional waits)
+# ============================================================================
+class TestRetryAfterCeil:
+    """Before fix: Retry-After used int() truncation — 0.4s became '0',
+    causing clients to retry immediately in a tight loop."""
+
+    def test_fractional_retry_after_rounds_up(self) -> None:
+        from drogue.core.abstracts import AcquireResult
+
+        result = AcquireResult(
+            allowed=False, remaining=0, limit=10, retry_after=0.4
+        )
+        assert result.headers["Retry-After"] == "1"
+
+
+# ============================================================================
+# SEC#7: Rate string with numeric window prefix parsed correctly
+# ============================================================================
+class TestRuleStringNumericWindow:
+    """Before fix: '100/30s' silently discarded the 30 and became 100/second."""
+
+    def test_combined_window_parsed(self) -> None:
+        from drogue.core.rules.rule import parse_rule_string
+
+        rule = parse_rule_string("100/30s")
+        assert rule.limit == 100
+        assert rule.window == 30.0
+
+    def test_combined_window_minutes(self) -> None:
+        from drogue.core.rules.rule import parse_rule_string
+
+        rule = parse_rule_string("50/15m")
+        assert rule.window == 15 * 60.0

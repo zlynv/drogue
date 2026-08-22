@@ -183,7 +183,10 @@ class TrustManager:
                 ttl = self.standard_ttl
             else:
                 level = TrustLevel.SUSPICIOUS
-                ttl = None  # Never cached
+                # Suspicious clients are re-evaluated on every request —
+                # never cached (a permanent entry would occupy LRU capacity
+                # and freeze a stale verdict).
+                return level
 
             state = TrustState(
                 level=level,

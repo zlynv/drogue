@@ -49,18 +49,19 @@ class ProgressiveBanManager:
     _violations: dict[str, list[float]] = field(default_factory=dict)
 
     def record_violation(self, key: str) -> int:
-        """Record a rate limit violation. Returns the new ban level."""
+        """Record a rate limit violation. Returns the new ban level.
+
+        The current violation is ALWAYS recorded, even when all previous
+        violations have aged out of the window — dropping it would reset
+        escalation progress for repeat offenders.
+        """
         now = time.monotonic()
 
-        # Clean old violations outside the window
+        # Clean old violations outside the window (but keep the current one)
         if key in self._violations:
             self._violations[key] = [
                 t for t in self._violations[key] if now - t < self.window
             ]
-            # Remove empty entries
-            if not self._violations[key]:
-                del self._violations[key]
-                return 0
         else:
             self._violations[key] = []
 

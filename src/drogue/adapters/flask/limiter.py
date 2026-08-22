@@ -118,6 +118,12 @@ class DrogueLimiter:
                 return None
 
             except BackendFailure:
+                # Honor fail_closed=False by allowing traffic through
+                if not limiter.config.default_fail_closed:
+                    logger.warning(
+                        "BackendFailure in global check; failing open (fail_closed=False)"
+                    )
+                    return None
                 response = jsonify({"error": "Rate limit service unavailable", "retry_after": 1})
                 response.status_code = 429
                 response.headers["Retry-After"] = "1"
@@ -160,7 +166,10 @@ class DrogueLimiter:
         """Check a single rate limit rule."""
         algo = self._get_algorithm(rule, route_key)
         cost = await CostResolver.resolve_cost(rule, context)
-        storage_key = f"{route_key}:{key}" if route_key else key
+        # Include rule params in the storage key so multiple rules on the
+        # same route get separate buckets (mirrors the FastAPI adapter).
+        rule_id = f"{rule.algorithm.value}:{rule.limit}:{rule.window}"
+        storage_key = f"{route_key}:{rule_id}:{key}" if route_key else key
         return await algo.acquire(storage_key, cost=cost, block=rule.block, timeout=rule.timeout)
 
     def _check_sync(
@@ -227,19 +236,14 @@ class DrogueLimiter:
 
 
 def _request_to_context(request: Any) -> dict[str, Any]:
-    """Convert a Flask request to a context dict."""
-    x_forwarded_for = request.headers.get("X-Forwarded-For")
-    x_real_ip = request.headers.get("X-Real-IP")
+    """Convert a Flask request to a context dict.
 
-    if x_real_ip:
-        client_host = x_real_ip.strip()
-    elif x_forwarded_for:
-        client_host = x_forwarded_for.split(",")[0].strip()
-    else:
-        client_host = request.remote_addr or "127.0.0.1"
-
+    client.host is always the direct peer address. Forwarded headers are
+    passed through in "headers" but only trusted by the identity extractor
+    when the peer is a configured trusted proxy.
+    """
     return {
-        "client": {"host": client_host},
+        "client": {"host": request.remote_addr or "127.0.0.1"},
         "headers": {k.lower(): v for k, v in request.headers},
         "path": request.path,
         "method": request.method,

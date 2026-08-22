@@ -76,9 +76,9 @@ config = DrogueConfig(
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `trusted_proxies` | `[]` | Trusted proxy CIDRs |
-| `proxy_header` | `x-forwarded-for` | Header for real IP |
-| `trust_x_real_ip` | `True` | Trust X-Real-IP header |
+| `trusted_proxies` | `[]` | Trusted proxy CIDRs. **Forwarded headers (X-Forwarded-For, X-Real-IP) are ONLY honored when the direct peer IP is in this list.** Empty list = headers never trusted. |
+| `proxy_header` | `x-forwarded-for` | Header for client IP chain |
+| `trust_x_real_ip` | `True` | Trust X-Real-IP header (only when peer is trusted) |
 
 ### Ban Settings
 

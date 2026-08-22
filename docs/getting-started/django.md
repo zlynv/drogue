@@ -56,6 +56,28 @@ MIDDLEWARE = [
 ]
 ```
 
+## Behind a Reverse Proxy
+
+Configure `trusted_proxies` in your settings:
+
+```python
+# settings.py
+from drogue.core.config import DrogueConfig
+
+config = DrogueConfig(
+    trusted_proxies=["10.0.0.0/8", "172.16.0.0/12"],
+    proxy_header="x-forwarded-for",
+    trust_x_real_ip=True,
+)
+
+DROGUE_LIMITER = DrogueRateLimiter(
+    config=config,
+    default_limits=["100/minute"],
+)
+```
+
+**Security note:** Without `trusted_proxies` configured, `X-Forwarded-For` and `X-Real-IP` headers are **completely ignored**. Clients cannot spoof their identity by sending these headers directly.
+
 ## Per-View Limits
 
 ```python

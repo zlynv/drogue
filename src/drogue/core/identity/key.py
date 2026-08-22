@@ -1,15 +1,30 @@
 from __future__ import annotations
 
+import ipaddress
 from typing import Any
 
 from drogue.core.abstracts import IdentityExtractor
 
 
+def _is_valid_ip(value: str) -> bool:
+    """Check whether a string parses as an IP address (v4 or v6)."""
+    try:
+        ipaddress.ip_address(value)
+        return True
+    except ValueError:
+        return False
+
+
 class RemoteAddressExtractor(IdentityExtractor):
     """Extract rate limit key by client IP address.
 
-    Respects X-Forwarded-For and X-Real-IP headers when configured.
-    Handles multi-hop proxy chains correctly.
+    Security model:
+    - Forwarded headers (X-Forwarded-For, X-Real-IP) are ONLY trusted when
+      the direct peer address is in ``trusted_proxies``. Without trusted
+      proxies configured, the connecting peer address is always used —
+      clients can never spoof their own identity.
+    - Extracted values must parse as valid IP addresses; otherwise the peer
+      address is used, preventing bucket-poisoning with junk headers.
     """
 
     def __init__(
@@ -23,27 +38,38 @@ class RemoteAddressExtractor(IdentityExtractor):
         self.trust_x_real_ip = trust_x_real_ip
 
     async def extract(self, context: dict[str, Any]) -> str:
-        # Try X-Real-IP first (simpler, single value)
-        if self.trust_x_real_ip:
-            headers = context.get("headers", {})
-            x_real_ip = self._get_header(headers, "x-real-ip")
-            if x_real_ip:
-                return x_real_ip.strip()
+        client = context.get("client", {})
+        host = (
+            client.get("host")
+            if isinstance(client, dict)
+            else getattr(client, "host", None)
+        )
+        peer = str(host) if host else "127.0.0.1"
 
-        # Try X-Forwarded-For (may have multiple IPs)
+        # Only honor forwarded headers when the direct peer is a proxy we
+        # trust. With no trusted proxies configured, header values are
+        # attacker-controlled and must never be used as identity.
+        if not self.trusted_proxies or peer not in self.trusted_proxies:
+            return peer
+
+        # Peer is a trusted proxy: resolve the real client from headers.
         headers = context.get("headers", {})
+
+        # Try X-Forwarded-For first (richest signal, multi-hop aware)
         xff = self._get_header(headers, self.proxy_header)
         if xff:
-            return self._parse_xff(xff)
+            candidate = self._parse_xff(xff)
+            if _is_valid_ip(candidate):
+                return candidate
 
-        # Fall back to client.host
-        client = context.get("client", {})
-        host = client.get("host") if isinstance(client, dict) else getattr(client, "host", None)
+        # Fall back to X-Real-IP (single value set by the edge proxy)
+        if self.trust_x_real_ip:
+            real_ip = self._get_header(headers, "x-real-ip")
+            if real_ip and _is_valid_ip(real_ip.strip()):
+                return real_ip.strip()
 
-        if host:
-            return host
-
-        return "127.0.0.1"
+        # Headers absent or invalid: trust the proxy's own address
+        return peer
 
     def _parse_xff(self, xff: str) -> str:
         """Parse X-Forwarded-For header, handling multi-hop proxies.

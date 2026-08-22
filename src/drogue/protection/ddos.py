@@ -50,6 +50,35 @@ class DistributionStats:
     def finalize(self) -> None:
         self.is_valid = self.count >= 2
 
+    def stats_without(self, value: float) -> tuple[int, float, float] | None:
+        """Leave-one-out statistics: (count, mean, std) excluding `value`.
+
+        Comparing a client against a distribution that includes its own
+        rate caps the achievable Z-score at ~sqrt(n) — a lone flooder among
+        10 clients can never exceed it. Excluding the client under test
+        removes that bias.
+
+        Returns None if fewer than 2 samples would remain.
+        """
+        if not self.is_valid or self.count < 3:
+            return None
+
+        n = self.count
+        total = self.mean * n
+        # M2 (population) = sum(x^2) - n * mean^2  =>  sum(x^2)
+        sum_sq = self.m2 + n * self.mean * self.mean
+
+        new_n = n - 1
+        new_total = total - value
+        new_sum_sq = sum_sq - value * value
+
+        if new_n < 2:
+            return None
+
+        new_mean = new_total / new_n
+        variance = max(0.0, new_sum_sq / new_n - new_mean * new_mean)
+        return new_n, new_mean, math.sqrt(variance)
+
 
 @dataclass
 class DDoSDetector:
@@ -162,11 +191,12 @@ class DDoSDetector:
     def is_http_anomalous(self, client_key: str) -> bool:
         """Check if a client's HTTP request rate is anomalous.
 
-        Compares the client's sustained rate against the distribution
-        of rates across all active clients.
+        Compares the client's sustained rate against a leave-one-out
+        distribution of peer rates (the client's own rate is excluded so
+        a single flooder isn't hidden by its own contribution to the mean).
         """
         dist = self._http_dist
-        if not dist.is_valid or dist.count < self.min_clients:
+        if not dist.is_valid or dist.count < max(3, self.min_clients):
             return False
 
         now = time.monotonic()
@@ -175,18 +205,23 @@ class DDoSDetector:
         if client_rate is None:
             return False
 
-        effective_std = max(dist.std, self.rate_floor)
-        z_score = (client_rate - dist.mean) / effective_std
+        loo = dist.stats_without(client_rate)
+        if loo is None or loo[0] < self.min_clients:
+            return False
+        _count, mean, std = loo
+
+        effective_std = max(std, self.rate_floor)
+        z_score = (client_rate - mean) / effective_std
         return z_score > self.z_threshold
 
     def is_ws_anomalous(self, client_key: str) -> bool:
         """Check if a client's WebSocket rate is anomalous.
 
-        Compares the client's sustained rate against the distribution
-        of rates across all active WebSocket clients.
+        Compares the client's sustained rate against a leave-one-out
+        distribution of peer rates (see is_http_anomalous).
         """
         dist = self._ws_dist
-        if not dist.is_valid or dist.count < self.min_clients:
+        if not dist.is_valid or dist.count < max(3, self.min_clients):
             return False
 
         now = time.monotonic()
@@ -195,8 +230,13 @@ class DDoSDetector:
         if client_rate is None:
             return False
 
-        effective_std = max(dist.std, self.rate_floor)
-        z_score = (client_rate - dist.mean) / effective_std
+        loo = dist.stats_without(client_rate)
+        if loo is None or loo[0] < self.min_clients:
+            return False
+        _count, mean, std = loo
+
+        effective_std = max(std, self.rate_floor)
+        z_score = (client_rate - mean) / effective_std
         return z_score > self.z_threshold
 
     def get_client_rate(self, client_key: str) -> float:

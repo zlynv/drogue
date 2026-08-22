@@ -115,7 +115,7 @@ class ProtectionPipeline:
                 allowed=False,
                 reason="circuit_open",
                 status_code=503,
-                retry_after=self.circuit._recovery_timeout if hasattr(self.circuit, '_recovery_timeout') else 5.0,
+                retry_after=self.circuit.recovery_timeout,
             )
 
         return PipelineResult(allowed=True)

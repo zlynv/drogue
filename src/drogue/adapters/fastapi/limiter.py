@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import inspect
 import logging
+from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
 from drogue.core.algorithms import (
@@ -35,10 +36,14 @@ _ALGORITHM_MAP: dict[AlgorithmType, type[Algorithm]] = {
     AlgorithmType.LEAKY_BUCKET: LeakyBucketAlgorithm,
 }
 
-# Stores the last AcquireResult for each request so the middleware can inject
-# the correct route-level headers.  Populated by the decorator via _find_request.
-_last_result: dict[int, AcquireResult] = {}
-_last_result_id: int = 0  # monotonically increasing, avoids id() reuse
+# Stores the AcquireResult for the current request so the middleware can
+# inject route-level headers. A ContextVar is used instead of a dict keyed
+# by id(scope): id() values are reused after GC, which could attach one
+# user's rate-limit headers to another user's response, and aborted
+# requests leaked entries. ContextVar is request-scoped and self-cleaning.
+_route_result: ContextVar[AcquireResult | None] = ContextVar(
+    "drogue_route_result", default=None
+)
 
 
 class DrogueLimiter:
@@ -164,7 +169,6 @@ class DrogueLimiter:
                 from drogue.core.errors import BackendFailure
 
                 request = Request(scope)
-                req_id = id(scope)
 
                 try:
                     context = _request_to_context(request)
@@ -225,6 +229,13 @@ class DrogueLimiter:
                             return
 
                 except BackendFailure:
+                    # Honor fail_closed=False by allowing traffic through
+                    if not limiter.config.default_fail_closed:
+                        logger.warning(
+                            "BackendFailure in middleware; failing open (fail_closed=False)"
+                        )
+                        await self.app(scope, receive, send)
+                        return
                     import json
                     body = json.dumps({
                         "error": "Rate limit service unavailable",
@@ -257,7 +268,7 @@ class DrogueLimiter:
                         nonlocal_response_headers = MutableHeaders(scope=message)
 
                         # Determine which result to use for headers
-                        route_result = _last_result.pop(req_id, None)
+                        route_result = _route_result.get()
                         result_to_use = route_result or global_result
                         if result_to_use and nonlocal_response_headers is not None:
                             inject_rate_limit_headers(
@@ -392,28 +403,39 @@ class DrogueLimiter:
 
             @functools.wraps(func)
             async def wrapper(*args: Any, **kwargs: Any) -> Any:
+                from drogue.core.errors import BackendFailure
+
                 request = kwargs.pop("request", None) or _find_request(args, kwargs)
                 context = _request_to_context(request) if request else {}
 
                 extractor = key_func or self.key_func
                 key = await extractor.extract(context)
 
-                for r in self._route_rules.get(func_name, [rule]):
-                    result = await self._check(key, r, context, route_key=func_name)
-                    if not result.allowed:
-                        raise RateLimitExceeded(
-                            retry_after=result.retry_after,
-                            limit=result.limit,
-                            remaining=result.remaining,
-                            key=key,
+                try:
+                    for r in self._route_rules.get(func_name, [rule]):
+                        result = await self._check(key, r, context, route_key=func_name)
+                        if not result.allowed:
+                            raise RateLimitExceeded(
+                                retry_after=result.retry_after,
+                                limit=result.limit,
+                                remaining=result.remaining,
+                                key=key,
+                            )
+                except BackendFailure:
+                    # Honor fail_closed=False by allowing traffic through
+                    # instead of surfacing an unhandled 500.
+                    if not rule.fail_closed and not self.config.default_fail_closed:
+                        logger.warning(
+                            "BackendFailure in route %s; failing open (fail_closed=False)",
+                            func_name,
                         )
+                        return await func(*args, **kwargs)
+                    raise
 
-                # Store the result keyed by the ASGI scope id so the
-                # middleware can inject the correct route-level headers.
-                if request is not None and rule.headers:
-                    scope = getattr(request, "scope", None)
-                    if scope is not None:
-                        _last_result[id(scope)] = result
+                # Store the result for the middleware to inject route-level
+                # headers (request-scoped via ContextVar).
+                if rule.headers:
+                    _route_result.set(result)
 
                 response = await func(*args, **kwargs)
                 return response

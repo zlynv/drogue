@@ -139,21 +139,31 @@ class MemoryStorage(Storage):
     async def compare_and_swap(
         self, key: str, expected: Any, new_value: Any, ttl: float
     ) -> bool:
-        """Atomically swap value only if current value matches expected."""
+        """Atomically swap value only if current value matches expected.
+
+        If expected is None, the swap only succeeds when the key does NOT
+        exist (or is expired) — create-if-absent for race-free init.
+        """
         with self._lock:
             now = time.monotonic()
             entry = self._store.get(key)
 
-            if entry is None:
-                return False
-
-            value, expiry = entry
-            if expiry is not None and expiry <= now:
+            # Treat expired entries as absent
+            if entry is not None and entry[1] is not None and entry[1] <= now:
                 del self._store[key]
-                return False
+                entry = None
 
-            if value != expected:
-                return False
+            if expected is None:
+                # Create-if-absent semantics
+                if entry is not None:
+                    return False
+            else:
+                if entry is None:
+                    return False
+
+                value, _ = entry
+                if value != expected:
+                    return False
 
             self._store[key] = (new_value, now + ttl)
             return True

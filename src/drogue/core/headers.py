@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import math
+import re
 from typing import TYPE_CHECKING, Any, Protocol
 
 if TYPE_CHECKING:
     from drogue.core.abstracts import AcquireResult
+
+_HEADER_NAME_RE = re.compile(r"^[A-Za-z0-9-]+$")
 
 
 class Response(Protocol):
@@ -26,6 +30,11 @@ def inject_rate_limit_headers(
         X-RateLimit-Reset: Unix timestamp when window resets
         Retry-After: Seconds until next allowed request (only on 429)
     """
+    if not _HEADER_NAME_RE.match(prefix):
+        raise ValueError(
+            f"Invalid header prefix: {prefix!r}. Must match [A-Za-z0-9-]+"
+        )
+
     response[f"{prefix}-Limit"] = str(result.limit)
     response[f"{prefix}-Remaining"] = str(max(0, result.remaining))
 
@@ -33,7 +42,8 @@ def inject_rate_limit_headers(
         response[f"{prefix}-Reset"] = str(int(result.reset_at))
 
     if not result.allowed and result.retry_after is not None:
-        response["Retry-After"] = str(int(result.retry_after))
+        # Round up so clients never see Retry-After: 0 for a fractional wait
+        response["Retry-After"] = str(max(1, math.ceil(result.retry_after)))
 
 
 def build_429_response(

@@ -16,6 +16,7 @@ Streaming Data" (IJCAI 2011)
 from __future__ import annotations
 
 import logging
+import math
 import random
 import threading
 from collections import deque
@@ -103,6 +104,11 @@ class HalfSpaceTree:
             raise ValueError(
                 f"Expected {self.n_features} features, got {len(point)}"
             )
+
+        if not self._trees:
+            # No reference data yet (need >= 2 samples to build trees).
+            # Neutral score: neither normal nor anomalous.
+            return 0.0
 
         scores = []
         for tree in self._trees:
@@ -266,6 +272,11 @@ class SentinelDetector:
     def analyze(self, features: list[float]) -> bool:
         """Analyze features and return True if anomalous.
 
+        The adaptive threshold is computed over the PREVIOUS score window
+        (excluding the current score), so a new maximum can never blind
+        the detector: comparing a score against a percentile that includes
+        itself would make `score > max(window ∪ {score})` always False.
+
         Args:
             features: Input feature vector.
 
@@ -276,10 +287,12 @@ class SentinelDetector:
             score = self._tree.score(features)
             self._tree.update(features)
 
+            # Threshold from history BEFORE appending the current score
+            threshold = self._compute_threshold()
+
             self._scores.append(score)
             self._total_count += 1
 
-            threshold = self._compute_threshold()
             is_anomaly = score > threshold
 
             if is_anomaly:
@@ -319,10 +332,12 @@ class SentinelDetector:
         if len(self._scores) < 10:
             return 0.0
 
-        # Sort scores and take the (1 - target_fpr) percentile
+        # Sort scores and take the (1 - target_fpr) percentile.
+        # Use ceiling so the index lands strictly inside the tail instead
+        # of on the window maximum (which would make anomalies impossible).
         sorted_scores = sorted(self._scores)
-        idx = int(len(sorted_scores) * (1.0 - self.target_fpr))
-        idx = min(idx, len(sorted_scores) - 1)
+        idx = math.ceil(len(sorted_scores) * (1.0 - self.target_fpr)) - 1
+        idx = min(max(idx, 0), len(sorted_scores) - 1)
         return sorted_scores[idx]
 
 

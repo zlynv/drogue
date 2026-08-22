@@ -28,8 +28,13 @@ class TestRateLimitRule:
         assert rule.algorithm == AlgorithmType.SLIDING_WINDOW
 
     def test_invalid_limit(self) -> None:
-        with pytest.raises(ValueError, match="limit must be >= 0"):
+        with pytest.raises(ValueError, match="limit must be >= 1"):
             RateLimitRule(limit=-1, window=60.0)
+
+    def test_zero_limit_rejected(self) -> None:
+        # limit=0 would divide by zero in algorithm constructors
+        with pytest.raises(ValueError, match="limit must be >= 1"):
+            RateLimitRule(limit=0, window=60.0)
 
     def test_invalid_window(self) -> None:
         with pytest.raises(ValueError, match="window must be > 0"):

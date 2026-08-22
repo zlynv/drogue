@@ -28,33 +28,39 @@ class TestRemoteAddressExtractor:
         assert result == "192.168.1.1"
 
     @pytest.mark.asyncio
-    async def test_x_real_ip(self, extractor: RemoteAddressExtractor) -> None:
+    async def test_x_real_ip_ignored_without_trusted_proxies(
+        self, extractor: RemoteAddressExtractor
+    ) -> None:
+        # SECURITY: forwarded headers are attacker-controlled when no
+        # trusted proxies are configured — must never be used as identity.
         context = {
             "client": {"host": "127.0.0.1"},
             "headers": {"x-real-ip": "203.0.113.1"},
         }
         result = await extractor.extract(context)
-        assert result == "203.0.113.1"
+        assert result == "127.0.0.1"
 
     @pytest.mark.asyncio
-    async def test_x_forwarded_for_single(self, extractor: RemoteAddressExtractor) -> None:
+    async def test_x_forwarded_for_ignored_without_trusted_proxies(
+        self, extractor: RemoteAddressExtractor
+    ) -> None:
         context = {
             "client": {"host": "127.0.0.1"},
             "headers": {"x-forwarded-for": "203.0.113.1"},
         }
         result = await extractor.extract(context)
-        assert result == "203.0.113.1"
+        assert result == "127.0.0.1"
 
     @pytest.mark.asyncio
-    async def test_x_forwarded_for_multi_hop(self, extractor: RemoteAddressExtractor) -> None:
-        # Client -> Proxy1 -> Proxy2
+    async def test_spoofed_header_from_untrusted_peer(self) -> None:
+        # SECURITY: peer is NOT in trusted_proxies — spoofed X-Real-IP ignored
+        extractor = RemoteAddressExtractor(trusted_proxies=["10.0.0.5"])
         context = {
-            "client": {"host": "127.0.0.1"},
-            "headers": {"x-forwarded-for": "203.0.113.1, 198.51.100.1, 192.168.1.1"},
+            "client": {"host": "6.6.6.6"},
+            "headers": {"x-real-ip": "1.2.3.4"},
         }
         result = await extractor.extract(context)
-        # Without trusted proxies, returns leftmost (client)
-        assert result == "203.0.113.1"
+        assert result == "6.6.6.6"
 
     @pytest.mark.asyncio
     async def test_x_forwarded_for_with_trusted_proxies(
@@ -63,13 +69,35 @@ class TestRemoteAddressExtractor:
         extractor = RemoteAddressExtractor(
             trusted_proxies=["192.168.1.1", "198.51.100.1"]
         )
+        # The direct peer must be a trusted proxy for headers to be honored
         context = {
-            "client": {"host": "127.0.0.1"},
+            "client": {"host": "192.168.1.1"},
             "headers": {"x-forwarded-for": "203.0.113.1, 198.51.100.1, 192.168.1.1"},
         }
         result = await extractor.extract(context)
         # Should return the first non-trusted IP (walking from right)
         assert result == "203.0.113.1"
+
+    @pytest.mark.asyncio
+    async def test_x_real_ip_with_trusted_proxies(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["10.0.0.5"])
+        context = {
+            "client": {"host": "10.0.0.5"},
+            "headers": {"x-real-ip": "203.0.113.1"},
+        }
+        result = await extractor.extract(context)
+        assert result == "203.0.113.1"
+
+    @pytest.mark.asyncio
+    async def test_invalid_ip_header_falls_back_to_peer(self) -> None:
+        # SECURITY: junk header values must not poison storage keys
+        extractor = RemoteAddressExtractor(trusted_proxies=["10.0.0.5"])
+        context = {
+            "client": {"host": "10.0.0.5"},
+            "headers": {"x-real-ip": "not-an-ip<script>"},
+        }
+        result = await extractor.extract(context)
+        assert result == "10.0.0.5"
 
     @pytest.mark.asyncio
     async def test_no_client(self, extractor: RemoteAddressExtractor) -> None:
@@ -78,9 +106,10 @@ class TestRemoteAddressExtractor:
         assert result == "127.0.0.1"
 
     @pytest.mark.asyncio
-    async def test_bytes_header_value(self, extractor: RemoteAddressExtractor) -> None:
+    async def test_bytes_header_value(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["10.0.0.5"])
         context = {
-            "client": {"host": "127.0.0.1"},
+            "client": {"host": "10.0.0.5"},
             "headers": {"x-real-ip": b"203.0.113.1"},
         }
         result = await extractor.extract(context)

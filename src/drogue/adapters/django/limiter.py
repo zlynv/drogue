@@ -120,7 +120,10 @@ class DrogueRateLimiter:
         """Check a single rate limit rule."""
         algo = self._get_algorithm(rule, route_key)
         cost = await CostResolver.resolve_cost(rule, context)
-        storage_key = f"{route_key}:{key}" if route_key else key
+        # Include rule params in the storage key so multiple rules on the
+        # same route get separate buckets (mirrors the FastAPI adapter).
+        rule_id = f"{rule.algorithm.value}:{rule.limit}:{rule.window}"
+        storage_key = f"{route_key}:{rule_id}:{key}" if route_key else key
         return await algo.acquire(storage_key, cost=cost, block=rule.block, timeout=rule.timeout)
 
     def _check_sync(
@@ -232,6 +235,12 @@ class DrogueMiddleware(MiddlewareMixin):
             return None
 
         except BackendFailure:
+            # Honor fail_closed=False by allowing traffic through
+            if limiter.config is not None and not limiter.config.default_fail_closed:
+                logger.warning(
+                    "BackendFailure in middleware; failing open (fail_closed=False)"
+                )
+                return None
             # Fail-closed: deny request when backend is unavailable
             return JsonResponse(
                 {"error": "Rate limit service unavailable", "retry_after": 1},
@@ -241,20 +250,14 @@ class DrogueMiddleware(MiddlewareMixin):
 
 
 def _request_to_context(request: HttpRequest) -> dict[str, Any]:
-    """Convert a Django HttpRequest to a context dict."""
-    # Get real IP from proxy headers
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    x_real_ip = request.META.get("HTTP_X_REAL_IP")
+    """Convert a Django HttpRequest to a context dict.
 
-    if x_real_ip:
-        client_host = x_real_ip.strip()
-    elif x_forwarded_for:
-        client_host = x_forwarded_for.split(",")[0].strip()
-    else:
-        client_host = request.META.get("REMOTE_ADDR", "127.0.0.1")
-
+    client.host is always REMOTE_ADDR (the direct peer). Forwarded headers
+    are passed through in "headers" but only trusted by the identity
+    extractor when the peer is a configured trusted proxy.
+    """
     return {
-        "client": {"host": client_host},
+        "client": {"host": request.META.get("REMOTE_ADDR", "127.0.0.1")},
         "headers": {k.lower().replace("http_", ""): v for k, v in request.META.items() if k.startswith("HTTP_")},
         "path": request.path,
         "method": request.method,

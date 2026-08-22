@@ -5,9 +5,47 @@ multi-process and multi-server deployments.
 """
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from drogue.core.abstracts import Storage
+
+# Sentinel used in compare_and_swap to mean "key must not exist yet"
+_NONE_SENTINEL = "__drogue_none__"
+
+
+def _serialize(value: Any) -> str:
+    """Serialize a value for storage.
+
+    Ints are stored as plain integers (backwards compatible with INCR-based
+    counters). Floats, tuples, and other values are stored as JSON so that
+    algorithm state like (tokens, last_refill) round-trips losslessly.
+    """
+    if isinstance(value, bool):
+        return json.dumps(value)
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return repr(value)
+    return json.dumps(value, separators=(",", ":"))
+
+
+def _deserialize(raw: str | None) -> Any:
+    """Deserialize a stored value.
+
+    Tries int, then float, then JSON. Returns None for missing keys.
+    """
+    if raw is None:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        pass
+    try:
+        return float(raw)
+    except ValueError:
+        pass
+    return json.loads(raw)
 
 
 class RedisStorage(Storage):
@@ -71,14 +109,14 @@ class RedisStorage(Storage):
         results = await pipe.execute()
         return results[0]
 
-    async def get(self, key: str) -> int | None:
-        """Get current count for key."""
+    async def get(self, key: str) -> Any:
+        """Get current value for key (int, float, or deserialized JSON)."""
         val = await self._redis.get(self._key(key))
-        return int(val) if val is not None else None
+        return _deserialize(val)
 
-    async def set(self, key: str, value: int, ttl: float) -> None:
+    async def set(self, key: str, value: Any, ttl: float) -> None:
         """Set value with TTL in seconds."""
-        await self._redis.set(self._key(key), value, ex=int(ttl) + 1)
+        await self._redis.set(self._key(key), _serialize(value), ex=int(ttl) + 1)
 
     async def delete(self, key: str) -> None:
         """Delete key."""
@@ -116,26 +154,44 @@ class RedisStorage(Storage):
         return count, ttl_remaining
 
     async def compare_and_swap(
-        self, key: str, expected: int, new_value: int, ttl: float
+        self, key: str, expected: Any, new_value: Any, ttl: float
     ) -> bool:
         """Atomically swap value only if current value matches expected.
 
-        Uses a Lua script for atomicity in Redis.
+        Uses a Lua script for atomicity in Redis. Values are compared as
+        serialized strings (exact match), so float/tuple state round-trips
+        correctly.
+
+        If expected is None, the swap only succeeds when the key does NOT
+        exist yet (create-if-absent), enabling race-free initialization.
         """
         script = """
         local current = redis.call('GET', KEYS[1])
-        if current == false then
-            return 0
-        end
-        if tonumber(current) ~= tonumber(ARGV[1]) then
-            return 0
+        local expected = ARGV[1]
+        if expected == '__drogue_none__' then
+            if current ~= false then
+                return 0
+            end
+        else
+            if current == false then
+                return 0
+            end
+            if current ~= expected then
+                return 0
+            end
         end
         redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
         return 1
         """
         rkey = self._key(key)
+        expected_raw = _NONE_SENTINEL if expected is None else _serialize(expected)
         result = await self._redis.eval(
-            script, 1, rkey, expected, new_value, int(ttl) + 1
+            script,
+            1,
+            rkey,
+            expected_raw,
+            _serialize(new_value),
+            int(ttl) + 1,
         )
         return result == 1
 
