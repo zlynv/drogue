@@ -134,23 +134,9 @@ class DrogueRateLimiter:
         route_key: str = "",
     ) -> AcquireResult:
         """Synchronous check (for Django views)."""
-        import asyncio
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
+        from drogue.utils.async_utils import run_async
 
-        if loop and loop.is_running():
-            # We're in an async context, create a new event loop
-            import concurrent.futures
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                future = pool.submit(
-                    asyncio.run,
-                    self._check(key, rule, context, route_key),
-                )
-                return future.result()
-        else:
-            return asyncio.run(self._check(key, rule, context, route_key))
+        return run_async(self._check(key, rule, context, route_key))
 
     def limit(
         self,

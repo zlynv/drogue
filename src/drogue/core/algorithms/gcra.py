@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import random
 import time
 
 from drogue.core.abstracts import AcquireResult, Algorithm, Storage
@@ -21,34 +22,6 @@ class GCRAAlgorithm(Algorithm):
 
     GCRA is used by telecom systems (ATM networks) and is the basis for
     IETF RFC 2697 (Single Rate Three Color Marker).
-
-    Redis Lua script for atomic operations:
-    ```lua
-    local key = KEYS[1]
-    local emission_interval = tonumber(ARGV[1])
-    local burst = tonumber(ARGV[2])
-    local now = tonumber(ARGV[3])
-    local ttl = tonumber(ARGV[4])
-
-    local tat = redis.call('get', key)
-    local new_tat
-
-    if tat then
-        new_tat = math.max(tonumber(tat), now) + emission_interval
-    else
-        new_tat = now + emission_interval
-    end
-
-    local allow_at = new_tat - burst * emission_interval
-
-    if allow_at <= now then
-        redis.call('setex', key, ttl, new_tat)
-        return {1, 0, new_tat}
-    else
-        local retry_after = allow_at - now
-        return {0, retry_after, new_tat}
-    end
-    ```
     """
 
     def __init__(
@@ -119,7 +92,7 @@ class GCRAAlgorithm(Algorithm):
                         allowed=True,
                         remaining=self.limit - cost,
                         limit=self.limit,
-                        reset_at=new_tat,
+                        reset_at=now,  # allowed immediately
                     )
                 # Another request initialized state; retry
                 continue
@@ -138,17 +111,17 @@ class GCRAAlgorithm(Algorithm):
                 if await self.storage.compare_and_swap(
                     storage_key, prev_tat, new_tat, self.window
                 ):
-                    # Calculate remaining capacity
-                    remaining = max(
-                        0,
-                        int((new_tat - now) / self.emission_interval) - cost,
-                    )
+                    # Remaining = how many more requests can fit before hitting burst limit
+                    # This is the number of emission_intervals between now and the burst boundary
+                    remaining = max(0, int((self.burst * self.emission_interval - (new_tat - now)) / self.emission_interval))
                     return AcquireResult(
                         allowed=True,
                         remaining=min(remaining, self.limit - cost),
                         limit=self.limit,
-                        reset_at=new_tat,
+                        reset_at=allow_at,  # when next request is allowed
                     )
+                # CAS failed — another request modified the TAT, retry
+                await asyncio.sleep(random.uniform(0, 0.001))
                 continue
             else:
                 retry_after = allow_at - now
@@ -157,7 +130,7 @@ class GCRAAlgorithm(Algorithm):
                     remaining=0,
                     limit=self.limit,
                     retry_after=retry_after,
-                    reset_at=new_tat,
+                    reset_at=allow_at,  # when request will be allowed
                 )
 
         return AcquireResult(
@@ -201,7 +174,7 @@ class GCRAAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now + self.window,
+                reset_at=now,
             )
 
         try:
@@ -211,18 +184,18 @@ class GCRAAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now + self.window,
+                reset_at=now,
             )
 
         new_tat = max(prev_tat, now) + self.emission_interval
         allow_at = new_tat - self.burst * self.emission_interval
-        remaining = max(0, int((new_tat - now) / self.emission_interval))
+        remaining = max(0, int((self.burst * self.emission_interval - (new_tat - now)) / self.emission_interval))
 
         return AcquireResult(
             allowed=allow_at <= now,
             remaining=min(remaining, self.limit),
             limit=self.limit,
-            reset_at=new_tat,
+            reset_at=allow_at,
         )
 
     async def reset(self, key: str) -> None:

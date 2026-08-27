@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import asyncio
+import random
 import time
 
 from drogue.core.abstracts import AcquireResult, Algorithm, Storage
-from drogue.core.errors import BackendFailure
 
 
 class SlidingWindowAlgorithm(Algorithm):
@@ -18,36 +19,8 @@ class SlidingWindowAlgorithm(Algorithm):
     - overlap_ratio = (window_size - elapsed_in_current_window) / window_size
     - This smooths the transition between windows
 
-    Redis Lua script for atomic operations:
-    ```lua
-    local key_prefix = KEYS[1]
-    local window = tonumber(ARGV[1])
-    local limit = tonumber(ARGV[2])
-    local now = tonumber(ARGV[3])
-    local cost = tonumber(ARGV[4])
-
-    local current_window = math.floor(now / window)
-    local previous_window = current_window - 1
-    local elapsed = now - (current_window * window)
-    local weight = (window - elapsed) / window
-
-    local prev_key = key_prefix .. ':' .. previous_window
-    local curr_key = key_prefix .. ':' .. current_window
-
-    local prev_count = tonumber(redis.call('get', prev_key) or '0')
-    local curr_count = tonumber(redis.call('get', curr_key) or '0')
-
-    local estimated = prev_count * weight + curr_count
-
-    if estimated + cost <= limit then
-        redis.call('incrby', curr_key, cost)
-        redis.call('expire', curr_key, window * 2)
-        return {1, math.floor(limit - estimated - cost)}
-    else
-        local retry_after = window - elapsed
-        return {0, math.floor(limit - estimated), retry_after}
-    end
-    ```
+    Uses compare-and-swap (CAS) for atomic read-modify-write to prevent
+    race conditions that cause over-admission.
     """
 
     def __init__(
@@ -56,6 +29,10 @@ class SlidingWindowAlgorithm(Algorithm):
         limit: int,
         window: float,
     ) -> None:
+        if limit < 1:
+            raise ValueError(f"limit must be >= 1, got {limit}")
+        if window <= 0:
+            raise ValueError(f"window must be > 0, got {window}")
         self.storage = storage
         self.limit = limit
         self.window = window
@@ -69,6 +46,12 @@ class SlidingWindowAlgorithm(Algorithm):
     def _get_elapsed(self, now: float) -> float:
         return now - (self._get_window_id(now) * self.window)
 
+    def _compute_estimated(
+        self, prev_count: int, curr_count: int, weight: float
+    ) -> float:
+        """Compute weighted estimate from previous and current window counts."""
+        return prev_count * weight + curr_count
+
     async def acquire(
         self,
         key: str,
@@ -77,61 +60,69 @@ class SlidingWindowAlgorithm(Algorithm):
         timeout: float | None = None,
     ) -> AcquireResult:
         now = time.monotonic()
+        max_retries = 5
 
-        try:
+        for _attempt in range(max_retries):
             current_window = self._get_window_id(now)
             previous_window = current_window - 1
             elapsed = self._get_elapsed(now)
             weight = (self.window - elapsed) / self.window
 
-            # Get previous window count (read-only, no race)
             prev_key = self._make_key(key, previous_window)
             curr_key = self._make_key(key, current_window)
 
+            # Read previous window count (read-only, no race on previous window)
             prev_count = await self.storage.get(prev_key) or 0
 
-            # Atomically increment current window to reserve tokens
-            new_curr_count, _ = await self.storage.increment_by(
-                curr_key, cost, self.window * 2
-            )
+            # Read current window count and attempt CAS increment
+            state = await self.storage.get(curr_key)
+            curr_count = state if isinstance(state, int) and state > 0 else 0
 
-            # Weighted estimate uses the OLD current count (before our increment)
-            old_curr_count = new_curr_count - cost
-            estimated = prev_count * weight + old_curr_count
+            # Compute estimate using current count (before our potential increment)
+            estimated = self._compute_estimated(prev_count, curr_count, weight)
 
             if estimated + cost <= self.limit:
-                # Allow: we already incremented
-                remaining = int(self.limit - estimated - cost)
-                return AcquireResult(
-                    allowed=True,
-                    remaining=max(0, remaining),
-                    limit=self.limit,
-                    reset_at=now + (self.window - elapsed),
-                )
+                # Try to atomically increment current window
+                # Use expected=None for create-if-absent on first request
+                expected = curr_count if curr_count > 0 else None
+                if await self.storage.compare_and_swap(
+                    curr_key, expected, curr_count + cost, self.window * 2
+                ):
+                    remaining = int(self.limit - estimated - cost)
+                    return AcquireResult(
+                        allowed=True,
+                        remaining=max(0, remaining),
+                        limit=self.limit,
+                        reset_at=now + (self.window - elapsed),
+                    )
+                # CAS failed — another request modified the counter, retry
+                await asyncio.sleep(random.uniform(0, 0.001))
+                continue
             else:
-                # Deny: decrement what we incremented (undo)
-                await self.storage.increment_by(curr_key, -cost, self.window * 2)
+                # Over limit — don't increment
                 retry_after = self.window - elapsed
                 if block and timeout is not None:
-                    await self._async_sleep(min(retry_after, timeout))
-                    return await self.acquire(key, cost, block=False)
+                    await asyncio.sleep(min(retry_after, timeout))
+                    now = time.monotonic()
+                    continue
 
+                remaining = max(0, int(self.limit - estimated))
                 return AcquireResult(
                     allowed=False,
-                    remaining=max(0, int(self.limit - estimated)),
+                    remaining=max(0, remaining),
                     limit=self.limit,
                     retry_after=retry_after,
                     reset_at=now + retry_after,
                 )
 
-        except BackendFailure:
-            raise
-        except Exception as e:
-            raise BackendFailure(
-                message=f"Sliding window storage error: {e}",
-                backend=self.storage.__class__.__name__,
-                original_error=e,
-            ) from e
+        # Exhausted retries — fail closed
+        return AcquireResult(
+            allowed=False,
+            remaining=0,
+            limit=self.limit,
+            retry_after=0.0,
+            reset_at=now + self.window,
+        )
 
     async def peek(self, key: str) -> AcquireResult:
         """Check state without consuming tokens."""
@@ -164,8 +155,3 @@ class SlidingWindowAlgorithm(Algorithm):
 
         await self.storage.delete(self._make_key(key, current_window))
         await self.storage.delete(self._make_key(key, previous_window))
-
-    async def _async_sleep(self, seconds: float) -> None:
-        """Async sleep wrapper."""
-        import asyncio
-        await asyncio.sleep(seconds)

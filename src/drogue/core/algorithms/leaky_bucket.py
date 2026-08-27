@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import random
 import time
 
 from drogue.core.abstracts import AcquireResult, Algorithm, Storage
@@ -25,34 +26,6 @@ class LeakyBucketAlgorithm(Algorithm):
     - Leaky Bucket processes at constant rate (smoother)
 
     Used by: NGINX, HAProxy, AWS WAF rate-based rules
-
-    Redis Lua script for atomic operations:
-    ```lua
-    local key = KEYS[1]
-    local capacity = tonumber(ARGV[1])
-    local leak_rate = tonumber(ARGV[2])
-    local now = tonumber(ARGV[3])
-    local ttl = tonumber(ARGV[4])
-
-    local bucket = redis.call('hmget', key, 'water', 'last_leak')
-    local water = tonumber(bucket[1]) or 0
-    local last_leak = tonumber(bucket[2]) or now
-
-    -- Leak water based on elapsed time
-    local elapsed = now - last_leak
-    local leaked = elapsed * leak_rate
-    water = math.max(0, water - leaked)
-
-    if water < capacity then
-        water = water + 1
-        redis.call('hmset', key, 'water', water, 'last_leak', now)
-        redis.call('expire', key, ttl)
-        return {1, capacity - math.floor(water), 0}
-    else
-        local wait_time = (1 - (capacity - water)) / leak_rate
-        return {0, 0, wait_time}
-    end
-    ```
     """
 
     def __init__(
@@ -70,6 +43,12 @@ class LeakyBucketAlgorithm(Algorithm):
 
     def _make_key(self, key: str) -> str:
         return f"drogue:lb:{key}"
+
+    def _time_to_empty(self, water: float) -> float:
+        """Time in seconds until bucket is empty."""
+        if water <= 0:
+            return 0.0
+        return water / self.leak_rate
 
     async def acquire(
         self,
@@ -121,9 +100,9 @@ class LeakyBucketAlgorithm(Algorithm):
                 ):
                     return AcquireResult(
                         allowed=True,
-                        remaining=self.limit - int(water),
+                        remaining=self.limit - water,
                         limit=self.limit,
-                        reset_at=now + self.window,
+                        reset_at=now + self._time_to_empty(water),
                     )
                 # Another request initialized the bucket first; retry
                 continue
@@ -149,23 +128,24 @@ class LeakyBucketAlgorithm(Algorithm):
                 if await self.storage.compare_and_swap(
                     storage_key, state, new_state, self.window
                 ):
-                    remaining = max(0, self.limit - int(new_water))
                     return AcquireResult(
                         allowed=True,
-                        remaining=remaining,
+                        remaining=self.limit - new_water,
                         limit=self.limit,
-                        reset_at=now + self.window,
+                        reset_at=now + self._time_to_empty(new_water),
                     )
+                # CAS failed — another request modified the bucket, retry
+                await asyncio.sleep(random.uniform(0, 0.001))
                 continue
             else:
                 # Bucket would overflow
                 wait_time = (new_water - self.limit) / self.leak_rate
                 return AcquireResult(
                     allowed=False,
-                    remaining=max(0, self.limit - int(water)),
+                    remaining=max(0, self.limit - water),
                     limit=self.limit,
                     retry_after=wait_time,
-                    reset_at=now + self.window,
+                    reset_at=now + wait_time,
                 )
 
         return AcquireResult(
@@ -209,7 +189,7 @@ class LeakyBucketAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now + self.window,
+                reset_at=now,
             )
 
         try:
@@ -219,19 +199,19 @@ class LeakyBucketAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now + self.window,
+                reset_at=now,
             )
 
         elapsed = max(0.0, now - last_leak)
         leaked = elapsed * self.leak_rate
         water = max(0.0, stored_water - leaked)
-        remaining = max(0, self.limit - int(water))
+        remaining = max(0, self.limit - water)
 
         return AcquireResult(
             allowed=remaining > 0,
             remaining=remaining,
             limit=self.limit,
-            reset_at=now + max(0.0, self.window - elapsed),
+            reset_at=now + self._time_to_empty(water),
         )
 
     async def reset(self, key: str) -> None:

@@ -158,29 +158,72 @@ class RedisStorage(Storage):
     ) -> bool:
         """Atomically swap value only if current value matches expected.
 
-        Uses a Lua script for atomicity in Redis. Values are compared as
-        serialized strings (exact match), so float/tuple state round-trips
-        correctly.
+        Uses a Lua script for atomicity in Redis. Values are compared
+        numerically (for floats/ints) or as JSON (for tuples/arrays).
 
         If expected is None, the swap only succeeds when the key does NOT
         exist yet (create-if-absent), enabling race-free initialization.
         """
         script = """
-        local current = redis.call('GET', KEYS[1])
-        local expected = ARGV[1]
-        if expected == '__drogue_none__' then
-            if current ~= false then
+        local current_raw = redis.call('GET', KEYS[1])
+        local expected_raw = ARGV[1]
+        local new_raw = ARGV[2]
+        local ttl = ARGV[3]
+
+        -- Helper: try to parse as number, return (success, number)
+        local function parse_number(s)
+            local n = tonumber(s)
+            if n then return true, n end
+            return false, nil
+        end
+
+        -- Helper: parse JSON
+        local function parse_json(s)
+            local ok, val = pcall(cjson.decode, s)
+            if ok then return true, val end
+            return false, nil
+        end
+
+        -- Deserialize a raw value to its native type for comparison
+        local function deserialize(s)
+            if s == false then return nil end
+            local ok_num, num = parse_number(s)
+            if ok_num then return num end
+            local ok_json, val = parse_json(s)
+            if ok_json then return val end
+            return s -- fallback: string
+        end
+
+        if expected_raw == '__drogue_none__' then
+            -- Create-if-absent: succeed only if key doesn't exist
+            if current_raw ~= false then
                 return 0
             end
         else
-            if current == false then
+            -- Key must exist
+            if current_raw == false then
                 return 0
             end
-            if current ~= expected then
-                return 0
+            -- Deserialize both and compare
+            local current_val = deserialize(current_raw)
+            local expected_val = deserialize(expected_raw)
+
+            -- Compare: if both numbers, compare numerically
+            local ok_curr_num, curr_num = parse_number(current_raw)
+            local ok_exp_num, exp_num = parse_number(expected_raw)
+            if ok_curr_num and ok_exp_num then
+                if curr_num ~= exp_num then
+                    return 0
+                end
+            else
+                -- Non-numeric: compare as JSON strings (canonical)
+                if current_raw ~= expected_raw then
+                    return 0
+                end
             end
         end
-        redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
+
+        redis.call('SET', KEYS[1], new_raw, 'EX', ttl)
         return 1
         """
         rkey = self._key(key)

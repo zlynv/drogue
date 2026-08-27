@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import random
 import time
 
 from drogue.core.abstracts import AcquireResult, Algorithm, Storage
@@ -88,6 +89,12 @@ class TokenBucketAlgorithm(Algorithm):
                 original_error=e,
             ) from e
 
+    def _time_to_full(self, tokens: float) -> float:
+        """Time in seconds until bucket is full."""
+        if tokens >= self.limit:
+            return 0.0
+        return (self.limit - tokens) / self.refill_rate
+
     async def _acquire_non_blocking(
         self, storage_key: str, cost: int, now: float
     ) -> AcquireResult:
@@ -122,9 +129,10 @@ class TokenBucketAlgorithm(Algorithm):
                         allowed=True,
                         remaining=remaining,
                         limit=self.limit,
-                        reset_at=now + self.window,
+                        reset_at=now + self._time_to_full(remaining),
                     )
-                # Another request initialized the bucket first; retry
+                # Another request initialized the bucket first; retry with backoff
+                await asyncio.sleep(random.uniform(0, 0.001))
                 continue
 
             # Unpack stored state
@@ -146,13 +154,15 @@ class TokenBucketAlgorithm(Algorithm):
                 if await self.storage.compare_and_swap(
                     storage_key, state, new_state, self.window
                 ):
+                    time_to_full = self._time_to_full(new_tokens)
                     return AcquireResult(
                         allowed=True,
                         remaining=int(new_tokens),
                         limit=self.limit,
-                        reset_at=now + self.window,
+                        reset_at=now + time_to_full,
                     )
-                # CAS failed, retry
+                # CAS failed, retry with backoff
+                await asyncio.sleep(random.uniform(0, 0.001))
                 continue
             else:
                 wait_time = (cost - tokens) / self.refill_rate
@@ -161,7 +171,7 @@ class TokenBucketAlgorithm(Algorithm):
                     remaining=int(tokens),
                     limit=self.limit,
                     retry_after=wait_time,
-                    reset_at=now + self.window,
+                    reset_at=now + wait_time,
                 )
 
         # Exhausted retries — fail closed
@@ -207,7 +217,7 @@ class TokenBucketAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now + self.window,
+                reset_at=now,  # already full
             )
 
         try:
@@ -217,17 +227,18 @@ class TokenBucketAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now + self.window,
+                reset_at=now,
             )
 
         elapsed = max(0.0, now - last_refill)
         tokens = min(self.limit, stored_tokens + elapsed * self.refill_rate)
 
+        time_to_full = self._time_to_full(tokens)
         return AcquireResult(
             allowed=tokens >= 1,
             remaining=int(tokens),
             limit=self.limit,
-            reset_at=now + max(0.0, self.window - elapsed),
+            reset_at=now + time_to_full,
         )
 
     async def reset(self, key: str) -> None:
