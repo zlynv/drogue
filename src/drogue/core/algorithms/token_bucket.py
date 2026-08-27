@@ -65,6 +65,12 @@ class TokenBucketAlgorithm(Algorithm):
     def _make_key(self, key: str) -> str:
         return f"drogue:tb:{key}"
 
+    def _time_to_full(self, tokens: float) -> float:
+        """Time in seconds until bucket is full."""
+        if tokens >= self.limit:
+            return 0.0
+        return (self.limit - tokens) / self.refill_rate
+
     async def acquire(
         self,
         key: str,
@@ -88,12 +94,6 @@ class TokenBucketAlgorithm(Algorithm):
                 backend=self.storage.__class__.__name__,
                 original_error=e,
             ) from e
-
-    def _time_to_full(self, tokens: float) -> float:
-        """Time in seconds until bucket is full."""
-        if tokens >= self.limit:
-            return 0.0
-        return (self.limit - tokens) / self.refill_rate
 
     async def _acquire_non_blocking(
         self, storage_key: str, cost: int, now: float
@@ -129,7 +129,7 @@ class TokenBucketAlgorithm(Algorithm):
                         allowed=True,
                         remaining=remaining,
                         limit=self.limit,
-                        reset_at=now + self._time_to_full(remaining),
+                        reset_at=time.time() + self._time_to_full(remaining),
                     )
                 # Another request initialized the bucket first; retry with backoff
                 await asyncio.sleep(random.uniform(0, 0.001))
@@ -159,7 +159,7 @@ class TokenBucketAlgorithm(Algorithm):
                         allowed=True,
                         remaining=int(new_tokens),
                         limit=self.limit,
-                        reset_at=now + time_to_full,
+                        reset_at=time.time() + time_to_full,
                     )
                 # CAS failed, retry with backoff
                 await asyncio.sleep(random.uniform(0, 0.001))
@@ -171,7 +171,7 @@ class TokenBucketAlgorithm(Algorithm):
                     remaining=int(tokens),
                     limit=self.limit,
                     retry_after=wait_time,
-                    reset_at=now + wait_time,
+                    reset_at=time.time() + wait_time,
                 )
 
         # Exhausted retries — fail closed
@@ -217,7 +217,7 @@ class TokenBucketAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now,  # already full
+                reset_at=time.time(),
             )
 
         try:
@@ -227,7 +227,7 @@ class TokenBucketAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now,
+                reset_at=time.time(),
             )
 
         elapsed = max(0.0, now - last_refill)
@@ -238,7 +238,7 @@ class TokenBucketAlgorithm(Algorithm):
             allowed=tokens >= 1,
             remaining=int(tokens),
             limit=self.limit,
-            reset_at=now + time_to_full,
+            reset_at=time.time() + time_to_full,
         )
 
     async def reset(self, key: str) -> None:

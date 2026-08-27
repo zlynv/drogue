@@ -93,7 +93,7 @@ class SlidingWindowAlgorithm(Algorithm):
                         allowed=True,
                         remaining=max(0, remaining),
                         limit=self.limit,
-                        reset_at=now + (self.window - elapsed),
+                        reset_at=time.time() + (self.window - elapsed),
                     )
                 # CAS failed — another request modified the counter, retry
                 await asyncio.sleep(random.uniform(0, 0.001))
@@ -112,7 +112,7 @@ class SlidingWindowAlgorithm(Algorithm):
                     remaining=max(0, remaining),
                     limit=self.limit,
                     retry_after=retry_after,
-                    reset_at=now + retry_after,
+                    reset_at=time.time() + retry_after,
                 )
 
         # Exhausted retries — fail closed
@@ -121,7 +121,7 @@ class SlidingWindowAlgorithm(Algorithm):
             remaining=0,
             limit=self.limit,
             retry_after=0.0,
-            reset_at=now + self.window,
+            reset_at=time.time() + self.window,
         )
 
     async def peek(self, key: str) -> AcquireResult:
@@ -145,7 +145,7 @@ class SlidingWindowAlgorithm(Algorithm):
             allowed=remaining > 0,
             remaining=remaining,
             limit=self.limit,
-            reset_at=now + (self.window - elapsed),
+            reset_at=time.time() + (self.window - elapsed),
         )
 
     async def reset(self, key: str) -> None:

@@ -132,7 +132,7 @@ class LeakyBucketAlgorithm(Algorithm):
                         allowed=True,
                         remaining=self.limit - new_water,
                         limit=self.limit,
-                        reset_at=now + self._time_to_empty(new_water),
+                        reset_at=time.time() + self._time_to_empty(new_water),
                     )
                 # CAS failed — another request modified the bucket, retry
                 await asyncio.sleep(random.uniform(0, 0.001))
@@ -145,7 +145,7 @@ class LeakyBucketAlgorithm(Algorithm):
                     remaining=max(0, self.limit - water),
                     limit=self.limit,
                     retry_after=wait_time,
-                    reset_at=now + wait_time,
+                    reset_at=time.time() + wait_time,
                 )
 
         return AcquireResult(
@@ -189,7 +189,7 @@ class LeakyBucketAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now,
+                reset_at=time.time(),
             )
 
         try:
@@ -199,7 +199,7 @@ class LeakyBucketAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now,
+                reset_at=time.time(),
             )
 
         elapsed = max(0.0, now - last_leak)
@@ -211,7 +211,7 @@ class LeakyBucketAlgorithm(Algorithm):
             allowed=remaining > 0,
             remaining=remaining,
             limit=self.limit,
-            reset_at=now + self._time_to_empty(water),
+            reset_at=time.time() + self._time_to_empty(water),
         )
 
     async def reset(self, key: str) -> None:

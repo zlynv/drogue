@@ -65,11 +65,12 @@ class FixedWindowAlgorithm(Algorithm):
                 ):
                     remaining = self.limit - new_count
                     next_window = (window_id + 1) * self.window
+                    retry_after = next_window - now
                     return AcquireResult(
                         allowed=True,
                         remaining=max(0, remaining),
                         limit=self.limit,
-                        reset_at=next_window,
+                        reset_at=time.time() + retry_after,
                     )
                 # CAS failed — another request modified the counter, retry
                 await asyncio.sleep(random.uniform(0, 0.001))
@@ -90,7 +91,7 @@ class FixedWindowAlgorithm(Algorithm):
                     remaining=max(0, remaining),
                     limit=self.limit,
                     retry_after=retry_after,
-                    reset_at=next_window,
+                    reset_at=time.time() + retry_after,
                 )
 
         # Exhausted retries — fail closed
@@ -99,7 +100,7 @@ class FixedWindowAlgorithm(Algorithm):
             remaining=0,
             limit=self.limit,
             retry_after=0.0,
-            reset_at=time.monotonic() + self.window,
+            reset_at=time.time() + self.window,
         )
 
     async def peek(self, key: str) -> AcquireResult:
@@ -116,7 +117,7 @@ class FixedWindowAlgorithm(Algorithm):
             allowed=remaining > 0,
             remaining=remaining,
             limit=self.limit,
-            reset_at=next_window,
+            reset_at=time.time() + (next_window - time.monotonic()),
         )
 
     async def reset(self, key: str) -> None:

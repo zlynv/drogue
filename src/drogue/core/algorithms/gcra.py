@@ -92,7 +92,7 @@ class GCRAAlgorithm(Algorithm):
                         allowed=True,
                         remaining=self.limit - cost,
                         limit=self.limit,
-                        reset_at=now,  # allowed immediately
+                        reset_at=time.time(),  # allowed immediately
                     )
                 # Another request initialized state; retry
                 continue
@@ -118,7 +118,7 @@ class GCRAAlgorithm(Algorithm):
                         allowed=True,
                         remaining=min(remaining, self.limit - cost),
                         limit=self.limit,
-                        reset_at=allow_at,  # when next request is allowed
+                        reset_at=time.time() + (allow_at - now),  # convert monotonic to epoch
                     )
                 # CAS failed — another request modified the TAT, retry
                 await asyncio.sleep(random.uniform(0, 0.001))
@@ -130,7 +130,7 @@ class GCRAAlgorithm(Algorithm):
                     remaining=0,
                     limit=self.limit,
                     retry_after=retry_after,
-                    reset_at=allow_at,  # when request will be allowed
+                    reset_at=time.time() + (allow_at - now),
                 )
 
         return AcquireResult(
@@ -174,7 +174,7 @@ class GCRAAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now,
+                reset_at=time.time(),
             )
 
         try:
@@ -184,7 +184,7 @@ class GCRAAlgorithm(Algorithm):
                 allowed=True,
                 remaining=self.limit,
                 limit=self.limit,
-                reset_at=now,
+                reset_at=time.time(),
             )
 
         new_tat = max(prev_tat, now) + self.emission_interval
@@ -195,7 +195,7 @@ class GCRAAlgorithm(Algorithm):
             allowed=allow_at <= now,
             remaining=min(remaining, self.limit),
             limit=self.limit,
-            reset_at=allow_at,
+            reset_at=time.time() + (allow_at - now),
         )
 
     async def reset(self, key: str) -> None:
