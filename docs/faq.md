@@ -42,7 +42,7 @@ config = DrogueConfig(
 
 ## Does it work with gRPC?
 
-drogue currently supports HTTP frameworks (FastAPI, Django, Flask). gRPC support is planned for v0.3.
+drogue currently supports HTTP frameworks (FastAPI, Django, Flask). gRPC support is planned for a future release.
 
 ## Can I use custom algorithms?
 
