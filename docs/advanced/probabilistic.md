@@ -205,5 +205,220 @@ hll.merge(hll2)
 ### Parameters
 
 | Parameter | Default | Description |
-|-----------|---------|-------------|
 | `precision` | 14 | Bits of precision (higher = more accurate, more memory) |
+
+---
+
+## Integration with Rate Limiting
+
+### Heavy Hitter Detection with Count-Min Sketch
+
+```python
+from drogue.storage.probabilistic import CountMinSketch
+from drogue.adapters.fastapi import DrogueLimiter
+
+cms = CountMinSketch(width=2**20, depth=4)
+limiter = DrogueLimiter(app)
+
+@app.middleware("http")
+async def heavy_hitter_check(request: Request, call_next):
+    client_ip = request.client.host
+    cms.add(client_ip)
+    
+    # If a single client exceeds threshold
+    if cms.estimate(client_ip) > 5000:
+        return JSONResponse(
+            status_code=429,
+            content={"error": "Rate limit exceeded: heavy hitter detected"}
+        )
+    
+    return await call_next(request)
+```
+
+### Bloom Filter for IP Allow/Deny Lists
+
+```python
+from drogue.storage.probabilistic import BloomFilter
+from drogue.adapters.fastapi import DrogueLimiter
+
+# Initialize from config
+ip_allowlist = BloomFilter(capacity=1_000_000, false_positive_rate=0.001)
+ip_denylist = BloomFilter(capacity=100_000, false_positive_rate=0.001)
+
+for ip in config.ALLOWED_IPS:
+    ip_allowlist.add(ip)
+for ip in config.DENIED_IPS:
+    ip_denylist.add(ip)
+
+limiter = DrogueLimiter(app)
+
+@app.middleware("http")
+async def ip_filter(request: Request, call_next):
+    client_ip = request.client.host
+    
+    # Check denylist first (fast path for known bad actors)
+    if ip_denylist.check(request.client.host):
+        return JSONResponse(status_code=403, content={"error": "IP denied"})
+    
+    # Check allowlist (if configured)
+    if not ip_allowlist.check(request.client.host):
+        return JSONResponse(status_code=403, content={"error": "IP not allowed"})
+    
+    return await call_next(request)
+```
+
+### Cuckoo Filter for Session Tracking
+
+```python
+from drogue.storage.probabilistic import CuckooFilter
+from fastapi import FastAPI, Request, Response
+
+sessions = CuckooFilter(capacity=1_000_000)
+
+@app.post("/login")
+async def login(credentials: Credentials):
+    session_id = create_session_id()
+    sessions.add(session_id)
+    response = Response(content="Logged in")
+    response.set_cookie("session_id", session_id)
+    return response
+
+@app.post("/logout")
+async def logout(request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id and sessions.remove(session_id):
+        return {"ok": True}
+    return {"error": "Session not found"}
+
+@app.middleware("http")
+async def validate_session(request: Request, call_next):
+    session_id = request.cookies.get("session_id")
+    if session_id and not sessions.check(session_id):
+        return JSONResponse(status_code=401, content={"error": "Invalid session"})
+    return await call_next(request)
+```
+
+### HyperLogLog for Unique Visitor Metrics
+
+```python
+from drogue.storage.probabilistic import HyperLogLog
+from drogue.adapters.fastapi import DrogueLimiter
+
+visitor_hll = HyperLogLog(precision=14)
+endpoint_hll = {}
+
+@app.middleware("http")
+async def track_visitors(request: Request, call_next):
+    response = await call_next(request)
+    
+    path = request.url.path
+    user_id = request.headers.get("X-User-ID", request.client.host)
+    
+    # Global unique visitors
+    visitor_hll.add(user_id)
+    
+    # Per-endpoint unique visitors
+    if path not in endpoint_hll:
+        endpoint_hll[path] = HyperLogLog(precision=12)
+    endpoint_hll[path].add(user_id)
+    
+    return response
+
+@app.get("/metrics/visitors")
+async def get_visitor_metrics():
+    return {
+        "total_unique_visitors": visitor_hll.count(),
+        "per_endpoint": {
+            path: hll.count() 
+            for path, hll in endpoint_hll.items()
+        }
+    }
+```
+
+### Complete Protection Pipeline
+
+```python
+from drogue.adapters.fastapi import DrogueLimiter
+from drogue.protection.pipeline import ProtectionPipeline
+from drogue.protection.ddos import DDoSDetector
+from drogue.protection.ban import ProgressiveBanManager
+from drogue.storage.probabilistic import CountMinSketch, BloomFilter, CuckooFilter, HyperLogLog
+
+# Probabilistic structures
+cms = CountMinSketch(width=2**20, depth=4)
+ip_allowlist = BloomFilter(capacity=1_000_000, false_positive_rate=0.001)
+ip_denylist = BloomFilter(capacity=100_000, false_positive_rate=0.001)
+sessions = CuckooFilter(capacity=1_000_000)
+visitor_hll = HyperLogLog(precision=14)
+
+# Standard protection
+ddos = DDoSDetector(window=60.0, z_threshold=3.0, min_clients=10)
+ban = ProgressiveBanManager(threshold=5, window=300.0)
+
+pipeline = ProtectionPipeline(ddos=ddos, ban=ban)
+
+app = FastAPI()
+limiter = DrogueLimiter(app, pipeline=pipeline)
+
+@app.middleware("http")
+async def full_protection(request: Request, call_next):
+    client_ip = request.client.host
+    user_id = request.headers.get("X-User-ID", client_ip)
+    
+    # 1. IP deny list (fast, probabilistic)
+    if ip_denylist.check(client_ip):
+        return JSONResponse(status_code=403, content={"error": "IP denied"})
+    
+    # 2. Allow list
+    if ip_allowlist.check(client_ip):
+        return await call_next(request)
+    
+    # 3. Heavy hitter detection
+    cms.add(user_id)
+    if cms.estimate(user_id) > 5000:
+        return JSONResponse(status_code=429, content={"error": "Heavy hitter detected"})
+    
+    # 4. Session validation
+    session_id = request.cookies.get("session_id")
+    if session_id and not sessions.check(session_id):
+        return JSONResponse(status_code=401, content={"error": "Invalid session"})
+    
+    # 5. Track unique visitors
+    visitor_hll.add(user_id)
+    
+    # 6. Standard protection pipeline
+    result = await pipeline.check(key=user_id, context={"client": {"host": client_ip}})
+    if not result.allowed:
+        return JSONResponse(
+            status_code=result.status_code,
+            content={"error": result.reason, "retry_after": result.retry_after}
+        )
+    
+    response = await call_next(request)
+    return response
+```
+
+## Performance Comparison
+
+| Structure | 1M Keys | Use Case |
+|-----------|---------|----------|
+| Redis Set | ~800 MB | Exact counts, sets |
+| Count-Min Sketch | ~10 MB | Heavy hitters, frequency |
+| Bloom Filter | ~1.2 MB | Allow/deny lists |
+| Cuckoo Filter | ~1.5 MB | Sessions (supports delete) |
+| HyperLogLog | ~12 KB | Unique visitor count |
+
+## Best Practices
+
+1. **Don't use for critical security** - Probabilistic structures can have false positives/negatives
+2. **Layer with exact structures** - Use Redis for bans/sessions, probabilistic for analytics
+3. **Tune parameters** - Adjust width/depth/error_rate based on your accuracy/memory needs
+3. **Monitor false positives** - Track and adjust Bloom Filter false positive rate
+4. **Combine with exact structures** - Use probabilistic for hot-path, exact for critical paths
+
+## When NOT to Use
+
+- Authentication/Authorization decisions (use exact structures)
+- Financial transactions (need exact counts)
+- Legal/compliance requirements (need exact audit trails)
+- Small datasets (<10k items) where memory savings don't matter
