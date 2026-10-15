@@ -2,6 +2,11 @@
 description: Production-ready rate limiting and DDoS protection for Python web frameworks. FastAPI, Django, Flask support with Redis backend.
 ---
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/logo-lockup-white.png">
+  <img alt="drogue - CONTROL • DEFEND • OPTIMIZE" src="assets/brand/logo-lockup-black.png" width="420">
+</picture>
+
 # drogue
 
 Rate limiting and DDoS protection for Python web applications. Clean APIs, WebSocket support, and built-in defense layers.

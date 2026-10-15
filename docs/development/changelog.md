@@ -27,7 +27,7 @@
 - Google site verification for SEO
 
 #### Adapters
-- Flask headers bug fixed — now works for dict-returning views
+- Flask headers bug fixed - now works for dict-returning views
 - Flask adapter uses `after_request` hook instead of broken `hasattr` approach
 
 ### Changed

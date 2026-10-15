@@ -1,4 +1,4 @@
-"""Tests for protection layer — DDoS, ban, circuit breaker."""
+"""Tests for protection layer - DDoS, ban, circuit breaker."""
 from __future__ import annotations
 
 import time

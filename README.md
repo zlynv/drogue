@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/logo-lockup-white.png">
+    <img alt="drogue - CONTROL • DEFEND • OPTIMIZE" src="assets/brand/logo-lockup-black.png" width="520">
+  </picture>
+</p>
+
 # drogue
 
 [![GitHub stars](https://img.shields.io/github/stars/zlynv/drogue?style=social)](https://github.com/zlynv/drogue)

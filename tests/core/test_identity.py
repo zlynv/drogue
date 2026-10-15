@@ -32,7 +32,7 @@ class TestRemoteAddressExtractor:
         self, extractor: RemoteAddressExtractor
     ) -> None:
         # SECURITY: forwarded headers are attacker-controlled when no
-        # trusted proxies are configured — must never be used as identity.
+        # trusted proxies are configured - must never be used as identity.
         context = {
             "client": {"host": "127.0.0.1"},
             "headers": {"x-real-ip": "203.0.113.1"},
@@ -53,7 +53,7 @@ class TestRemoteAddressExtractor:
 
     @pytest.mark.asyncio
     async def test_spoofed_header_from_untrusted_peer(self) -> None:
-        # SECURITY: peer is NOT in trusted_proxies — spoofed X-Real-IP ignored
+        # SECURITY: peer is NOT in trusted_proxies - spoofed X-Real-IP ignored
         extractor = RemoteAddressExtractor(trusted_proxies=["10.0.0.5"])
         context = {
             "client": {"host": "6.6.6.6"},

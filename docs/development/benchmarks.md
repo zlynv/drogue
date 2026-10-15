@@ -119,7 +119,7 @@ open http://localhost:8000/stats/html
 
 - **Requests/sec**: Higher is better. Shows throughput under load.
 - **Response Time**: Lower is better. Shows latency under load.
-- **Failure Rate**: 429s are expected at high concurrency — this is the rate limiter working correctly.
+- **Failure Rate**: 429s are expected at high concurrency - this is the rate limiter working correctly.
 
 ### DDoS Protection
 

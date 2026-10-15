@@ -9,6 +9,8 @@ repo_url: https://github.com/zlynv/drogue
 theme:
   name: material
   custom_dir: docs/overrides
+  logo: assets/brand/logo-mark-white.png
+  favicon: assets/favicons/favicon.svg
   palette:
     - scheme: default
       primary: indigo

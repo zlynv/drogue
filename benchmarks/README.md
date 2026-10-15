@@ -100,7 +100,7 @@ locust -f benchmarks/locustfile.py -H http://localhost:8089
 | Rate Limited (429) | 62,524 (90.5%) |
 | Successful | 6,573 |
 
-**Key Finding**: 90.5% of requests were rate limited — this proves the rate limiter is working correctly under extreme load. The 6,573 successful requests completed in ~19ms avg response time.
+**Key Finding**: 90.5% of requests were rate limited - this proves the rate limiter is working correctly under extreme load. The 6,573 successful requests completed in ~19ms avg response time.
 
 ### Response Time Percentiles
 
@@ -127,7 +127,7 @@ locust -f benchmarks/locustfile.py -H http://localhost:8089
 
 - **Requests/sec**: Higher is better. Shows throughput under load.
 - **Response Time**: Lower is better. Shows latency under load.
-- **Failure Rate**: 429s are expected at high concurrency — this is the rate limiter working correctly.
+- **Failure Rate**: 429s are expected at high concurrency - this is the rate limiter working correctly.
 
 ## Algorithm Comparison
 

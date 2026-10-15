@@ -46,10 +46,10 @@ def run_async(coro: Any) -> Any:
         loop = None
 
     if loop is None:
-        # No running loop — safe to use asyncio.run()
+        # No running loop - safe to use asyncio.run()
         return asyncio.run(coro)
     else:
-        # Running loop detected — delegate to background thread
+        # Running loop detected - delegate to background thread
         bg_loop = _ensure_background_loop()
         future = asyncio.run_coroutine_threadsafe(coro, bg_loop)
         return future.result()

@@ -72,11 +72,11 @@ class FixedWindowAlgorithm(Algorithm):
                         limit=self.limit,
                         reset_at=time.time() + retry_after,
                     )
-                # CAS failed — another request modified the counter, retry
+                # CAS failed - another request modified the counter, retry
                 await asyncio.sleep(random.uniform(0, 0.001))
                 continue
             else:
-                # Over limit — don't increment
+                # Over limit - don't increment
                 next_window = (window_id + 1) * self.window
                 retry_after = next_window - now
 
@@ -94,7 +94,7 @@ class FixedWindowAlgorithm(Algorithm):
                     reset_at=time.time() + retry_after,
                 )
 
-        # Exhausted retries — fail closed
+        # Exhausted retries - fail closed
         return AcquireResult(
             allowed=False,
             remaining=0,

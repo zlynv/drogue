@@ -55,7 +55,7 @@ await storage.initialize()
 # 100 requests per minute, bucket refills steadily
 algorithm = TokenBucketAlgorithm(storage=storage, limit=100, window=60.0)
 
-# Burst: 10 requests instantly — all allowed
+# Burst: 10 requests instantly - all allowed
 for i in range(10):
     result = await algorithm.acquire("user123")
     print(f"Request {i+1}: allowed={result.allowed}, remaining={result.remaining}")
@@ -87,7 +87,7 @@ print(f"After wait: allowed={result.allowed}, remaining={result.remaining}")
 
 @limiter.limit("1000/hour", algorithm=AlgorithmType.TOKEN_BUCKET)
 async def process_csv():
-    # 500 rows processed in burst — allowed
+    # 500 rows processed in burst - allowed
     ...
 ```
 
@@ -141,12 +141,12 @@ from drogue.core.algorithms import SlidingWindowAlgorithm
 
 algorithm = SlidingWindowAlgorithm(storage=storage, limit=100, window=60.0)
 
-# 12:00:00 — send 100 requests (all allowed)
+# 12:00:00 - send 100 requests (all allowed)
 for i in range(100):
     result = await algorithm.acquire("user123")
 # All allowed
 
-# 12:00:30 — 30 seconds later
+# 12:00:30 - 30 seconds later
 # Previous window: 100, current window: 0
 # estimated = 100 × ((60-30)/60) + 0 = 50
 result = await algorithm.acquire("user123")
@@ -154,7 +154,7 @@ print(f"30s later: allowed={result.allowed}, remaining={result.remaining}")
 # 30s later: allowed=True, remaining=49
 # Allowed because estimated count (50) < limit (100)
 
-# 12:00:45 — 45 seconds later
+# 12:00:45 - 45 seconds later
 # estimated = 100 × ((60-45)/60) + 0 = 25
 result = await algorithm.acquire("user123")
 print(f"45s later: allowed={result.allowed}, remaining={result.remaining}")
@@ -259,7 +259,7 @@ async def get_data():
 
 ### What it is
 
-A cell-based algorithm from telecom (ATM networks). Evenly spaces requests with no bursts allowed. Each request has a "theoretical arrival time" (TAT) — the earliest time the next request can arrive.
+A cell-based algorithm from telecom (ATM networks). Evenly spaces requests with no bursts allowed. Each request has a "theoretical arrival time" (TAT) - the earliest time the next request can arrive.
 
 ### How it works
 

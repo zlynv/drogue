@@ -174,7 +174,7 @@ class TokenBucketAlgorithm(Algorithm):
                     reset_at=time.time() + wait_time,
                 )
 
-        # Exhausted retries — fail closed
+        # Exhausted retries - fail closed
         return AcquireResult(
             allowed=False,
             remaining=0,

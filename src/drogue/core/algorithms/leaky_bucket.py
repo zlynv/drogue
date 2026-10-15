@@ -134,7 +134,7 @@ class LeakyBucketAlgorithm(Algorithm):
                         limit=self.limit,
                         reset_at=time.time() + self._time_to_empty(new_water),
                     )
-                # CAS failed — another request modified the bucket, retry
+                # CAS failed - another request modified the bucket, retry
                 await asyncio.sleep(random.uniform(0, 0.001))
                 continue
             else:

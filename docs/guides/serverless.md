@@ -164,7 +164,7 @@ gcloud functions deploy my-function \
 
 ## Notes
 
-- MemoryStorage resets on cold start — use Redis for production
+- MemoryStorage resets on cold start - use Redis for production
 - DDoS detection needs Redis to track traffic across invocations
 - Auto-ban state is lost on cold start without Redis
 - Circuit breaker state is per-invocation with in-memory storage

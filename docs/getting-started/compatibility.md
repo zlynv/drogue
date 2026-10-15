@@ -41,7 +41,7 @@ drogue supports multiple Python versions, frameworks, and storage backends. This
 
 | Backend | Status | Extra | Notes |
 |---------|--------|-------|-------|
-| Memory | Stable | — | Default, in-process, lost on restart |
+| Memory | Stable | - | Default, in-process, lost on restart |
 | Redis | Stable | `drogue[redis]` | Recommended for production, supports clustering |
 | MongoDB | Alpha | `drogue[mongodb]` | Uses Motor async driver, TTL indexes |
 

@@ -120,7 +120,7 @@ class GCRAAlgorithm(Algorithm):
                         limit=self.limit,
                         reset_at=time.time() + (allow_at - now),  # convert monotonic to epoch
                     )
-                # CAS failed — another request modified the TAT, retry
+                # CAS failed - another request modified the TAT, retry
                 await asyncio.sleep(random.uniform(0, 0.001))
                 continue
             else:

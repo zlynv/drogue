@@ -95,11 +95,11 @@ class SlidingWindowAlgorithm(Algorithm):
                         limit=self.limit,
                         reset_at=time.time() + (self.window - elapsed),
                     )
-                # CAS failed — another request modified the counter, retry
+                # CAS failed - another request modified the counter, retry
                 await asyncio.sleep(random.uniform(0, 0.001))
                 continue
             else:
-                # Over limit — don't increment
+                # Over limit - don't increment
                 retry_after = self.window - elapsed
                 if block and timeout is not None:
                     await asyncio.sleep(min(retry_after, timeout))
@@ -115,7 +115,7 @@ class SlidingWindowAlgorithm(Algorithm):
                     reset_at=time.time() + retry_after,
                 )
 
-        # Exhausted retries — fail closed
+        # Exhausted retries - fail closed
         return AcquireResult(
             allowed=False,
             remaining=0,

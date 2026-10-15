@@ -142,7 +142,7 @@ class MemoryStorage(Storage):
         """Atomically swap value only if current value matches expected.
 
         If expected is None, the swap only succeeds when the key does NOT
-        exist (or is expired) — create-if-absent for race-free init.
+        exist (or is expired) - create-if-absent for race-free init.
         """
         with self._lock:
             now = time.monotonic()

@@ -1,4 +1,4 @@
-"""FastAPI test app using drogue — exercises every feature."""
+"""FastAPI test app using drogue - exercises every feature."""
 from __future__ import annotations
 
 from fastapi import Depends, FastAPI

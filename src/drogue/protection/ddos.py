@@ -54,7 +54,7 @@ class DistributionStats:
         """Leave-one-out statistics: (count, mean, std) excluding `value`.
 
         Comparing a client against a distribution that includes its own
-        rate caps the achievable Z-score at ~sqrt(n) — a lone flooder among
+        rate caps the achievable Z-score at ~sqrt(n) - a lone flooder among
         10 clients can never exceed it. Excluding the client under test
         removes that bias.
 

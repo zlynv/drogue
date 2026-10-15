@@ -21,7 +21,7 @@ class RemoteAddressExtractor(IdentityExtractor):
     Security model:
     - Forwarded headers (X-Forwarded-For, X-Real-IP) are ONLY trusted when
       the direct peer address is in ``trusted_proxies``. Without trusted
-      proxies configured, the connecting peer address is always used —
+      proxies configured, the connecting peer address is always used -
       clients can never spoof their own identity.
     - Extracted values must parse as valid IP addresses; otherwise the peer
       address is used, preventing bucket-poisoning with junk headers.

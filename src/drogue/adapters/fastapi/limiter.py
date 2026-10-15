@@ -151,7 +151,7 @@ class DrogueLimiter:
                 headers=headers,
             )
 
-        # Pure ASGI middleware — no BaseHTTPMiddleware overhead, full control
+        # Pure ASGI middleware - no BaseHTTPMiddleware overhead, full control
         from starlette.datastructures import MutableHeaders
         from starlette.types import ASGIApp, Message, Receive, Scope, Send
 

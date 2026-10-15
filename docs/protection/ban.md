@@ -17,7 +17,7 @@ Auto-ban automatically blocks clients that repeatedly violate rate limits. Unlik
 4. Violations expire after the window elapses
 5. Ban expires after the duration elapses
 
-**Note:** The current violation is ALWAYS recorded, even when all previous violations have aged out of the window. This prevents escalation from being reset — a persistent attacker who pauses between bursts will still escalate through the ban levels.
+**Note:** The current violation is ALWAYS recorded, even when all previous violations have aged out of the window. This prevents escalation from being reset - a persistent attacker who pauses between bursts will still escalate through the ban levels.
 ```
 
 ## Usage

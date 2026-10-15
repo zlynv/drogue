@@ -1,4 +1,4 @@
-"""Django test views using drogue — proper integration pattern."""
+"""Django test views using drogue - proper integration pattern."""
 from __future__ import annotations
 
 import os

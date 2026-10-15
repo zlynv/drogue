@@ -103,7 +103,7 @@ class CircuitBreaker:
         with self._lock:
             if self._state == CircuitState.HALF_OPEN:
                 self._success_count += 1
-                # Successful test call — close the circuit
+                # Successful test call - close the circuit
                 self._state = CircuitState.CLOSED
                 self._failure_count = 0
                 self._success_count = 0
@@ -120,7 +120,7 @@ class CircuitBreaker:
             self._last_failure_time = now
 
             if self._state == CircuitState.HALF_OPEN:
-                # Test call failed — reopen the circuit with a fresh deadline
+                # Test call failed - reopen the circuit with a fresh deadline
                 self._state = CircuitState.OPEN
                 self._half_open_calls = 0
                 self._recovery_deadline = now + self._sample_timeout()

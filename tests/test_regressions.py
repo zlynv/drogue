@@ -69,7 +69,7 @@ class TestFlaskDoubleRateLimit:
             return {"ok": True}
 
         with app.test_client() as client:
-            # Make 5 requests — all should succeed (exactly 5 tokens)
+            # Make 5 requests - all should succeed (exactly 5 tokens)
             for i in range(5):
                 resp = client.get("/test")
                 assert resp.status_code == 200, f"Request {i+1} should succeed"
@@ -95,7 +95,7 @@ class TestFlaskDoubleRateLimit:
             return {"ok": True}
 
         with app.test_client() as client:
-            # Exactly 5 requests should succeed — not 2.5 (which would happen
+            # Exactly 5 requests should succeed - not 2.5 (which would happen
             # if header injection consumed a second token)
             for i in range(5):
                 resp = client.get("/test")
@@ -170,7 +170,7 @@ class TestFastAPITimeoutParam:
         app = FastAPI()
         limiter = DrogueLimiter(app)
 
-        # Should not raise — timeout param must be accepted
+        # Should not raise - timeout param must be accepted
         @app.get("/test")
         @limiter.limit("10/minute", block=False, timeout=5.0)
         async def test_route():
@@ -287,7 +287,7 @@ class TestBanViolationsCleanup:
         # Wait for window to expire
         time.sleep(0.15)
 
-        # Record another violation — the old one should be cleaned
+        # Record another violation - the old one should be cleaned
         ban.record_violation("key1")
 
         # The violation list should be fresh (old expired)
@@ -359,7 +359,7 @@ class TestTokenBucketNoDeadLock:
 # SEC#1: Concurrent first requests must not over-admit (CAS init race)
 # ============================================================================
 class TestBucketInitRace:
-    """Before fix: first request used plain set() — concurrent initializers
+    """Before fix: first request used plain set() - concurrent initializers
     each overwrote the bucket, admitting N requests at limit cost."""
 
     def test_concurrent_first_requests_capped(self) -> None:
@@ -385,7 +385,7 @@ class TestBucketInitRace:
         async def run() -> None:
             s = MemoryStorage()
             assert await s.compare_and_swap("k", None, "v1", 60) is True
-            # Key now exists — create-if-absent must fail
+            # Key now exists - create-if-absent must fail
             assert await s.compare_and_swap("k", None, "v2", 60) is False
 
         asyncio.run(run())
@@ -396,7 +396,7 @@ class TestBucketInitRace:
 # ============================================================================
 class TestDDoSLeaveOneOut:
     """Before fix: client compared against distribution including itself,
-    capping Z at ~sqrt(n) — a single flooder was undetectable at defaults."""
+    capping Z at ~sqrt(n) - a single flooder was undetectable at defaults."""
 
     def test_lone_flooder_detected(self) -> None:
         from collections import deque
@@ -501,7 +501,7 @@ class TestCIDRMappedIPv6:
 # SEC#6: Retry-After rounds up (never 0 for fractional waits)
 # ============================================================================
 class TestRetryAfterCeil:
-    """Before fix: Retry-After used int() truncation — 0.4s became '0',
+    """Before fix: Retry-After used int() truncation - 0.4s became '0',
     causing clients to retry immediately in a tight loop."""
 
     def test_fractional_retry_after_rounds_up(self) -> None:

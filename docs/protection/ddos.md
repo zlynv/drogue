@@ -17,7 +17,7 @@ DDoS (Distributed Denial of Service) attacks use many clients to overwhelm your 
 4. If Z > threshold (default 3.0), the client is anomalous
 ```
 
-**Why leave-one-out?** In the original implementation, the client being tested was included in the distribution it was compared against. A single flooder among 10 clients inflates the mean and std, mathematically capping its Z-score at ~√n — a lone flooder could never be detected. By excluding the client under test, a single attacker sending 50× the peer rate gets flagged immediately.
+**Why leave-one-out?** In the original implementation, the client being tested was included in the distribution it was compared against. A single flooder among 10 clients inflates the mean and std, mathematically capping its Z-score at ~√n - a lone flooder could never be detected. By excluding the client under test, a single attacker sending 50× the peer rate gets flagged immediately.
 
 ### Example scenario
 

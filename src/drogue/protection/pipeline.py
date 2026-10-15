@@ -32,9 +32,9 @@ class ProtectionPipeline:
     """Unified protection pipeline.
 
     Runs checks in order:
-        1. Ban check — is this client banned?
-        2. DDoS detection — is this client anomalous?
-        3. Circuit breaker — is the service in degraded mode?
+        1. Ban check - is this client banned?
+        2. DDoS detection - is this client anomalous?
+        3. Circuit breaker - is the service in degraded mode?
 
     After rate limiting, call record_violation() or record_success()
     to update ban and circuit breaker state.

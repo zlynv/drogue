@@ -37,16 +37,16 @@ locust -f benchmarks/ddos_locustfile.py --headless -u 50 -r 10 --run-time 20s -H
 
 ### How It Works
 
-1. **DDoS Detection** — Z-score anomaly detection monitors request rates per client
-2. **Progressive Bans** — After 5 violations: 1min → 10min → 1hr → 24hr
-3. **Rate Limiting** — Token Bucket (100/sec) and Sliding Window (50/sec) per endpoint
+1. **DDoS Detection** - Z-score anomaly detection monitors request rates per client
+2. **Progressive Bans** - After 5 violations: 1min → 10min → 1hr → 24hr
+3. **Rate Limiting** - Token Bucket (100/sec) and Sliding Window (50/sec) per endpoint
 
 ### Key Findings
 
-- **97.8% of requests were banned** — attackers were quickly identified and blocked
-- **p50 response time: 5ms** — protection layers add minimal overhead
-- **Zero successful DDoS attacks** — all aggressive clients were banned
-- **Server survived 2,173 RPS** — handled extreme load without crashing
+- **97.8% of requests were banned** - attackers were quickly identified and blocked
+- **p50 response time: 5ms** - protection layers add minimal overhead
+- **Zero successful DDoS attacks** - all aggressive clients were banned
+- **Server survived 2,173 RPS** - handled extreme load without crashing
 
 ### Protection Architecture
 

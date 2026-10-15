@@ -52,7 +52,7 @@ class ProgressiveBanManager:
         """Record a rate limit violation. Returns the new ban level.
 
         The current violation is ALWAYS recorded, even when all previous
-        violations have aged out of the window — dropping it would reset
+        violations have aged out of the window - dropping it would reset
         escalation progress for repeat offenders.
         """
         now = time.monotonic()

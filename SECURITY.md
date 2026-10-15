@@ -68,11 +68,11 @@ We will not pursue legal action against researchers who follow these guidelines.
 
 When using drogue in production:
 
-1. **Use HTTPS** — Always encrypt traffic in transit
-2. **Configure trusted proxies** — Prevent header spoofing
-3. **Use Redis/MongoDB authentication** — Secure storage backends
-4. **Monitor rate limit metrics** — Watch for anomalies
-5. **Keep drogue updated** — Apply security patches promptly
+1. **Use HTTPS** - Always encrypt traffic in transit
+2. **Configure trusted proxies** - Prevent header spoofing
+3. **Use Redis/MongoDB authentication** - Secure storage backends
+4. **Monitor rate limit metrics** - Watch for anomalies
+5. **Keep drogue updated** - Apply security patches promptly
 
 ## Contact
 
