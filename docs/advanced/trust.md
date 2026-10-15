@@ -47,24 +47,37 @@ trust.poison("fingerprint_abc123")
 
 ## Integration with drogue
 
+Trust is wired into the pipeline and the FastAPI adapter. The pipeline
+tracks consecutive successes per key and promotes clean clients to
+TRUSTED; any violation poisons trust immediately. Trusted keys are
+never exempt from rate limiting, but the adapter rewards them with a
+higher effective limit.
+
 ```python
-class DrogueLimiter:
-    async def _check(self, context):
-        fingerprint = context.identity.fingerprint
+from fastapi import FastAPI
+from drogue.adapters.fastapi import DrogueLimiter
+from drogue.core.config import DrogueConfig
 
-        # Tier 0: Trusted -- skip everything
-        if self.trust_manager and self.trust_manager.is_trusted(fingerprint):
-            return RateLimitResult(allowed=True, tier=0)
+config = DrogueConfig(
+    trust_enabled=True,
+    trust_success_threshold=100,  # successes before promotion
+    trust_limit_multiplier=2.0,   # TRUSTED keys get 2x the limit
+)
+limiter = DrogueLimiter(FastAPI(), config=config)
+```
 
-        # Tier 1: Standard -- rate limit only
-        result = await self._check_algorithm(context)
+Manual wiring through your own pipeline works the same way:
 
-        # After check: update trust score
-        if self.trust_manager:
-            score = self._compute_trust_score(context, result)
-            self.trust_manager.update(fingerprint, score)
+```python
+from drogue.protection import ProtectionPipeline, TrustManager
 
-        return result
+trust = TrustManager()
+pipeline = ProtectionPipeline(trust=trust, trust_success_threshold=100)
+
+await pipeline.check(key, context)   # consults nothing; trust never blocks
+pipeline.record_success(key)         # streak += 1, maybe promotes
+pipeline.record_violation(key)       # poisons + resets the streak
+trust.is_trusted(key)                # True once promoted
 ```
 
 ## Performance Impact

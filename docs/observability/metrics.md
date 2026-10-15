@@ -35,27 +35,23 @@ summary = metrics.get_summary()
 # {
 #     "requests_allowed": 15000,
 #     "requests_rejected": 500,
-#     "total_requests": 15500,
-#     "rejection_rate": 0.032,
 #     "bans_total": 25,
 #     "bans_active": 5,
 #     "ddos_detections": 3,
 #     "circuit_trips": 2,
-#     "circuit_resets": 1,
-#     "avg_latency_us": 43.0,
+#     "circuit_state": 0.0,
+#     "check_latency_avg": 0.000043,
+#     "check_latency_count": 15500,
 # }
 ```
 
 ### `to_prometheus()` response
 
 ```
-# HELP drogue_requests_allowed_total Total allowed requests
-# TYPE drogue_requests_allowed_total counter
-drogue_requests_allowed_total 15000
-
-# HELP drogue_requests_rejected_total Total rejected requests
-# TYPE drogue_requests_rejected_total counter
-drogue_requests_rejected_total 500
+# HELP drogue_requests_total Total rate limit checks
+# TYPE drogue_requests_total counter
+drogue_requests_total{status="allowed"} 15000
+drogue_requests_total{status="rejected"} 500
 
 # HELP drogue_bans_total Total bans issued
 # TYPE drogue_bans_total counter
@@ -72,7 +68,21 @@ drogue_ddos_detections_total 3
 # HELP drogue_circuit_trips_total Circuit breaker trips
 # TYPE drogue_circuit_trips_total counter
 drogue_circuit_trips_total 2
+
+# HELP drogue_check_latency_seconds Rate limit check latency
+# TYPE drogue_check_latency_seconds summary
+drogue_check_latency_seconds_count 15500
+drogue_check_latency_seconds_sum 0.665000
+
+# HELP drogue_route_requests_total Per-route request counts
+# TYPE drogue_route_requests_total counter
+drogue_route_requests_total{route="/api/data",status="allowed"} 15000
+drogue_route_requests_total{route="/api/data",status="rejected"} 500
 ```
+
+Per-route series are capped by `max_routes` (default 500): lowest-traffic
+routes are evicted first. The latency export is a `_count`/`_sum` pair;
+per-bucket histograms are not exported.
 
 ## Configuration
 

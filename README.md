@@ -10,7 +10,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/zlynv/drogue?style=social)](https://github.com/zlynv/drogue)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-131%20passing-brightgreen.svg)](#development)
+[![Tests](https://img.shields.io/badge/tests-244%20passing-brightgreen.svg)](#development)
 [![codecov](https://codecov.io/github/zlynv/drogue/graph/badge.svg?token=VVJ3EEPOD7)](https://codecov.io/github/zlynv/drogue)
 [![PyPI version](https://img.shields.io/pypi/v/drogue.svg)](https://pypi.org/project/drogue/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/drogue.svg)](https://pypi.org/project/drogue/)
@@ -236,10 +236,36 @@ async def get_data():
 
 ---
 
+## Advanced Defenses
+
+Beyond rate limiting, drogue ships recon and anomaly defenses that are
+off by default and enable via `DrogueConfig` (FastAPI auto-builds the
+pipeline for them) or through your own `ProtectionPipeline`:
+
+- **Probe detection** (`probes_enabled`) -- flags clients scanning many
+  paths with high error rates and answers 429.
+- **Trust fast-path** (`trust_enabled`, `trust_limit_multiplier`) --
+  consecutive successes promote keys to TRUSTED for higher limits;
+  any violation poisons trust instantly.
+- **Sentinel** (`sentinel_enabled`) -- sampled Half-Space-Tree anomaly
+  scoring, observe-only unless `sentinel_block=True`.
+- **Session jitter** (`randomizer_enabled`) -- per-session limit
+  multipliers keyed by `x-session-id` so attackers can't learn exact
+  thresholds.
+- **Honeypots** (`honeypot_paths`) -- trap paths answer 404 and
+  optionally record a ban violation.
+- **Shared bans** -- `ProgressiveBanManager(storage=RedisStorage(...))`
+  with the `*_async` methods enforces bans across workers and hosts.
+
 ## Known Limitations
 
-- Ban state is in-memory only by default. Redis persistence planned for v0.3.
-- Trust cache is per-process. Multi-worker setups need separate trust state per worker.
+- Ban, trust, DDoS, and probe state is per-process by default; only
+  bans currently support shared storage. Multi-worker setups without
+  shared storage keep separate state per worker.
+- Trust never exempts a client from rate limiting, it only raises the
+  limit via `trust_limit_multiplier`.
+- Sentinel needs a few hundred requests of warm-up before its forest
+  exists; until then everything passes.
 - Flask headers for dict-returning views do not inject automatically.
 
 ---

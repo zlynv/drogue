@@ -52,8 +52,17 @@ async def health():
     return {"status": "ok"}
 
 
+from drogue.observability.metrics import DrogueMetrics
+
+metrics_collector = DrogueMetrics()
+
+
 @app.get("/metrics")
 async def metrics():
     """Expose Prometheus metrics."""
-    from drogue.observability.metrics import get_metrics
-    return get_metrics()
+    from fastapi import Response
+
+    return Response(
+        content=metrics_collector.to_prometheus(),
+        media_type="text/plain",
+    )

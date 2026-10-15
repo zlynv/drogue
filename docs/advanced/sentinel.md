@@ -64,23 +64,45 @@ The Sentinel Model uses these features for anomaly detection:
 
 ## Integration with drogue
 
-```python
-class DDoSDetector:
-    def __init__(self, method="half_space_tree"):
-        if method == "half_space_tree":
-            self._detector = SentinelDetector(
-                n_features=5,
-                n_trees=25,
-                window_size=256,
-            )
-        elif method == "z_score":
-            self._detector = ZScoreDetector(threshold=3.0)
+Sentinel runs inside the pipeline on a sample of requests (scoring
+every request would dominate CPU at high throughput). By default it
+only observes and logs; set `sentinel_block=True` to deny anomalies
+with a 429.
 
-    def analyze(self, client_id: str, features: list[float]) -> bool:
-        score = self._detector.score(features)
-        self._detector.update(features)
-        return score > self._adaptive_threshold()
+```python
+from fastapi import FastAPI
+from drogue.adapters.fastapi import DrogueLimiter
+from drogue.core.config import DrogueConfig
+
+config = DrogueConfig(
+    sentinel_enabled=True,
+    sentinel_sample_rate=0.01,  # score 1% of requests
+    sentinel_block=False,       # True to deny anomalies
+)
+limiter = DrogueLimiter(FastAPI(), config=config)  # auto-builds pipeline
 ```
+
+Manual wiring through your own pipeline, with custom features:
+
+```python
+from drogue.protection import ProtectionPipeline, SentinelDetector
+from drogue.protection import extract_features
+
+sentinel = SentinelDetector(n_features=5, n_trees=25, window_size=256)
+pipeline = ProtectionPipeline(
+    sentinel=sentinel,
+    sentinel_sample_rate=0.05,
+    sentinel_block=True,
+    feature_fn=extract_features,  # or your own ctx -> [float x5]
+)
+
+result = await pipeline.check(key, context)  # 429 sentinel_anomaly if blocked
+```
+
+The detector needs a warm-up of a few hundred requests before the
+forest exists; until then every request passes. Scores from before
+the forest exists are never fed to the adaptive threshold, so
+warm-up traffic cannot blind later detection.
 
 ## Statistics
 

@@ -23,7 +23,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     # Add drogue middleware for global rate limiting
-    "drogue.django.middleware.DrogueMiddleware",
+    "drogue.adapters.django.limiter.DrogueMiddleware",
 ]
 
 ROOT_URLCONF = "example_django.urls"

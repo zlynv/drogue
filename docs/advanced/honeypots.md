@@ -187,3 +187,38 @@ if honeypots.is_honeypot("/admin/debug"):
 # Check if banned
 is_banned = ban_manager.is_banned(client_ip)  # True
 ```
+
+## Automatic wiring (FastAPI)
+
+Registering trap paths by hand is optional: with `honeypot_paths`
+set, the FastAPI limiter (or your pipeline) answers traps with the
+registered response code and records a ban violation automatically.
+
+```python
+from fastapi import FastAPI
+from drogue.adapters.fastapi import DrogueLimiter
+from drogue.core.config import DrogueConfig
+
+config = DrogueConfig(
+    honeypot_paths=["/admin/backup.sql", "/.env", "/wp-admin"],
+    honeypot_ban=True,  # record a ban violation on every hit
+)
+limiter = DrogueLimiter(FastAPI(), config=config)
+```
+
+The same works through an explicit pipeline:
+
+```python
+from drogue.defense.randomizer import HoneypotManager
+from drogue.protection import ProtectionPipeline, ProgressiveBanManager
+
+honeypots = HoneypotManager()
+for path in ["/admin/backup.sql", "/.env"]:
+    honeypots.register(path, auto_ban=True, response_code=404)
+
+pipeline = ProtectionPipeline(
+    ban=ProgressiveBanManager(threshold=1),
+    honeypots=honeypots,
+)
+result = await pipeline.check(key, context)  # 404 honeypot on trap hits
+```

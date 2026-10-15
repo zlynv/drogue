@@ -75,17 +75,33 @@ detector = ProbeDetector(
 
 ## Integration with drogue
 
+Probe detection runs inside the pipeline and the FastAPI adapter. The
+adapter feeds every finished response (with its real status code) into
+the detector; clients showing recon patterns get 429s.
+
 ```python
-# In the protection pipeline
-probe_score = probe_detector.get_threat_boost(client_id)
-ddos_score = ddos_detector.analyze(client_id, features)
+from fastapi import FastAPI
+from drogue.adapters.fastapi import DrogueLimiter
+from drogue.core.config import DrogueConfig
 
-# Combined threat score
-combined = ddos_score + probe_score
+config = DrogueConfig(
+    probes_enabled=True,
+    probes_retry_after=60.0,
+)
+limiter = DrogueLimiter(FastAPI(), config=config)  # auto-builds pipeline
+```
 
-if combined > 0.7:
-    # Tighten rate limits for this client
-    await ban_manager.record_violation(client_id)
+Manual wiring through your own pipeline:
+
+```python
+from drogue.protection import ProtectionPipeline, ProbeDetector
+
+pipeline = ProtectionPipeline(
+    probes=ProbeDetector(), probes_retry_after=60.0
+)
+
+result = await pipeline.check(key, context)  # 429 probe_detected if recon
+pipeline.record_response(key, path, status_code)  # after each response
 ```
 
 ## Statistics

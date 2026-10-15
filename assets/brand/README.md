@@ -1,9 +1,8 @@
 # drogue brand assets
 
-All artwork below was split out of the master brand board
-(`drogue_logos.png` at the repo root). White artwork is
-transparent-background; `-on-dark` files keep the board's dark
-background baked in.
+All artwork below was split out of the master brand board.
+White artwork is transparent-background; `-on-dark` files keep the
+board's dark (`#0B0F14`) background baked in.
 
 ## Logo
 

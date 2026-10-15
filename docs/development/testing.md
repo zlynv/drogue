@@ -6,28 +6,30 @@
 tests/
 ├── core/
 │   ├── test_algorithms.py      # Rate limit algorithm tests
-│   ├── test_config.py          # Configuration tests
-│   ├── test_storage.py         # Storage backend tests
+│   ├── test_errors.py          # Error type tests
+│   ├── test_identity.py        # Identity extraction tests
 │   ├── test_rules.py           # Rule parsing tests
-│   └── test_cost_resolver.py   # Cost resolver tests
+│   └── test_storage.py         # MemoryStorage tests
 ├── adapters/
+│   ├── conftest.py             # Django settings setup
 │   ├── test_fastapi.py         # FastAPI adapter tests
-│   ├── test_flask.py           # Flask adapter tests
 │   └── test_django.py          # Django adapter tests
+├── integration/
+│   ├── test_integration.py     # End-to-end FastAPI + Django tests
+│   ├── fastapi_app.py          # Test app fixture
+│   ├── django_settings.py      # Test settings fixture
+│   ├── django_urls.py          # Test URL fixture
+│   └── django_views.py         # Test views fixture
 ├── protection/
-│   ├── test_ban.py             # Auto-ban tests
-│   ├── test_ddos.py            # DDoS detection tests
-│   ├── test_trust.py           # Trust state tests
-│   ├── test_sentinel.py        # Sentinel model tests
-│   ├── test_probes.py          # Probe detection tests
-│   └── test_cidr.py            # CIDR filtering tests
-├── test_regressions.py         # Regression tests
-└── _integration_test/          # Integration tests
-    ├── run_all.py              # Test runner
-    ├── test_fastapi_integration.py
-    ├── test_django_integration.py
-    └── test_redis_integration.py
+│   └── test_protection.py      # DDoS, ban, circuit breaker, pipeline tests
+├── test_regressions.py         # Regression tests (one per past bug)
+└── test_thread_safety.py       # Concurrent-acquire tests per algorithm
 ```
+
+Flask has no dedicated adapter test file; it is covered through the
+regression tests. Redis/Mongo backends, GCRA/leaky-bucket algorithms,
+`RuleResolver`/`CostResolver`, and the standalone protection modules
+(sentinel, trust, probes, adaptive, randomizer) have no unit tests yet.
 
 ## Running Tests
 
@@ -79,7 +81,7 @@ import pytest
 async def test_token_bucket_acquire():
     storage = MemoryStorage()
     await storage.initialize()
-    algo = TokenBucketAlgorithm(storage, capacity=10, refill_rate=1.0)
+    algo = TokenBucketAlgorithm(storage, limit=10, window=60.0)
 
     result = await algo.acquire("key1")
 
@@ -125,7 +127,7 @@ async def test_token_bucket_no_leak():
     """Regression: Token bucket was leaking tokens due to fractional truncation."""
     storage = MemoryStorage()
     await storage.initialize()
-    algo = TokenBucketAlgorithm(storage, capacity=10, refill_rate=1.0)
+    algo = TokenBucketAlgorithm(storage, limit=10, window=60.0)
 
     # Drain tokens
     for _ in range(10):
@@ -306,11 +308,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: pip install -e ".[dev,all]"
+        run: pip install -e ".[dev,fastapi,flask,drf]" httpx
       - name: Run tests
-        run: pytest --cov=src/drogue
+        run: pytest tests/ -v --tb=short --cov=src/drogue --cov-report=xml
       - name: Run linter
-        run: ruff check src/ tests/
+        run: ruff check src/drogue/
 ```
 
 ## Debugging Tests

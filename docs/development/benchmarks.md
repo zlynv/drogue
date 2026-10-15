@@ -75,6 +75,11 @@ open http://localhost:8000/stats/html
 
 ## Results
 
+These numbers come from a separate run than the one recorded in
+`benchmarks/README.md` at the repo root: different durations and load
+profiles, so expect different absolute values. The throughput table
+below matches that run exactly.
+
 ### Function-Level (Windows, Python 3.13, MemoryStorage)
 
 | Algorithm | Mean (ms) | ops/sec | Min | Max |

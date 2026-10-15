@@ -22,37 +22,47 @@ prometheus_output = metrics.to_prometheus()  # Prometheus text format
 summary = metrics.get_summary()              # dict with all counts
 ```
 
+`get_summary()` returns `requests_allowed`, `requests_rejected`,
+`bans_total`, `bans_active`, `ddos_detections`, `circuit_trips`,
+`circuit_state`, `check_latency_avg`, `check_latency_count`.
+`to_prometheus()` emits `drogue_requests_total{status="allowed"|"rejected"}`,
+`drogue_bans_total`, `drogue_bans_active`, `drogue_ddos_detections_total`,
+`drogue_circuit_trips_total`, `drogue_check_latency_seconds_count/_sum`
+and per-route `drogue_route_requests_total{route,status}`. See
+[Metrics](../observability/metrics.md) for the full exposition.
+
 ## StructuredRateLimitLogger
 
 ```python
+import logging
 from drogue.observability.logging import StructuredRateLimitLogger
 
-logger = StructuredRateLimitLogger(
-    level="INFO",
-    json_format=True,
-    include_client_ip=True,
-    include_request_path=True,
-    include_rate_limit_info=True,
-)
+logger = StructuredRateLimitLogger(logger_name="drogue", level=logging.INFO)
+logger.log_allowed(key="192.168.1.1", route="/api/data", remaining=9, limit=10)
+logger.log_rejected(key="192.168.1.1", route="/api/data", retry_after=30, limit=10)
 ```
+
+Event names are `rate_limit_allowed`, `rate_limit_rejected`,
+`ban_issued`, `ban_expired`, `ddos_detected`, `circuit_breaker` and
+`error`. See [Logging](../observability/logging.md) for the field tables.
 
 ## DrogueTelemetry
 
 ```python
 from drogue.observability.opentelemetry import DrogueTelemetry
 
-telemetry = DrogueTelemetry(
-    service_name="my-api",
-    enable_metrics=True,
-    enable_tracing=True,
-)
+telemetry = DrogueTelemetry(service_name="my-api")
 
 # Traces
-with telemetry.start_span("rate_limit_check") as span:
-    span.set_attribute("client_ip", "192.168.1.1")
+with telemetry.trace_rate_limit_check(key="192.168.1.1", limit=10) as span:
+    ...
 
 # Metrics
-telemetry.record_request_count("allowed")
-telemetry.record_rate_limit_time(0.000043)
-telemetry.record_active_keys(150)
+telemetry.record_rate_limit_result(allowed=True, route="/api/data")
+telemetry.record_latency(0.000043, route="/api/data")
 ```
+
+Instruments are `drogue.rate_limit.requests`, `drogue.rate_limit.blocked`,
+`drogue.rate_limit.latency`, `drogue.ddos.detected`, `drogue.ban.issued`
+and `drogue.circuit_breaker.state_change`. See
+[OpenTelemetry](../observability/opentelemetry.md) for attributes.

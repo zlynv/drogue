@@ -119,17 +119,19 @@ trust = TrustManager(
 ## Integration example
 
 ```python
-from drogue.protection.trust import TrustManager
+from drogue.protection.trust import TrustManager, TrustLevel
 
 manager = TrustManager()
 
-# On each request
+# On each request: score 0.0 (clean) to 1.0 (malicious).
+# Below 0.2 promotes to TRUSTED, below 0.5 to STANDARD,
+# anything higher stays SUSPICIOUS and is never cached.
 def handle_request(fingerprint, success):
-    level = manager.update(fingerprint, score=-0.1 if success else 0.1)
+    level = manager.update(fingerprint, score=0.0 if success else 0.9)
 
     if level == TrustLevel.TRUSTED:
-        # Fast path: skip expensive checks
-        return fast_response()
+        # Reward: serve with a higher effective limit
+        return rewarded_response()
     elif level == TrustLevel.BANNED:
         # Block immediately
         return blocked_response()
@@ -137,3 +139,8 @@ def handle_request(fingerprint, success):
         # Standard path: full rate limiting
         return rate_limited_response()
 ```
+
+Prefer the built-in wiring: `DrogueConfig(trust_enabled=True,
+trust_success_threshold=100, trust_limit_multiplier=2.0)` promotes
+clean keys automatically and rewards them in the FastAPI adapter.
+See [Trust Model](../advanced/trust.md).

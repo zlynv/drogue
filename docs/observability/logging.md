@@ -3,43 +3,37 @@
 ## Setup
 
 ```python
+import logging
 from drogue.observability.logging import StructuredRateLimitLogger
 
 logger = StructuredRateLimitLogger(
-    level="INFO",
-    json_format=True,
-    include_client_ip=True,
-    include_request_path=True,
-    include_rate_limit_info=True,
+    logger_name="drogue",
+    level=logging.INFO,
 )
 ```
 
 ## Log events
 
-| Event | Level | When |
-|-------|-------|------|
-| `request_allowed` | DEBUG | Request passes rate limit |
-| `request_limited` | WARNING | Request is rate limited |
-| `ban_issued` | WARNING | Client is banned |
-| `ddos_detected` | WARNING | Anomaly detected |
-| `trust_transition` | INFO | Trust state changes |
-| `circuit_breaker_trip` | WARNING | Circuit opens |
+| Method | `event` value | Fields |
+|--------|---------------|--------|
+| `log_allowed(key, route, remaining, limit, latency_ms=None)` | `rate_limit_allowed` | `key, route, remaining, limit, latency_ms` |
+| `log_rejected(key, route, retry_after, limit, remaining=0)` | `rate_limit_rejected` | `key, route, retry_after, limit, remaining` |
+| `log_ban(key, level, expires_in=None, reason="rate_limit_violations")` | `ban_issued` | `key, level, expires_in, reason` |
+| `log_ban_expired(key, level)` | `ban_expired` | `key, level` |
+| `log_ddos(key, z_score, global_rate, client_rate)` | `ddos_detected` | `key, z_score, global_rate, client_rate` |
+| `log_circuit_break(state, failure_count=0, success_count=0)` | `circuit_breaker` | `state, failure_count, success_count` |
+| `log_error(message, error=None, **kwargs)` | `error` | `message, error_type, error_message` |
 
 ## Log format
 
+Each record is one JSON line written at the configured stdlib level:
+
 ```json
-{
-    "timestamp": "2026-07-28T22:30:00.000Z",
-    "level": "warning",
-    "event": "request_limited",
-    "client_ip": "192.168.1.1",
-    "request_path": "/api/data",
-    "rate_limit": "10/minute",
-    "remaining": 0,
-    "algorithm": "token_bucket",
-    "key": "192.168.1.1"
-}
+{"timestamp": 1785670200.0, "event": "rate_limit_rejected", "key": "192.168.1.1", "route": "/api/data", "retry_after": 30, "limit": 10, "remaining": 0}
 ```
+
+`timestamp` is epoch seconds (not ISO 8601). The stdlib log level lives
+on the `LogRecord`, not inside the JSON payload.
 
 ## Integration
 
@@ -47,6 +41,9 @@ logger = StructuredRateLimitLogger(
 from drogue.observability.logging import StructuredRateLimitLogger
 from drogue.core.config import DrogueConfig
 
-logger = StructuredRateLimitLogger(level="INFO")
-config = DrogueConfig(log_level="info")
+logger = StructuredRateLimitLogger()
+config = DrogueConfig(log_level="warning")
 ```
+
+Call the `log_*` methods yourself around limiter decisions; adapters do
+not emit these automatically (except FastAPI shadow-mode notices).

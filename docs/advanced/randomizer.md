@@ -28,6 +28,28 @@ effective_limit = randomizer.get_effective_limit("session_abc123", 100)
 randomizer.apply_jitter("session_abc123", response)
 ```
 
+## Automatic wiring (FastAPI)
+
+With `randomizer_enabled`, the adapter reads a session id from a
+request header and scales the effective limit by that session's
+stored multiplier. Requests without the header use the base limit.
+
+```python
+from fastapi import FastAPI
+from drogue.adapters.fastapi import DrogueLimiter
+from drogue.core.config import DrogueConfig
+
+config = DrogueConfig(
+    randomizer_enabled=True,
+    randomizer_session_header="x-session-id",
+)
+limiter = DrogueLimiter(FastAPI(), config=config)
+```
+
+Send the header from your frontend (any stable per-client value
+works); sessions expire after `session_ttl` and the table is capped
+at `max_sessions` with oldest-first eviction.
+
 ## Why It Works
 
 **User A sees:** rate limit = 95/min (randomized)
