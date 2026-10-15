@@ -8,6 +8,7 @@ from drogue.core.errors import (
     BanError,
     ConfigurationError,
     DrogueError,
+    HoneypotError,
     RateLimitExceeded,
     StorageError,
 )
@@ -47,6 +48,13 @@ class TestErrors:
         )
         assert exc.key == "192.168.1.1"
         assert exc.level == 3
+
+    def test_honeypot_error(self) -> None:
+        exc = HoneypotError(path="/trap", key="bot", response_code=404)
+        assert exc.path == "/trap"
+        assert exc.key == "bot"
+        assert exc.response_code == 404
+        assert isinstance(exc, DrogueError)
 
     def test_configuration_error(self) -> None:
         with pytest.raises(ConfigurationError):

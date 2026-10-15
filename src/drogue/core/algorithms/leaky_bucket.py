@@ -102,7 +102,7 @@ class LeakyBucketAlgorithm(Algorithm):
                         allowed=True,
                         remaining=self.limit - water,
                         limit=self.limit,
-                        reset_at=now + self._time_to_empty(water),
+                        reset_at=time.time() + self._time_to_empty(water),
                     )
                 # Another request initialized the bucket first; retry
                 continue

@@ -26,6 +26,7 @@ from drogue.core.errors import (
     BackendFailure,
     BanError,
     ConfigurationError,
+    HoneypotError,
     RateLimitExceeded,
     StorageError,
 )
@@ -52,6 +53,7 @@ __all__ = [
     "RateLimitExceeded",
     "BackendFailure",
     "BanError",
+    "HoneypotError",
     "ConfigurationError",
     "StorageError",
     # Rules

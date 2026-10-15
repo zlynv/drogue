@@ -5,6 +5,7 @@ to Prometheus, StatsD, or custom backends.
 """
 from __future__ import annotations
 
+import heapq
 import threading
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -140,10 +141,11 @@ class DrogueMetrics:
             all_routes[route] = all_routes.get(route, 0) + counter.get()
         for route, counter in self._route_rejected.items():
             all_routes[route] = all_routes.get(route, 0) + counter.get()
-        # Evict lowest-traffic routes
+        # Evict lowest-traffic routes (heap selection avoids a full sort)
         excess = total - self.max_routes
-        sorted_routes = sorted(all_routes.keys(), key=lambda r: all_routes[r])
-        for route in sorted_routes[:excess]:
+        for route in heapq.nsmallest(
+            excess, all_routes.keys(), key=lambda r: all_routes[r]
+        ):
             self._route_allowed.pop(route, None)
             self._route_rejected.pop(route, None)
 

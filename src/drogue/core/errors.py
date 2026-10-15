@@ -55,6 +55,22 @@ class BanError(DrogueError):
         self.level = level
 
 
+class HoneypotError(DrogueError):
+    """Raised when a request hits a registered honeypot path."""
+
+    def __init__(
+        self,
+        message: str = "Not found",
+        path: str | None = None,
+        key: str | None = None,
+        response_code: int = 404,
+    ) -> None:
+        super().__init__(message)
+        self.path = path
+        self.key = key
+        self.response_code = response_code
+
+
 class ConfigurationError(DrogueError):
     """Raised for invalid configuration."""
     pass

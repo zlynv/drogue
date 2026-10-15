@@ -61,6 +61,28 @@ class DrogueConfig:
     logging_enabled: bool = True
     log_level: str = "warning"
 
+    # Probe detection (reconnaissance early warning)
+    probes_enabled: bool = False
+    probes_retry_after: float = 60.0
+
+    # Trust fast-path (verified clients earn higher limits)
+    trust_enabled: bool = False
+    trust_success_threshold: int = 100
+    trust_limit_multiplier: float = 1.0
+
+    # Sentinel anomaly detection (streaming Half-Space Trees)
+    sentinel_enabled: bool = False
+    sentinel_sample_rate: float = 0.01
+    sentinel_block: bool = False
+
+    # Defense randomization (per-session limit jitter)
+    randomizer_enabled: bool = False
+    randomizer_session_header: str = "x-session-id"
+
+    # Honeypot trap paths
+    honeypot_paths: list[str] = field(default_factory=list)
+    honeypot_ban: bool = True
+
     def __post_init__(self) -> None:
         """Validate configuration."""
         if self.ban_threshold < 1:
@@ -69,3 +91,13 @@ class DrogueConfig:
             raise ValueError("ddos_z_score_threshold must be > 0")
         if self.circuit_failure_threshold < 1:
             raise ValueError("circuit_failure_threshold must be >= 1")
+        if self.probes_retry_after < 0:
+            raise ValueError("probes_retry_after must be >= 0")
+        if self.trust_success_threshold < 1:
+            raise ValueError("trust_success_threshold must be >= 1")
+        if self.trust_limit_multiplier < 1.0:
+            raise ValueError("trust_limit_multiplier must be >= 1.0")
+        if not 0.0 < self.sentinel_sample_rate <= 1.0:
+            raise ValueError("sentinel_sample_rate must be in (0, 1]")
+        if not self.randomizer_session_header:
+            raise ValueError("randomizer_session_header must not be empty")

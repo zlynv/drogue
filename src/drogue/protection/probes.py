@@ -14,6 +14,7 @@ Impact: 30-120 seconds of early warning before attack flood.
 """
 from __future__ import annotations
 
+import heapq
 import logging
 import time
 from collections import defaultdict, deque
@@ -99,11 +100,10 @@ class ProbeDetector:
         self._probing_clients: dict[str, ProbeSignal] = {}
         self._last_cleanup = time.monotonic()
 
-        # Statistics
+        # Statistics (clients_tracked is derived live in get_stats)
         self._stats = {
             "total_requests": 0,
             "probes_detected": 0,
-            "clients_tracked": 0,
         }
 
     def record(
@@ -277,13 +277,13 @@ class ProbeDetector:
         for cid in expired:
             del self._probing_clients[cid]
 
-        # Evict if over capacity
+        # Evict if over capacity (heap selection avoids a full sort)
         if len(self._client_events) > self.max_clients:
             excess = len(self._client_events) - self.max_clients
             # Remove clients with fewest events
-            sorted_clients = sorted(
+            for cid in heapq.nsmallest(
+                excess,
                 self._client_events.keys(),
                 key=lambda k: len(self._client_events[k]),
-            )
-            for cid in sorted_clients[:excess]:
+            ):
                 del self._client_events[cid]

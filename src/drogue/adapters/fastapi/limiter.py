@@ -14,7 +14,7 @@ from drogue.core.algorithms import (
     TokenBucketAlgorithm,
 )
 from drogue.core.config import DrogueConfig
-from drogue.core.errors import RateLimitExceeded
+from drogue.core.errors import HoneypotError, RateLimitExceeded
 from drogue.core.headers import build_429_response, inject_rate_limit_headers
 from drogue.core.identity import RemoteAddressExtractor
 from drogue.core.rules.resolver import CostResolver
@@ -80,7 +80,7 @@ class DrogueLimiter:
         self._route_rules: dict[str, list[RateLimitRule]] = {}
         self._initialized = False
         self._app: Any = None
-        self._pipeline = pipeline
+        self._pipeline: Any = None
 
         # Global rules (applied to all routes via middleware)
         self._global_rules: list[RateLimitRule] = list(rules or [])
@@ -110,6 +110,55 @@ class DrogueLimiter:
                 latency_threshold=self.config.adaptive_latency_threshold,
                 check_interval=self.config.adaptive_check_interval,
             )
+
+        # Detection components (probes, trust, sentinel, honeypots) live
+        # in the pipeline so there is exactly one owner per component.
+        # When the user did not pass a pipeline but enabled detection
+        # via config, build one automatically.
+        if pipeline is None and (
+            self.config.probes_enabled
+            or self.config.trust_enabled
+            or self.config.sentinel_enabled
+            or self.config.honeypot_paths
+        ):
+            from drogue.defense.randomizer import HoneypotManager
+            from drogue.protection.pipeline import ProtectionPipeline
+            from drogue.protection.probes import ProbeDetector
+            from drogue.protection.sentinel import SentinelDetector
+            from drogue.protection.trust import TrustManager
+
+            auto_honeypots = None
+            if self.config.honeypot_paths:
+                auto_honeypots = HoneypotManager()
+                for honeypot_path in self.config.honeypot_paths:
+                    auto_honeypots.register(
+                        honeypot_path, auto_ban=self.config.honeypot_ban
+                    )
+            pipeline = ProtectionPipeline(
+                probes=ProbeDetector() if self.config.probes_enabled else None,
+                trust=TrustManager() if self.config.trust_enabled else None,
+                sentinel=SentinelDetector() if self.config.sentinel_enabled else None,
+                honeypots=auto_honeypots,
+                probes_retry_after=self.config.probes_retry_after,
+                trust_success_threshold=self.config.trust_success_threshold,
+                sentinel_sample_rate=self.config.sentinel_sample_rate,
+                sentinel_block=self.config.sentinel_block,
+            )
+        self._pipeline = pipeline
+
+        # Shared aliases into the pipeline's components (None when the
+        # pipeline was user-supplied without them or absent entirely).
+        self._trust = getattr(pipeline, "trust", None) if pipeline else None
+        self._honeypots = getattr(pipeline, "honeypots", None) if pipeline else None
+
+        # Defense randomization is a limit modifier, not detection, so
+        # the limiter owns it directly.
+        self._randomizer = None
+        if self.config.randomizer_enabled:
+            from drogue.defense.randomizer import DefenseRandomizer
+            self._randomizer = DefenseRandomizer()
+
+        self._pipeline = pipeline
 
         # Shadow mode tracking
         self._shadow_stats: dict[str, int] = {}
@@ -151,6 +200,13 @@ class DrogueLimiter:
                 headers=headers,
             )
 
+        @app.exception_handler(HoneypotError)
+        async def honeypot_handler(request: Any, exc: HoneypotError) -> JSONResponse:
+            return JSONResponse(
+                {"error": "Not found"},
+                status_code=exc.response_code,
+            )
+
         # Pure ASGI middleware - no BaseHTTPMiddleware overhead, full control
         from starlette.datastructures import MutableHeaders
         from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -173,14 +229,22 @@ class DrogueLimiter:
                 try:
                     context = _request_to_context(request)
                     key = await limiter.key_func.extract(context)
+                    client_ip = context.get("client", {}).get("host", key)
 
-                    # Pipeline check (ban + DDoS + circuit breaker)
+                    # Pipeline check (honeypot, ban, probes, DDoS,
+                    # sentinel, circuit breaker)
                     if limiter._pipeline is not None:
                         result = await limiter._pipeline.check(
                             key=key,
                             context=context,
                         )
                         if not result.allowed:
+                            limiter._pipeline.record_probe(
+                                client_ip,
+                                context.get("path", ""),
+                                result.status_code,
+                                context.get("method", "GET"),
+                            )
                             import json as _json
                             body = _json.dumps({
                                 "error": result.reason,
@@ -203,9 +267,28 @@ class DrogueLimiter:
                     # Check global rules
                     global_result = None
                     for rule in limiter._global_rules:
-                        global_result = await limiter._check(
-                            key, rule, context, route_key="__global__"
-                        )
+                        try:
+                            global_result = await limiter._check(
+                                key, rule, context, route_key="__global__"
+                            )
+                        except HoneypotError as exc:
+                            import json as _honeypot_json
+                            honeypot_body = _honeypot_json.dumps({
+                                "error": "Not found",
+                            }).encode()
+                            await send({
+                                "type": "http.response.start",
+                                "status": exc.response_code,
+                                "headers": [
+                                    [b"content-type", b"application/json"],
+                                    [b"content-length", str(len(honeypot_body)).encode()],
+                                ],
+                            })
+                            await send({
+                                "type": "http.response.body",
+                                "body": honeypot_body,
+                            })
+                            return
                         if not global_result.allowed:
                             response_body = build_429_response(global_result)
                             import json
@@ -275,6 +358,22 @@ class DrogueLimiter:
                                 nonlocal_response_headers, result_to_use
                             )
 
+                        # Feed the finished response back: probe
+                        # detection sees real error rates, and trust /
+                        # circuit breaker learn from successes. Denials
+                        # already recorded their violation at decision
+                        # time, so only successes are recorded here.
+                        if limiter._pipeline is not None:
+                            status = message["status"]
+                            limiter._pipeline.record_probe(
+                                client_ip,
+                                context.get("path", ""),
+                                status,
+                                context.get("method", "GET"),
+                            )
+                            if 200 <= status < 400:
+                                limiter._pipeline.record_success(key)
+
                     await send(message)
 
                 await self.app(scope, receive, send_wrapper)
@@ -304,6 +403,24 @@ class DrogueLimiter:
         route_key: str = "",
     ) -> AcquireResult:
         """Check a single rate limit rule."""
+        # Honeypot trap paths deny before anything else (bots only)
+        if self._honeypots and context:
+            honeypot_path = context.get("path", "") or ""
+            if honeypot_path and self._honeypots.is_honeypot(honeypot_path):
+                honeypot_config = self._honeypots.record_hit(honeypot_path, key)
+                if (
+                    honeypot_config
+                    and honeypot_config.get("auto_ban", True)
+                    and self._pipeline is not None
+                    and getattr(self._pipeline, "ban", None) is not None
+                ):
+                    self._pipeline.record_violation(key)
+                raise HoneypotError(
+                    path=honeypot_path,
+                    key=key,
+                    response_code=int((honeypot_config or {}).get("response_code", 404)),
+                )
+
         # Check CIDR filter
         if self._cidr_filter and context:
             client_ip = context.get("client", {}).get("host", "")
@@ -318,10 +435,31 @@ class DrogueLimiter:
                     headers={},
                 )
 
-        # Get effective limit (adaptive)
+        # Get effective limit (adaptive, trust reward, session jitter)
         effective_limit = rule.limit
         if self._adaptive:
             effective_limit = self._adaptive.get_effective_limit(rule.limit)
+        if (
+            self._trust is not None
+            and self.config.trust_limit_multiplier != 1.0
+            and self._trust.is_trusted(key)
+        ):
+            effective_limit = max(
+                1, int(effective_limit * self.config.trust_limit_multiplier)
+            )
+        if self._randomizer is not None and context:
+            session_id = _get_session_id(
+                context, self.config.randomizer_session_header
+            )
+            if session_id:
+                session_params = self._randomizer.get_session_params(session_id)
+                effective_limit = max(
+                    1,
+                    int(
+                        effective_limit
+                        * session_params.rate_limit_multiplier
+                    ),
+                )
 
         # Create modified rule with effective limit
         if effective_limit != rule.limit:
@@ -530,6 +668,22 @@ class DrogueLimiter:
             return self._adaptive.get_metrics()
         return None
 
+    def get_pipeline(self) -> Any | None:
+        """Get the protection pipeline (auto-built or user-supplied)."""
+        return self._pipeline
+
+    def get_trust_manager(self) -> Any | None:
+        """Get the trust manager shared with the pipeline, if any."""
+        return self._trust
+
+    def get_honeypots(self) -> Any | None:
+        """Get the honeypot manager shared with the pipeline, if any."""
+        return self._honeypots
+
+    def get_randomizer(self) -> Any | None:
+        """Get the defense randomizer, if enabled."""
+        return self._randomizer
+
     def limit_ws(
         self,
         rule_str: str,
@@ -557,6 +711,32 @@ class DrogueLimiter:
             return wrapper
 
         return decorator
+
+
+def _get_session_id(context: dict[str, Any] | None, header_name: str) -> str | None:
+    """Extract a defense-randomizer session id from request headers.
+
+    Header lookup is case-insensitive and tolerates the bytes keys
+    some frameworks produce.
+    """
+    headers = (context or {}).get("headers", {}) or {}
+    wanted = header_name.lower()
+    for name, value in headers.items():
+        if isinstance(name, bytes):
+            try:
+                name = name.decode("latin-1")
+            except Exception:
+                continue
+        if str(name).lower() != wanted:
+            continue
+        if isinstance(value, bytes):
+            try:
+                value = value.decode("latin-1")
+            except Exception:
+                continue
+        session_id = str(value).strip()
+        return session_id or None
+    return None
 
 
 def _find_request(args: tuple, kwargs: dict) -> Any:

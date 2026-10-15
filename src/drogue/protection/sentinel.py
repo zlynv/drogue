@@ -284,13 +284,20 @@ class SentinelDetector:
             True if the features are anomalous.
         """
         with self._lock:
+            has_model = bool(self._tree._trees)
             score = self._tree.score(features)
             self._tree.update(features)
 
             # Threshold from history BEFORE appending the current score
             threshold = self._compute_threshold()
 
-            self._scores.append(score)
+            # Scores produced with no trees yet are the 0.0 neutral
+            # placeholder, not measurements. Real scores are negative
+            # average depths, so a window full of placeholder zeros
+            # would pin the threshold at 0.0 and blind the detector
+            # until they age out. Only learn from real scores.
+            if has_model:
+                self._scores.append(score)
             self._total_count += 1
 
             is_anomaly = score > threshold

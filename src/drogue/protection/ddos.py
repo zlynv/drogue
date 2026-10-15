@@ -5,6 +5,7 @@ that indicate DDoS attacks or scanning activity.
 """
 from __future__ import annotations
 
+import heapq
 import math
 import time
 from collections import deque
@@ -386,21 +387,21 @@ class DDoSDetector:
         for key in empty_ws:
             del self._ws_client_buckets[key]
 
-        # Hard cap eviction
+        # Hard cap eviction (heap selection avoids a full sort)
         if len(self._client_buckets) > self.max_clients:
             excess = len(self._client_buckets) - self.max_clients
-            sorted_keys = sorted(
+            for key in heapq.nsmallest(
+                excess,
                 self._client_buckets.keys(),
                 key=lambda k: len(self._client_buckets[k]),
-            )
-            for key in sorted_keys[:excess]:
+            ):
                 del self._client_buckets[key]
 
         if len(self._ws_client_buckets) > self.max_clients:
             excess = len(self._ws_client_buckets) - self.max_clients
-            sorted_keys = sorted(
+            for key in heapq.nsmallest(
+                excess,
                 self._ws_client_buckets.keys(),
                 key=lambda k: len(self._ws_client_buckets[k]),
-            )
-            for key in sorted_keys[:excess]:
+            ):
                 del self._ws_client_buckets[key]

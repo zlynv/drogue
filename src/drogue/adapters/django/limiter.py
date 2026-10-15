@@ -60,9 +60,11 @@ class DrogueRateLimiter:
         DROGUE_LIMITER = DrogueRateLimiter(default_limits=["100/minute"])
 
     Usage (in views.py):
-        from drogue.django import ratelimit
+        from drogue.adapters.django import DrogueRateLimiter
 
-        @ratelimit("100/minute")
+        limiter = DrogueRateLimiter(default_limits=["100/minute"])
+
+        @limiter.limit("100/minute")
         def my_view(request):
             return JsonResponse({"data": "value"})
     """
@@ -194,7 +196,7 @@ class DrogueMiddleware(MiddlewareMixin):
     Add to MIDDLEWARE in settings.py:
         MIDDLEWARE = [
             ...
-            'drogue.django.middleware.DrogueMiddleware',
+            'drogue.adapters.django.limiter.DrogueMiddleware',
         ]
     """
 

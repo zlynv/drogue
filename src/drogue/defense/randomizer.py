@@ -13,6 +13,7 @@ works when the limit varies.
 """
 from __future__ import annotations
 
+import heapq
 import logging
 import random
 import threading
@@ -211,15 +212,14 @@ class DefenseRandomizer:
         if not self._sessions:
             return
 
-        # Sort by creation time
-        sorted_sessions = sorted(
+        # Remove oldest 10% (heap selection avoids a full sort)
+        count = max(1, len(self._sessions) // 10)
+        oldest = heapq.nsmallest(
+            count,
             self._sessions.items(),
-            key=lambda x: x[1].created_at,
+            key=lambda item: item[1].created_at,
         )
-
-        # Remove oldest 10%
-        count = max(1, len(sorted_sessions) // 10)
-        for session_id, _ in sorted_sessions[:count]:
+        for session_id, _ in oldest:
             del self._sessions[session_id]
 
 
@@ -242,9 +242,15 @@ class HoneypotManager:
             ban_manager.record_violation(client_id)
     """
 
-    def __init__(self):
+    def __init__(self, hit_ttl: float = 86400.0):
+        """Initialize the honeypot manager.
+
+        Args:
+            hit_ttl: Seconds to retain per-client hit timestamps.
+        """
         self._honeypots: dict[str, dict[str, Any]] = {}
         self._hits: dict[str, list[float]] = {}
+        self.hit_ttl = hit_ttl
 
     def register(
         self,
@@ -285,22 +291,38 @@ class HoneypotManager:
         if config is None:
             return None
 
-        # Record hit
-        if client_id not in self._hits:
-            self._hits[client_id] = []
-        self._hits[client_id].append(time.monotonic())
+        # Record hit (pruning expired timestamps first)
+        now = time.monotonic()
+        hits = self._hits.get(client_id)
+        if hits is None:
+            hits = self._hits[client_id] = []
+        else:
+            cutoff = now - self.hit_ttl
+            while hits and hits[0] < cutoff:
+                hits.pop(0)
+        hits.append(now)
 
         logger.info("honeypot_hit path=%s client=%s", path, client_id)
 
         return config
 
     def get_hits(self, client_id: str) -> list[float]:
-        """Get all honeypot hits for a client."""
-        return self._hits.get(client_id, [])
+        """Get all honeypot hits for a client (within the hit TTL)."""
+        hits = self._hits.get(client_id, [])
+        if not hits:
+            return []
+        cutoff = time.monotonic() - self.hit_ttl
+        live = [t for t in hits if t >= cutoff]
+        if len(live) != len(hits):
+            if live:
+                self._hits[client_id] = live
+            else:
+                del self._hits[client_id]
+        return live
 
     def is_bot(self, client_id: str) -> bool:
-        """Check if a client has hit any honeypot."""
-        return client_id in self._hits
+        """Check if a client has hit any honeypot (within the hit TTL)."""
+        return bool(self.get_hits(client_id))
 
     def clear_client(self, client_id: str) -> bool:
         """Clear hits for a client."""
