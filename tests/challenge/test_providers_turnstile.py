@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from urllib.parse import parse_qs
 
 import httpx
@@ -16,7 +16,7 @@ from drogue.challenge.base import (
 )
 from drogue.challenge.providers.turnstile import TurnstileProvider
 
-_EXPECTED_TS = datetime(2026, 10, 17, 10, 0, tzinfo=UTC).timestamp()
+_EXPECTED_TS = datetime(2026, 10, 17, 10, 0, tzinfo=timezone.utc).timestamp()
 
 
 def transport(responses: list[httpx.Response]) -> httpx.MockTransport:
