@@ -88,6 +88,32 @@ async def get_data(): ...
 stats = limiter.get_shadow_stats()
 ```
 
+## Challenges (CAPTCHA escalation)
+
+Serve a challenge widget on page denials instead of a bare 429. Requires
+`challenge_enabled` in the config plus a signing key and Turnstile keys
+(either in the config or via `challenge_provider=`):
+
+```python
+import os
+from drogue.core.config import DrogueConfig
+
+config = DrogueConfig(
+    challenge_enabled=True,
+    challenge_signing_key=os.environ["DROGUE_CHALLENGE_SIGNING_KEY"],
+    challenge_site_key=os.environ["TURNSTILE_SITE_KEY"],
+    challenge_secret=os.environ["TURNSTILE_SECRET"],
+)
+
+limiter = DrogueLimiter(app, storage=storage, config=config)
+```
+
+`GET /drogue/challenge` renders the interstitial, `POST /drogue/verify`
+checks the answer and sets the signed `drogue_pass` cookie on success.
+Only GET requests accepting `text/html` see the interstitial; API
+clients keep the normal JSON denial. Full details in
+[Challenges (CAPTCHA)](../protection/challenges.md).
+
 ## Rate limit headers
 
 | Header | Description |

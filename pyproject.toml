@@ -39,8 +39,9 @@ drf = ["django>=4.2", "djangorestframework>=3.14"]
 prometheus = ["prometheus-client>=0.17.0"]
 opentelemetry = ["opentelemetry-api>=1.0.0", "opentelemetry-sdk>=1.0.0"]
 adaptive = ["psutil>=5.0.0"]
+turnstile = ["httpx>=0.24.0"]
 all = [
-    "drogue[redis,mongodb,fastapi,django,flask,drf,prometheus,opentelemetry,adaptive]",
+    "drogue[redis,mongodb,fastapi,django,flask,drf,prometheus,opentelemetry,adaptive,turnstile]",
 ]
 dev = [
     "pytest>=7.0",

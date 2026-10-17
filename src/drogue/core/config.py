@@ -83,6 +83,23 @@ class DrogueConfig:
     honeypot_paths: list[str] = field(default_factory=list)
     honeypot_ban: bool = True
 
+    # Challenge escalation (CAPTCHA/PoW interstitials for page traffic)
+    challenge_enabled: bool = False
+    challenge_signing_key: str = ""
+    challenge_cookie_name: str = "drogue_pass"
+    challenge_cookie_ttl: float = 86400.0
+    challenge_token_ttl: float = 300.0
+    challenge_failure_mode: str = "block"
+    challenge_failure_threshold: int = 3
+    challenge_rate_limit: int = 20
+    challenge_rate_window: float = 60.0
+    challenge_verify_url: str = "/drogue/verify"
+    # Provider credentials (for config-driven provider auto-build).
+    # Provide these from the environment, never from committed code.
+    challenge_site_key: str = ""
+    challenge_secret: str = ""
+    challenge_action: str | None = None
+
     def __post_init__(self) -> None:
         """Validate configuration."""
         if self.ban_threshold < 1:
@@ -101,3 +118,21 @@ class DrogueConfig:
             raise ValueError("sentinel_sample_rate must be in (0, 1]")
         if not self.randomizer_session_header:
             raise ValueError("randomizer_session_header must not be empty")
+        if self.challenge_failure_mode not in ("block", "allow"):
+            raise ValueError(
+                "challenge_failure_mode must be 'block' or 'allow'"
+            )
+        if self.challenge_cookie_ttl <= 0:
+            raise ValueError("challenge_cookie_ttl must be > 0")
+        if self.challenge_token_ttl <= 0:
+            raise ValueError("challenge_token_ttl must be > 0")
+        if self.challenge_failure_threshold < 1:
+            raise ValueError("challenge_failure_threshold must be >= 1")
+        if self.challenge_rate_limit < 1:
+            raise ValueError("challenge_rate_limit must be >= 1")
+        if self.challenge_enabled and len(self.challenge_signing_key) < 32:
+            raise ValueError(
+                "challenge_signing_key must be at least 32 characters when"
+                " the challenge is enabled; use a dedicated secret"
+                " (openssl rand -hex 32)"
+            )

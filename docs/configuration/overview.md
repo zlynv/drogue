@@ -198,6 +198,26 @@ state across processes/hosts, and use its `*_async` methods.
 | `honeypot_paths` | `[]` | Trap paths (exact match); hits get 404 |
 | `honeypot_ban` | `True` | Record a ban violation on trap hits |
 
+### Challenges (CAPTCHA)
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `challenge_enabled` | `False` | Serve challenge interstitials on HTML page denials |
+| `challenge_signing_key` | `""` | HMAC seed for pass cookies, at least 32 chars |
+| `challenge_cookie_name` | `"drogue_pass"` | Signed pass cookie name |
+| `challenge_cookie_ttl` | `86400.0` | Pass cookie lifetime, seconds |
+| `challenge_token_ttl` | `300.0` | Provider token single-use claim TTL |
+| `challenge_failure_mode` | `"block"` | `block` = 503 on provider outage, `allow` = degrade to normal denial |
+| `challenge_failure_threshold` | `3` | Failed verifications before ban escalation |
+| `challenge_rate_limit` | `20` | Verify attempts per client per window |
+| `challenge_rate_window` | `60.0` | Verify rate-limit window, seconds |
+| `challenge_verify_url` | `"/drogue/verify"` | Verify endpoint path |
+| `challenge_site_key` | `""` | Turnstile site key |
+| `challenge_secret` | `""` | Turnstile secret key |
+| `challenge_action` | `None` | Optional Turnstile action requirement |
+
+See [Challenges (CAPTCHA)](../protection/challenges.md) for the full flow and security model.
+
 ### Observability
 
 | Setting | Default | Description |

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Challenges (CAPTCHA escalation) for page traffic: Turnstile provider, pluggable `ChallengeProvider` protocol, signed pass cookies, single-use token claims, verify-endpoint rate limiting, failure escalation into auto-ban and trust (`docs/protection/challenges.md`)
+- New optional dependency extra: `pip install drogue[turnstile]` (httpx)
+
 ## 0.2.0
 
 - Added GCRA and Leaky Bucket algorithms (5 total)

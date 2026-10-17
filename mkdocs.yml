@@ -101,6 +101,7 @@ nav:
     - DDoS Detection: protection/ddos.md
     - Progressive Auto-Ban: protection/ban.md
     - Trust State Machine: protection/trust.md
+    - Challenges (CAPTCHA): protection/challenges.md
     - Circuit Breaker: protection/circuit.md
     - Probe Detection: protection/probes.md
     - CIDR Filtering: protection/cidr.md

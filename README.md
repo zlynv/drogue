@@ -85,6 +85,7 @@ No `request: Request` parameter. Rate limit headers are injected automatically. 
 | **DDoS Detection** | Z-score anomaly detection, streaming Sentinel Model, probe pattern detection |
 | **Auto-Ban** | Progressive ban with doubling duration (5m to 160m), configurable thresholds |
 | **Trust System** | State machine (Unknown/Normal/Trusted/Distrusted/Banned), 9x throughput for verified users |
+| **Challenges** | CAPTCHA escalation for page traffic (Turnstile), signed pass cookies, replay-proof tokens |
 | **Circuit Breaker** | Closed/Open/HalfOpen states, automatic recovery |
 | **Adaptive Limits** | CPU and memory-based scaling, reduces limits under system load |
 | **Defense Randomization** | Per-session variance, honeypot paths, anti-fingerprinting |

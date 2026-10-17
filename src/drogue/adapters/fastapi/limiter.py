@@ -14,7 +14,11 @@ from drogue.core.algorithms import (
     TokenBucketAlgorithm,
 )
 from drogue.core.config import DrogueConfig
-from drogue.core.errors import HoneypotError, RateLimitExceeded
+from drogue.core.errors import (
+    ConfigurationError,
+    HoneypotError,
+    RateLimitExceeded,
+)
 from drogue.core.headers import build_429_response, inject_rate_limit_headers
 from drogue.core.identity import RemoteAddressExtractor
 from drogue.core.rules.resolver import CostResolver
@@ -25,6 +29,19 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from drogue.core.abstracts import AcquireResult, Algorithm, IdentityExtractor, Storage
+
+try:
+    from starlette.datastructures import MutableHeaders  # noqa: F401
+    from starlette.requests import Request
+    from starlette.responses import (
+        HTMLResponse,
+        JSONResponse,
+        RedirectResponse,
+    )
+    from starlette.types import ASGIApp, Message, Receive, Scope, Send  # noqa: F401
+except ImportError:  # pragma: no cover - fastapi optional extra
+    Request = None  # type: ignore[assignment, misc]
+    HTMLResponse = JSONResponse = RedirectResponse = None  # type: ignore[assignment, misc]
 
 logger = logging.getLogger("drogue.fastapi")
 
@@ -69,6 +86,7 @@ class DrogueLimiter:
         config: DrogueConfig | None = None,
         default_limits: list[str] | None = None,
         pipeline: Any | None = None,
+        challenge_provider: Any | None = None,
     ) -> None:
         self.config = config or DrogueConfig()
         self.storage = storage if storage is not None else MemoryStorage()
@@ -158,6 +176,45 @@ class DrogueLimiter:
             from drogue.defense.randomizer import DefenseRandomizer
             self._randomizer = DefenseRandomizer()
 
+        # Challenge escalation: when enabled, page denials become a
+        # CAPTCHA/PoW interstitial instead of a bare 429. Managed here
+        # (not in the pipeline) because it wraps the limiter's denial
+        # path rather than participating in route checks.
+        self._challenge_manager: Any = None
+        if self.config.challenge_enabled or challenge_provider is not None:
+            from drogue.challenge import ChallengeManager, TurnstileProvider
+
+            provider = challenge_provider
+            if provider is None:
+                if not (
+                    self.config.challenge_site_key
+                    and self.config.challenge_secret
+                ):
+                    raise ConfigurationError(
+                        "challenge requires either challenge_provider= or"
+                        " config.challenge_site_key + config.challenge_secret"
+                    )
+                provider = TurnstileProvider(
+                    site_key=self.config.challenge_site_key,
+                    secret=self.config.challenge_secret,
+                    action=self.config.challenge_action,
+                )
+            self._challenge_manager = ChallengeManager(
+                provider=provider,
+                storage=self.storage,
+                signing_key=self.config.challenge_signing_key,
+                cookie_name=self.config.challenge_cookie_name,
+                cookie_ttl=self.config.challenge_cookie_ttl,
+                token_ttl=self.config.challenge_token_ttl,
+                failure_mode=self.config.challenge_failure_mode,
+                failure_threshold=self.config.challenge_failure_threshold,
+                challenge_rate_limit=self.config.challenge_rate_limit,
+                challenge_rate_window=self.config.challenge_rate_window,
+                verify_url=self.config.challenge_verify_url,
+                ban=(getattr(pipeline, "ban", None) if pipeline else None),
+                trust=(getattr(pipeline, "trust", None) if pipeline else None),
+            )
+
         self._pipeline = pipeline
 
         # Shadow mode tracking
@@ -169,8 +226,7 @@ class DrogueLimiter:
     def init_app(self, app: Any) -> None:
         """Register middleware and exception handler with a FastAPI app."""
         try:
-            from starlette.requests import Request
-            from starlette.responses import JSONResponse
+            import starlette.responses  # noqa: F401
         except ImportError as exc:
             raise ImportError(
                 "FastAPI/starlette is required for DrogueLimiter. "
@@ -181,7 +237,7 @@ class DrogueLimiter:
         limiter = self
 
         @app.exception_handler(RateLimitExceeded)
-        async def rate_limit_handler(request: Any, exc: RateLimitExceeded) -> JSONResponse:
+        async def rate_limit_handler(request: Any, exc: RateLimitExceeded) -> Any:
             headers: dict[str, str] = {}
             if exc.retry_after is not None:
                 headers["Retry-After"] = str(int(exc.retry_after))
@@ -189,6 +245,26 @@ class DrogueLimiter:
                 headers["X-RateLimit-Limit"] = str(exc.limit)
             if exc.remaining is not None:
                 headers["X-RateLimit-Remaining"] = str(max(0, exc.remaining))
+
+            # Challenge escalation: for page traffic without a valid
+            # pass cookie, deny with the interstitial instead of JSON.
+            manager = limiter._challenge_manager
+            if manager is not None:
+                client_ip = (
+                    request.client.host if request.client else "127.0.0.1"
+                )
+                if (
+                    not manager.has_valid_pass(request.cookies, client_ip)
+                    and manager.should_serve(
+                        request.method, request.headers.get("accept")
+                    )
+                ):
+                    return HTMLResponse(
+                        manager.page_html(request.url.path),
+                        status_code=429,
+                        headers=headers,
+                    )
+
             body: dict[str, Any] = {"error": "Rate limit exceeded"}
             if exc.retry_after is not None:
                 body["retry_after"] = exc.retry_after
@@ -207,9 +283,87 @@ class DrogueLimiter:
                 status_code=exc.response_code,
             )
 
-        # Pure ASGI middleware - no BaseHTTPMiddleware overhead, full control
-        from starlette.datastructures import MutableHeaders
-        from starlette.types import ASGIApp, Message, Receive, Scope, Send
+        manager = limiter._challenge_manager
+
+        async def _challenge_form(request: Request) -> dict[str, str]:
+            """Parse a challenge-verify form without hard deps.
+
+            Browsers submit plain urlencoded bodies; multipart only in
+            exotic setups, where python-multipart is used if installed.
+            """
+            content_type = request.headers.get("content-type", "")
+            if "multipart/form-data" in content_type:
+                try:
+                    return dict(await request.form())  # type: ignore[no-any-return]
+                except AssertionError:
+                    pass
+            from urllib.parse import parse_qs
+
+            body = (await request.body()).decode("utf-8", "replace")
+            return {k: v[0] for k, v in parse_qs(body).items()}
+
+        if manager is not None:
+
+            @app.post(manager.verify_url)
+            async def challenge_verify(request: Request) -> Any:
+                """Verify a challenge token, then set the pass cookie."""
+                client_ip = (
+                    request.client.host if request.client else "127.0.0.1"
+                )
+                form = await _challenge_form(request)
+                next_url = manager.sanitize_next(str(form.get("next", "/")))
+                token = str(form.get(manager.provider.field_name, ""))
+
+                if not await manager.allow_verify_request(client_ip):
+                    return JSONResponse(
+                        {"error": "Too many attempts"},
+                        status_code=429,
+                    )
+
+                if manager.has_valid_pass(request.cookies, client_ip):
+                    return RedirectResponse(next_url, status_code=303)
+
+                from drogue.challenge.base import (
+                    ChallengeUnavailableError,
+                    ChallengeVerificationError,
+                )
+
+                try:
+                    verified = await manager.verify(token, client_ip, client_ip)
+                except ChallengeUnavailableError:
+                    # Undecided: either blocked or fail-through per
+                    # failure_mode; verify() handled the choice.
+                    manager_ok = manager.failure_mode == "allow"
+                    if not manager_ok:
+                        return HTMLResponse(
+                            manager.page_html(next_url),
+                            status_code=503,
+                        )
+                except ChallengeVerificationError:
+                    manager_ok = False
+                else:
+                    manager_ok = verified
+
+                response = RedirectResponse(next_url, status_code=303)
+                if manager_ok:
+                    response.set_cookie(
+                        manager.cookie_name,
+                        manager.issue_pass_cookie(client_ip),
+                        max_age=int(manager.cookie_ttl),
+                        httponly=True,
+                        samesite="lax",
+                    )
+                else:
+                    return HTMLResponse(
+                        manager.page_html(next_url),
+                        status_code=429,
+                    )
+                return response
+
+            @app.get(manager.verify_url.rsplit("/", 1)[0] + "/challenge")
+            async def challenge_page() -> HTMLResponse:
+                """Manual entry point for testing/embedding checks."""
+                return HTMLResponse(manager.page_html("/"))
 
         class DrogueASGIMiddleware:
             """ASGI middleware that enforces global rate limits and injects headers."""
@@ -290,6 +444,41 @@ class DrogueLimiter:
                             })
                             return
                         if not global_result.allowed:
+                            # Challenge escalation for page traffic
+                            # without a valid pass cookie: serve the
+                            # interstitial instead of the JSON body.
+                            if (
+                                manager is not None
+                                and manager.should_serve(
+                                    request.method,
+                                    request.headers.get("accept"),
+                                )
+                                and not manager.has_valid_pass(
+                                    request.cookies,
+                                    request.client.host
+                                    if request.client
+                                    else "127.0.0.1",
+                                )
+                            ):
+                                import json as _json
+
+                                page = manager.page_html(
+                                    request.url.path
+                                ).encode()
+                                await send({
+                                    "type": "http.response.start",
+                                    "status": 429,
+                                    "headers": [
+                                        [b"content-type", b"text/html; charset=utf-8"],
+                                        [b"content-length", str(len(page)).encode()],
+                                    ],
+                                })
+                                await send({
+                                    "type": "http.response.body",
+                                    "body": page,
+                                })
+                                return
+
                             response_body = build_429_response(global_result)
                             import json
                             body = json.dumps(response_body).encode()
@@ -683,6 +872,10 @@ class DrogueLimiter:
     def get_randomizer(self) -> Any | None:
         """Get the defense randomizer, if enabled."""
         return self._randomizer
+
+    def get_challenge_manager(self) -> Any | None:
+        """Get the challenge manager, if challenge escalation is enabled."""
+        return self._challenge_manager
 
     def limit_ws(
         self,
