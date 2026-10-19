@@ -4,6 +4,7 @@ from __future__ import annotations
 import pytest
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 from drogue.adapters.fastapi import DrogueLimiter
 from drogue.core.rules.rule import AlgorithmType
@@ -295,3 +296,59 @@ class TestProtectionPipeline:
         assert client.get("/no-pipeline").status_code == 200
         assert client.get("/no-pipeline").status_code == 200
         assert client.get("/no-pipeline").status_code == 429
+
+
+
+
+
+class TestRequestParameterForwarding:
+    """Routes that declare `request: Request` must receive it (regression:
+    the wrapper used to strip the injected request before calling the
+    endpoint, which 500'd every route that declared it)."""
+
+    def test_endpoint_with_request_param_works(
+        self, app: FastAPI, storage: MemoryStorage
+    ) -> None:
+        limiter = DrogueLimiter(app, storage=storage)
+
+        @app.get("/with-request")
+        @limiter.limit("5/minute")
+        async def route(request: Request):
+            return {"client": request.client.host}
+
+        client = TestClient(app)
+        r = client.get("/with-request")
+        assert r.status_code == 200
+        assert "client" in r.json()
+
+    def test_endpoint_without_request_param_works(
+        self, app: FastAPI, storage: MemoryStorage
+    ) -> None:
+        limiter = DrogueLimiter(app, storage=storage)
+
+        @app.get("/without-request")
+        @limiter.limit("5/minute")
+        async def route():
+            return {"ok": True}
+
+        client = TestClient(app)
+        assert client.get("/without-request").status_code == 200
+
+    def test_stacked_limits_each_checked_once(
+        self, app: FastAPI, storage: MemoryStorage
+    ) -> None:
+        """Regression: stacked @limit decorators used to re-check every
+        prior rule at each layer, halving the effective quota."""
+        limiter = DrogueLimiter(app, storage=storage)
+
+        @app.get("/stacked")
+        @limiter.limit("2/minute")
+        @limiter.limit("4/minute", key_func=None)
+        async def route():
+            return {"ok": True}
+
+        client = TestClient(app)
+        # outer limit is 2/minute: 2 passes + deny on the 3rd
+        assert client.get("/stacked").status_code == 200
+        assert client.get("/stacked").status_code == 200
+        assert client.get("/stacked").status_code == 429

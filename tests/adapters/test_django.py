@@ -198,6 +198,27 @@ class TestRateLimitHeaders(_BaseDjangoTest):
         assert "Retry-After" in response
 
 
+class TestDictResponseHeaders(_BaseDjangoTest):
+    """Views returning plain dicts must not receive keys as headers."""
+
+    def test_dict_return_not_mutated_with_header_keys(self) -> None:
+        @self.limiter.limit("5/minute")
+        def my_view(request: HttpRequest) -> dict:
+            return {"hello": "world"}
+
+        response = my_view(self._make_request())
+        assert response == {"hello": "world"}
+
+    def test_response_object_still_gets_headers(self) -> None:
+        @self.limiter.limit("5/minute")
+        def my_view(request: HttpRequest) -> JsonResponse:
+            return JsonResponse({"ok": True})
+
+        response = my_view(self._make_request())
+        assert response.status_code == 200
+        assert "X-RateLimit-Limit" in response
+
+
 class Test429ResponseBody(_BaseDjangoTest):
     """Test 429 response body format."""
 

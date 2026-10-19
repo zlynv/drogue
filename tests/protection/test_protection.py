@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import time
 
+import pytest
+
 from drogue.protection.ban import ProgressiveBanManager
 from drogue.protection.circuit import CircuitBreaker, CircuitState
 from drogue.protection.ddos import DDoSDetector
@@ -134,6 +136,58 @@ class TestProgressiveBanManager:
         retry = ban.get_retry_after("c1")
         assert retry is not None
         assert retry > 0
+
+
+class TestBanViolationPruning:
+    """Violations that fully age out must not leak in _violations forever."""
+
+    def test_single_violation_key_pruned_on_ban_check(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        ban = ProgressiveBanManager(threshold=5, window=60.0)
+        fake_clock = {"now": time.monotonic()}
+
+        # time.monotonic is the sync path's clock; pin it to a fake value
+        monkeypatch.setattr(time, "monotonic", lambda: fake_clock["now"])
+
+        assert ban.record_violation("1.2.3.4") == 0
+        assert "1.2.3.4" in ban._violations
+
+        fake_clock["now"] += 61.0
+        assert ban.is_banned("1.2.3.4") is False
+        assert "1.2.3.4" not in ban._violations
+
+    def test_no_leak_across_many_unique_keys(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        ban = ProgressiveBanManager(threshold=5, window=60.0)
+        fake_clock = {"now": time.monotonic()}
+        monkeypatch.setattr(time, "monotonic", lambda: fake_clock["now"])
+
+        for i in range(100):
+            ban.record_violation(f"10.0.0.{i}")
+        assert len(ban._violations) == 100
+
+        fake_clock["now"] += 61.0
+        assert ban.get_active_bans() == {}
+        assert len(ban._violations) == 0
+
+    def test_active_ban_kept_stale_history_pruned(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        ban = ProgressiveBanManager(threshold=1, window=300.0)
+        fake_clock = {"now": time.monotonic()}
+        monkeypatch.setattr(time, "monotonic", lambda: fake_clock["now"])
+
+        ban.record_violation("banned-key")
+        assert ban.is_banned("banned-key") is True
+        assert "banned-key" in ban._violations
+
+        # Advance mid-ban and inside the violation window:
+        # active ban intact, history kept.
+        fake_clock["now"] += 30.0
+        assert ban.is_banned("banned-key") is True
+        assert "banned-key" in ban._violations
+
+        # Advance past everything: ban expired, nothing unexpired remains.
+        fake_clock["now"] += 400.0
+        assert ban.is_banned("banned-key") is False
+        assert "banned-key" not in ban._violations
+        assert "banned-key" not in ban._bans
 
 
 class TestCircuitBreaker:

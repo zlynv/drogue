@@ -5,6 +5,7 @@ import random
 import time
 
 from drogue.core.abstracts import AcquireResult, Algorithm, Storage
+from drogue.core.errors import BackendFailure
 
 
 class FixedWindowAlgorithm(Algorithm):
@@ -46,62 +47,85 @@ class FixedWindowAlgorithm(Algorithm):
         timeout: float | None = None,
     ) -> AcquireResult:
         max_retries = 5
+        start = time.monotonic()
+        attempt = 0
 
-        for _attempt in range(max_retries):
-            now = time.monotonic()
-            window_id = self._get_window_id(now)
-            storage_key = self._make_key(key, window_id)
+        try:
+            while attempt < max_retries:
+                now = time.monotonic()
+                window_id = self._get_window_id(now)
+                storage_key = self._make_key(key, window_id)
 
-            # Read current count and attempt CAS increment
-            state = await self.storage.get(storage_key)
-            count = state if isinstance(state, int) and state > 0 else 0
-            new_count = count + cost
+                # Read current count and attempt CAS increment
+                state = await self.storage.get(storage_key)
+                count = state if isinstance(state, int) and state > 0 else 0
+                new_count = count + cost
 
-            if new_count <= self.limit:
-                # Try to atomically increment (use expected=None for create-if-absent)
-                expected = count if count > 0 else None
-                if await self.storage.compare_and_swap(
-                    storage_key, expected, new_count, self.window * 2
-                ):
-                    remaining = self.limit - new_count
-                    next_window = (window_id + 1) * self.window
-                    retry_after = next_window - now
-                    return AcquireResult(
-                        allowed=True,
-                        remaining=max(0, remaining),
-                        limit=self.limit,
-                        reset_at=time.time() + retry_after,
-                    )
-                # CAS failed - another request modified the counter, retry
-                await asyncio.sleep(random.uniform(0, 0.001))
-                continue
-            else:
+                if new_count <= self.limit:
+                    # Try to atomically increment (use expected=None for create-if-absent)
+                    expected = count if count > 0 else None
+                    if await self.storage.compare_and_swap(
+                        storage_key, expected, new_count, self.window * 2
+                    ):
+                        remaining = self.limit - new_count
+                        next_window = (window_id + 1) * self.window
+                        retry_after = next_window - now
+                        return AcquireResult(
+                            allowed=True,
+                            remaining=max(0, remaining),
+                            limit=self.limit,
+                            reset_at=time.time() + retry_after,
+                        )
+                    # CAS failed - another request modified the counter, retry
+                    attempt += 1
+                    await asyncio.sleep(random.uniform(0, 0.001))
+                    continue
+
                 # Over limit - don't increment
                 next_window = (window_id + 1) * self.window
                 retry_after = next_window - now
 
                 if block and timeout is not None:
-                    wait_time = min(retry_after, timeout)
-                    await asyncio.sleep(wait_time)
+                    remaining_wait = min(
+                        retry_after, timeout - (time.monotonic() - start)
+                    )
+                    if remaining_wait <= 0:
+                        remaining = max(0, self.limit - (new_count - cost))
+                        return AcquireResult(
+                            allowed=False,
+                            remaining=remaining,
+                            limit=self.limit,
+                            retry_after=retry_after,
+                            reset_at=time.time() + retry_after,
+                        )
+                    await asyncio.sleep(min(remaining_wait, 0.1))
                     continue
 
                 remaining = max(0, self.limit - (new_count - cost))
                 return AcquireResult(
                     allowed=False,
-                    remaining=max(0, remaining),
+                    remaining=remaining,
                     limit=self.limit,
                     retry_after=retry_after,
                     reset_at=time.time() + retry_after,
                 )
 
-        # Exhausted retries - fail closed
-        return AcquireResult(
-            allowed=False,
-            remaining=0,
-            limit=self.limit,
-            retry_after=0.0,
-            reset_at=time.time() + self.window,
-        )
+            # Exhausted retries - fail closed
+            return AcquireResult(
+                allowed=False,
+                remaining=0,
+                limit=self.limit,
+                retry_after=0.0,
+                reset_at=time.time() + self.window,
+            )
+        except BackendFailure:
+            raise
+        except Exception as e:
+            raise BackendFailure(
+                message=f"Fixed window storage error: {e}",
+                backend=self.storage.__class__.__name__,
+                original_error=e,
+            ) from e
 
     async def peek(self, key: str) -> AcquireResult:
         """Check state without consuming tokens."""

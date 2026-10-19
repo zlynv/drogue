@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0] - 2026-10-19
+
+### Added
+
+- Challenge escalation (CAPTCHA interstitials) with a Turnstile provider, signed pass cookies, replay-proof single-use tokens, verify-endpoint rate limiting, and failure escalation into ban/trust
+- Circuit-breaker feedback from FastAPI 5xx responses
+- `DROGUE_STORAGE` setting for DRF throttles
+
+### Fixed
+
+- FastAPI `request: Request` endpoints, stacked limit decorators (FastAPI + Flask), shadow-mode and CIDR crashes, MongoDB CAS/expiry semantics, sliding/fixed window `BackendFailure` wrapping and blocking deadlines, CIDR trusted-proxy matching, `Retry-After` rounding, negative `remaining`, WebSocket per-route buckets, ban violation history leak
+
 ## [0.2.0] - 2026-08-02
 
 ### Added

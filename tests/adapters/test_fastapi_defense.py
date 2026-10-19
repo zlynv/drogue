@@ -1,19 +1,21 @@
 """Tests for auto-wired defenses in the FastAPI adapter.
 
 Covers config-driven pipeline auto-building, honeypot traps, trust
-limit rewards, probe-driven blocking, session jitter, and
-detect-only sentinel scoring over HTTP.
+limit rewards, probe-driven blocking, session jitter, detect-only
+sentinel scoring over HTTP, and circuit-breaker failure feedback.
 """
 from __future__ import annotations
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from starlette.responses import JSONResponse
 
 from drogue.adapters.fastapi import DrogueLimiter
 from drogue.core.config import DrogueConfig
 from drogue.core.storage.memory import MemoryStorage
 from drogue.defense.randomizer import HoneypotManager
 from drogue.protection.ban import ProgressiveBanManager
+from drogue.protection.circuit import CircuitBreaker, CircuitState
 from drogue.protection.pipeline import ProtectionPipeline
 
 
@@ -205,3 +207,62 @@ class TestSentinelHttp:
             assert client.get("/watched").status_code == 200
         stats = limiter.get_pipeline().get_stats()
         assert stats["sentinel"]["total_count"] == 5
+
+
+class TestCircuitBreakerFailureFeedback:
+    """The middleware must feed 5xx responses and app exceptions into the
+    pipeline so the circuit breaker sees real failure rates."""
+
+    def test_5xx_responses_trip_the_breaker(self) -> None:
+        cb = CircuitBreaker(failure_threshold=5, recovery_timeout=60.0)
+        pipeline = ProtectionPipeline(circuit=cb)
+        app, _ = make_app(DrogueConfig(), pipeline=pipeline)
+
+        @app.get("/broken")
+        async def broken():
+            return JSONResponse({"error": "boom"}, status_code=500)
+
+        client = TestClient(app)
+        for _ in range(5):
+            assert client.get("/broken").status_code == 500
+        assert cb.get_status()["failure_count"] == 5
+        assert cb.state == CircuitState.OPEN
+
+        # Breaker open: the pipeline denies before the route runs.
+        response = client.get("/broken")
+        assert response.status_code == 503
+        assert response.json()["error"] == "circuit_open"
+
+    def test_raised_app_errors_trip_the_breaker(self) -> None:
+        cb = CircuitBreaker(failure_threshold=3, recovery_timeout=60.0)
+        pipeline = ProtectionPipeline(circuit=cb)
+        app, _ = make_app(DrogueConfig(), pipeline=pipeline)
+
+        @app.get("/crash")
+        async def crash():
+            raise RuntimeError("boom")
+
+        client = TestClient(app, raise_server_exceptions=False)
+        for _ in range(3):
+            assert client.get("/crash").status_code == 500
+        assert cb.get_status()["failure_count"] == 3
+        assert cb.state == CircuitState.OPEN
+
+        response = client.get("/crash")
+        assert response.status_code == 503
+        assert response.json()["error"] == "circuit_open"
+
+    def test_2xx_keeps_breaker_closed(self) -> None:
+        cb = CircuitBreaker(failure_threshold=2, recovery_timeout=60.0)
+        pipeline = ProtectionPipeline(circuit=cb)
+        app, _ = make_app(DrogueConfig(), pipeline=pipeline)
+
+        @app.get("/healthy")
+        async def healthy():
+            return {"ok": True}
+
+        client = TestClient(app)
+        for _ in range(10):
+            assert client.get("/healthy").status_code == 200
+        assert cb.state == CircuitState.CLOSED
+        assert cb.get_status()["failure_count"] == 0

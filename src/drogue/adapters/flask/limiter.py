@@ -212,14 +212,17 @@ class DrogueLimiter:
                 extractor = key_func or self.key_func
                 key = _run_async(extractor.extract(context))
 
-                for r in self._route_rules.get(func_name, [rule]):
-                    result = self._check_sync(key, r, context, route_key=func_name)
-                    if not result.allowed:
-                        response = jsonify(build_429_response(result))
-                        response.status_code = 429
-                        for header, value in result.headers.items():
-                            response.headers[header] = value
-                        return response
+                # functools.wraps copies __qualname__, so stacked
+                # decorators share func_name: each wrapper must enforce
+                # ONLY its own captured rule, or every rule in the list
+                # is re-checked once per layer (double-counting).
+                result = self._check_sync(key, rule, context, route_key=func_name)
+                if not result.allowed:
+                    response = jsonify(build_429_response(result))
+                    response.status_code = 429
+                    for header, value in result.headers.items():
+                        response.headers[header] = value
+                    return response
 
                 response = func(*args, **kwargs)
 

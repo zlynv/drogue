@@ -90,6 +90,9 @@ class DrogueConfig:
     challenge_cookie_ttl: float = 86400.0
     challenge_token_ttl: float = 300.0
     challenge_failure_mode: str = "block"
+    # Set True for TLS-only deployments so the pass cookie never
+    # travels over plaintext HTTP.
+    challenge_cookie_secure: bool = False
     challenge_failure_threshold: int = 3
     challenge_rate_limit: int = 20
     challenge_rate_window: float = 60.0

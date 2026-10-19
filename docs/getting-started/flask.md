@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-pip install drogue
+pip install drogue[flask]
 ```
 
 ## Basic Usage

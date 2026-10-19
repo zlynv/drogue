@@ -115,6 +115,96 @@ class TestRemoteAddressExtractor:
         result = await extractor.extract(context)
         assert result == "203.0.113.1"
 
+    @pytest.mark.asyncio
+    async def test_cidr_trusted_proxy_honors_xff(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["192.168.1.0/24"])
+        context = {
+            "client": {"host": "192.168.1.42"},
+            "headers": {"x-forwarded-for": "203.0.113.9, 192.168.1.42"},
+        }
+        result = await extractor.extract(context)
+        assert result == "203.0.113.9"
+
+    @pytest.mark.asyncio
+    async def test_mapped_ipv6_peer_matches_cidr(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["10.0.0.0/24"])
+        context = {
+            "client": {"host": "::ffff:10.0.0.7"},
+            "headers": {"x-real-ip": "203.0.113.9"},
+        }
+        result = await extractor.extract(context)
+        assert result == "203.0.113.9"
+
+    @pytest.mark.asyncio
+    async def test_off_cidr_mapped_ipv6_peer_untrusted(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["10.0.0.0/24"])
+        context = {
+            "client": {"host": "::ffff:10.0.1.7"},
+            "headers": {"x-real-ip": "203.0.113.9"},
+        }
+        result = await extractor.extract(context)
+        assert result == "::ffff:10.0.1.7"
+
+    @pytest.mark.asyncio
+    async def test_unknown_string_entry_still_string_matches(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["edge-proxy-1"])
+        context = {"client": {"host": "edge-proxy-1"}}
+        result = await extractor.extract(context)
+        # No headers follow, so the trusted proxy's own address is returned
+        assert result == "edge-proxy-1"
+
+    @pytest.mark.asyncio
+    async def test_unknown_string_entry_does_not_match_other_peer(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["edge-proxy-1"])
+        context = {
+            "client": {"host": "10.0.0.5"},
+            "headers": {"x-real-ip": "203.0.113.9"},
+        }
+        result = await extractor.extract(context)
+        assert result == "10.0.0.5"
+
+    @pytest.mark.asyncio
+    async def test_invalid_trusted_entry_ignored(self) -> None:
+        extractor = RemoteAddressExtractor(
+            trusted_proxies=["not~an~ip!", "10.0.0.5"]
+        )
+        context = {
+            "client": {"host": "10.0.0.5"},
+            "headers": {"x-real-ip": "203.0.113.9"},
+        }
+        result = await extractor.extract(context)
+        assert result == "203.0.113.9"
+
+    @pytest.mark.asyncio
+    async def test_invalid_entry_alone_does_not_trust_everything(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["not~an~ip!"])
+        context = {
+            "client": {"host": "10.0.0.5"},
+            "headers": {"x-real-ip": "203.0.113.9"},
+        }
+        result = await extractor.extract(context)
+        assert result == "10.0.0.5"
+
+    @pytest.mark.asyncio
+    async def test_xff_hop_cidr_trusted(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["198.51.100.0/24"])
+        context = {
+            "client": {"host": "198.51.100.7"},
+            "headers": {"x-forwarded-for": "203.0.113.9, 198.51.100.8"},
+        }
+        result = await extractor.extract(context)
+        assert result == "203.0.113.9"
+
+    @pytest.mark.asyncio
+    async def test_xff_all_hops_trusted_returns_leftmost(self) -> None:
+        extractor = RemoteAddressExtractor(trusted_proxies=["198.51.100.0/24"])
+        context = {
+            "client": {"host": "198.51.100.7"},
+            "headers": {"x-forwarded-for": "198.51.100.8"},
+        }
+        result = await extractor.extract(context)
+        assert result == "198.51.100.8"
+
 
 class TestUserExtractor:
     """Tests for user-based identity extraction."""
@@ -156,6 +246,34 @@ class TestHeaderExtractor:
     async def test_missing_header(self) -> None:
         extractor = HeaderExtractor("x-api-key")
         context: dict[str, Any] = {}
+        result = await extractor.extract(context)
+        assert result == "anonymous"
+
+    @pytest.mark.asyncio
+    async def test_clamps_value_to_256_chars(self) -> None:
+        extractor = HeaderExtractor("x-api-key")
+        context = {"headers": {"x-api-key": "A" * 300}}
+        result = await extractor.extract(context)
+        assert result == "A" * 256
+
+    @pytest.mark.asyncio
+    async def test_drops_non_printable_ascii(self) -> None:
+        extractor = HeaderExtractor("x-api-key")
+        context = {"headers": {"x-api-key": "he\xffllo\nwo\u00e9rld"}}
+        result = await extractor.extract(context)
+        assert result == "helloworld"
+
+    @pytest.mark.asyncio
+    async def test_bytes_value_sanitized(self) -> None:
+        extractor = HeaderExtractor("x-api-key")
+        context = {"headers": {"x-api-key": b"\x01key\r"}}
+        result = await extractor.extract(context)
+        assert result == "key"
+
+    @pytest.mark.asyncio
+    async def test_all_non_printable_falls_back(self) -> None:
+        extractor = HeaderExtractor("x-api-key", fallback="anonymous")
+        context = {"headers": {"x-api-key": "\u4e2d\u6587"}}
         result = await extractor.extract(context)
         assert result == "anonymous"
 

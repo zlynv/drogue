@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import inspect
 import logging
+import math
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any
 
@@ -240,7 +241,8 @@ class DrogueLimiter:
         async def rate_limit_handler(request: Any, exc: RateLimitExceeded) -> Any:
             headers: dict[str, str] = {}
             if exc.retry_after is not None:
-                headers["Retry-After"] = str(int(exc.retry_after))
+                # Retry-After must be a positive integer; int(0.75) is "0"
+                headers["Retry-After"] = str(max(1, math.ceil(exc.retry_after)))
             if exc.limit is not None:
                 headers["X-RateLimit-Limit"] = str(exc.limit)
             if exc.remaining is not None:
@@ -331,14 +333,13 @@ class DrogueLimiter:
                 try:
                     verified = await manager.verify(token, client_ip, client_ip)
                 except ChallengeUnavailableError:
-                    # Undecided: either blocked or fail-through per
-                    # failure_mode; verify() handled the choice.
-                    manager_ok = manager.failure_mode == "allow"
-                    if not manager_ok:
-                        return HTMLResponse(
-                            manager.page_html(next_url),
-                            status_code=503,
-                        )
+                    # Undecided upstream (block mode, or a custom manager
+                    # that raises): never grant a pass on an outage,
+                    # re-serve the check with 503 so clients retry.
+                    return HTMLResponse(
+                        manager.page_html(next_url),
+                        status_code=503,
+                    )
                 except ChallengeVerificationError:
                     manager_ok = False
                 else:
@@ -352,6 +353,7 @@ class DrogueLimiter:
                         max_age=int(manager.cookie_ttl),
                         httponly=True,
                         samesite="lax",
+                        secure=limiter.config.challenge_cookie_secure,
                     )
                 else:
                     return HTMLResponse(
@@ -404,13 +406,23 @@ class DrogueLimiter:
                                 "error": result.reason,
                                 "retry_after": result.retry_after,
                             }).encode()
+                            denial_headers: list[list[bytes]] = [
+                                [b"content-type", b"application/json"],
+                                [b"content-length", str(len(body)).encode()],
+                            ]
+                            if result.retry_after:
+                                denial_headers.append(
+                                    [
+                                        b"retry-after",
+                                        str(
+                                            max(1, math.ceil(result.retry_after))
+                                        ).encode(),
+                                    ]
+                                )
                             await send({
                                 "type": "http.response.start",
                                 "status": result.status_code,
-                                "headers": [
-                                    [b"content-type", b"application/json"],
-                                    [b"content-length", str(len(body)).encode()],
-                                ],
+                                "headers": denial_headers,
                             })
                             await send({
                                 "type": "http.response.body",
@@ -465,13 +477,15 @@ class DrogueLimiter:
                                 page = manager.page_html(
                                     request.url.path
                                 ).encode()
+                                interstitial_headers = [
+                                    [b"content-type", b"text/html; charset=utf-8"],
+                                    [b"content-length", str(len(page)).encode()],
+                                    [b"retry-after", b"1"],
+                                ]
                                 await send({
                                     "type": "http.response.start",
                                     "status": 429,
-                                    "headers": [
-                                        [b"content-type", b"text/html; charset=utf-8"],
-                                        [b"content-length", str(len(page)).encode()],
-                                    ],
+                                    "headers": interstitial_headers,
                                 })
                                 await send({
                                     "type": "http.response.body",
@@ -562,10 +576,19 @@ class DrogueLimiter:
                             )
                             if 200 <= status < 400:
                                 limiter._pipeline.record_success(key)
+                            elif status >= 500:
+                                limiter._pipeline.record_failure(key)
 
                     await send(message)
 
-                await self.app(scope, receive, send_wrapper)
+                try:
+                    await self.app(scope, receive, send_wrapper)
+                except Exception:
+                    # The app failed without a 5xx response reaching the
+                    # client; the breaker still must learn about it.
+                    if limiter._pipeline is not None:
+                        limiter._pipeline.record_failure(key)
+                    raise
 
         app.add_middleware(DrogueASGIMiddleware)
 
@@ -621,7 +644,6 @@ class DrogueLimiter:
                     limit=rule.limit,
                     remaining=0,
                     retry_after=0,
-                    headers={},
                 )
 
         # Get effective limit (adaptive, trust reward, session jitter)
@@ -698,7 +720,6 @@ class DrogueLimiter:
                 limit=result.limit,
                 remaining=result.remaining,
                 retry_after=0,
-                headers=result.headers,
             )
 
         return result
@@ -732,22 +753,36 @@ class DrogueLimiter:
             async def wrapper(*args: Any, **kwargs: Any) -> Any:
                 from drogue.core.errors import BackendFailure
 
-                request = kwargs.pop("request", None) or _find_request(args, kwargs)
+                # FastAPI forwards the injected request among kwargs;
+                # read it WITHOUT popping so the endpoint still gets it.
+                request = kwargs.get("request") or _find_request(args, kwargs)
                 context = _request_to_context(request) if request else {}
+
+                # Endpoints that never declared `request: Request` get
+                # it injected synthetically into the wrapper signature;
+                # strip it again so the real function does not receive
+                # an unexpected kwarg.
+                call_kwargs = kwargs if _forward_request else (
+                    {k: v for k, v in kwargs.items() if k != "request"}
+                )
+                # Positional callers of the wrapper (rare, direct tests)
+                # may pass request positionally: keep them untouched.
+                call_args = args
 
                 extractor = key_func or self.key_func
                 key = await extractor.extract(context)
 
                 try:
-                    for r in self._route_rules.get(func_name, [rule]):
-                        result = await self._check(key, r, context, route_key=func_name)
-                        if not result.allowed:
-                            raise RateLimitExceeded(
-                                retry_after=result.retry_after,
-                                limit=result.limit,
-                                remaining=result.remaining,
-                                key=key,
-                            )
+                    # Check only THIS decorator's rule; stacked decorators
+                    # compose naturally (each layer checks its own rule).
+                    result = await self._check(key, rule, context, route_key=func_name)
+                    if not result.allowed:
+                        raise RateLimitExceeded(
+                            retry_after=result.retry_after,
+                            limit=result.limit,
+                            remaining=result.remaining,
+                            key=key,
+                        )
                 except BackendFailure:
                     # Honor fail_closed=False by allowing traffic through
                     # instead of surfacing an unhandled 500.
@@ -756,7 +791,7 @@ class DrogueLimiter:
                             "BackendFailure in route %s; failing open (fail_closed=False)",
                             func_name,
                         )
-                        return await func(*args, **kwargs)
+                        return await func(*call_args, **call_kwargs)
                     raise
 
                 # Store the result for the middleware to inject route-level
@@ -764,8 +799,9 @@ class DrogueLimiter:
                 if rule.headers:
                     _route_result.set(result)
 
-                response = await func(*args, **kwargs)
+                response = await func(*call_args, **call_kwargs)
                 return response
+
 
             # Inject Request into wrapper's signature so FastAPI injects it
             # even when the original route function has no parameters.
@@ -773,7 +809,9 @@ class DrogueLimiter:
 
             orig_sig = inspect.signature(func)
             params = list(orig_sig.parameters.values())
-            if not any(p.name == "request" for p in params):
+            # Whether the endpoint itself wants the Request forwarded.
+            _forward_request = any(p.name == "request" for p in params)
+            if not _forward_request:
                 params.insert(
                     0,
                     inspect.Parameter(
@@ -888,13 +926,17 @@ class DrogueLimiter:
         rule = parse_rule_string(rule_str, algorithm=algorithm)
 
         def decorator(func: Callable) -> Callable:
+            func_name = f"{func.__module__}.{func.__qualname__}"
+
             @functools.wraps(func)
             async def wrapper(websocket: Any, *args: Any, **kwargs: Any) -> Any:
                 context = _websocket_to_context(websocket)
                 extractor = key_func or self.key_func
                 key = await extractor.extract(context)
 
-                result = await self._check(key, rule, context, route_key="ws")
+                result = await self._check(
+                    key, rule, context, route_key=f"ws:{func_name}"
+                )
                 if not result.allowed:
                     await websocket.close(code=4008, reason="Rate limit exceeded")
                     return

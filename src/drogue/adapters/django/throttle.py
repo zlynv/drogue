@@ -21,9 +21,12 @@ Usage per-view:
 """
 from __future__ import annotations
 
+from collections import OrderedDict
+from contextlib import suppress
 from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework.throttling import BaseThrottle
 
 from drogue.core.algorithms import (
@@ -37,7 +40,7 @@ from drogue.core.rules.rule import AlgorithmType, parse_rule_string
 from drogue.core.storage.memory import MemoryStorage
 
 if TYPE_CHECKING:
-    from drogue.core.abstracts import Algorithm
+    from drogue.core.abstracts import Algorithm, Storage
 
 _ALGORITHM_MAP: dict[AlgorithmType, type[Algorithm]] = {
     AlgorithmType.TOKEN_BUCKET: TokenBucketAlgorithm,
@@ -48,30 +51,45 @@ _ALGORITHM_MAP: dict[AlgorithmType, type[Algorithm]] = {
 }
 
 # Shared storage and algorithms across throttle instances
-_storage: MemoryStorage | None = None
-_algorithms: dict[str, Algorithm] = {}
+_storage: Storage | None = None
+_algorithms: OrderedDict[str, Algorithm] = OrderedDict()
 _MAX_ALGORITHMS = 256
 
 
-def _get_storage() -> MemoryStorage:
+def _get_configured_storage() -> Storage | None:
+    """Storage object from Django settings (DROGUE_STORAGE), or None."""
+    try:
+        configured = getattr(settings, "DROGUE_STORAGE", None)
+    except ImproperlyConfigured:
+        return None
+    return configured if configured is not None else None
+
+
+def _get_storage() -> Storage:
     global _storage
     if _storage is None:
-        _storage = MemoryStorage()
+        configured = _get_configured_storage()
+        _storage = configured if configured is not None else MemoryStorage()
     return _storage
 
 
 def _get_algorithm(rule_str: str, route_key: str = "") -> Algorithm:
     cache_key = f"{route_key}:{rule_str}"
-    if cache_key not in _algorithms:
-        if len(_algorithms) >= _MAX_ALGORITHMS:
-            _algorithms.clear()
-        rule = parse_rule_string(rule_str)
-        algo_class = _ALGORITHM_MAP[rule.algorithm]
-        _algorithms[cache_key] = algo_class(
-            storage=_get_storage(),
-            limit=rule.limit,
-            window=rule.window,
-        )
+    if cache_key in _algorithms:
+        _algorithms.move_to_end(cache_key)
+        return _algorithms[cache_key]
+    if len(_algorithms) >= _MAX_ALGORITHMS:
+        # Evict the least-recently-used single algorithm instead of
+        # clearing everything: a wholesale reset would erase all live
+        # token buckets and hand clients a fresh burst allowance.
+        _algorithms.popitem(last=False)
+    rule = parse_rule_string(rule_str)
+    algo_class = _ALGORITHM_MAP[rule.algorithm]
+    _algorithms[cache_key] = algo_class(
+        storage=_get_storage(),
+        limit=rule.limit,
+        window=rule.window,
+    )
     return _algorithms[cache_key]
 
 
@@ -118,7 +136,9 @@ class DrogueThrottle(BaseThrottle):
             return throttle_rates[scope]
 
         # Fall back to DRF global settings
-        rates = getattr(settings, "REST_FRAMEWORK", {}).get("DEFAULT_THROTTLE_RATES", {})
+        rates: dict[str, Any] = {}
+        with suppress(ImproperlyConfigured):
+            rates = getattr(settings, "REST_FRAMEWORK", {}).get("DEFAULT_THROTTLE_RATES", {})
         if scope and scope in rates:
             return rates[scope]
 

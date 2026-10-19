@@ -1,7 +1,8 @@
 """Bundled :class:`ChallengeProvider` implementations.
 
-Each provider ships as a separate extra to keep the core dependency
-free: ``drogue[turnstile]``, ``drogue[recaptcha]``, ...
+The Turnstile provider ships as its own extra (``drogue[turnstile]``)
+to keep the core dependency free; see ``drogue.challenge.base`` for
+the protocol when writing your own.
 """
 from __future__ import annotations
 

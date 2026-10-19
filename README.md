@@ -10,7 +10,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/zlynv/drogue?style=social)](https://github.com/zlynv/drogue)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-244%20passing-brightgreen.svg)](#development)
+[![Tests](https://img.shields.io/badge/tests-367%20passing-brightgreen.svg)](https://github.com/zlynv/drogue/actions)
 [![codecov](https://codecov.io/github/zlynv/drogue/graph/badge.svg?token=VVJ3EEPOD7)](https://codecov.io/github/zlynv/drogue)
 [![PyPI version](https://img.shields.io/pypi/v/drogue.svg)](https://pypi.org/project/drogue/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/drogue.svg)](https://pypi.org/project/drogue/)
@@ -267,7 +267,14 @@ pipeline for them) or through your own `ProtectionPipeline`:
   limit via `trust_limit_multiplier`.
 - Sentinel needs a few hundred requests of warm-up before its forest
   exists; until then everything passes.
-- Flask headers for dict-returning views do not inject automatically.
+- Redis-backed rate-limit state is single-host only in 0.4.0: CAS
+  state stores monotonic-clock timestamps. Multi-host Redis
+  deployments get per-host limiting today.
+- Adaptive limits and trust multipliers adjust the limit by switching
+  counter keys, which grants a fresh quota on each adjustment.
+- The probe detector can flag ordinary 404 bursts (three unique 404s
+  in a minute); disable with `probes_enabled=False` if your app
+  legitimately serves broken assets.
 
 ---
 

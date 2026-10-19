@@ -5,6 +5,7 @@ import random
 import time
 
 from drogue.core.abstracts import AcquireResult, Algorithm, Storage
+from drogue.core.errors import BackendFailure
 
 
 class SlidingWindowAlgorithm(Algorithm):
@@ -60,69 +61,93 @@ class SlidingWindowAlgorithm(Algorithm):
         timeout: float | None = None,
     ) -> AcquireResult:
         now = time.monotonic()
+        start = now
         max_retries = 5
+        attempt = 0
 
-        for _attempt in range(max_retries):
-            current_window = self._get_window_id(now)
-            previous_window = current_window - 1
-            elapsed = self._get_elapsed(now)
-            weight = (self.window - elapsed) / self.window
+        try:
+            while attempt < max_retries:
+                current_window = self._get_window_id(now)
+                previous_window = current_window - 1
+                elapsed = self._get_elapsed(now)
+                weight = (self.window - elapsed) / self.window
 
-            prev_key = self._make_key(key, previous_window)
-            curr_key = self._make_key(key, current_window)
+                prev_key = self._make_key(key, previous_window)
+                curr_key = self._make_key(key, current_window)
 
-            # Read previous window count (read-only, no race on previous window)
-            prev_count = await self.storage.get(prev_key) or 0
+                # Read previous window count (read-only, no race on previous window)
+                prev_count = await self.storage.get(prev_key) or 0
 
-            # Read current window count and attempt CAS increment
-            state = await self.storage.get(curr_key)
-            curr_count = state if isinstance(state, int) and state > 0 else 0
+                # Read current window count and attempt CAS increment
+                state = await self.storage.get(curr_key)
+                curr_count = state if isinstance(state, int) and state > 0 else 0
 
-            # Compute estimate using current count (before our potential increment)
-            estimated = self._compute_estimated(prev_count, curr_count, weight)
+                # Compute estimate using current count (before our potential increment)
+                estimated = self._compute_estimated(prev_count, curr_count, weight)
 
-            if estimated + cost <= self.limit:
-                # Try to atomically increment current window
-                # Use expected=None for create-if-absent on first request
-                expected = curr_count if curr_count > 0 else None
-                if await self.storage.compare_and_swap(
-                    curr_key, expected, curr_count + cost, self.window * 2
-                ):
-                    remaining = int(self.limit - estimated - cost)
-                    return AcquireResult(
-                        allowed=True,
-                        remaining=max(0, remaining),
-                        limit=self.limit,
-                        reset_at=time.time() + (self.window - elapsed),
-                    )
-                # CAS failed - another request modified the counter, retry
-                await asyncio.sleep(random.uniform(0, 0.001))
-                continue
-            else:
+                if estimated + cost <= self.limit:
+                    # Try to atomically increment current window
+                    # Use expected=None for create-if-absent on first request
+                    expected = curr_count if curr_count > 0 else None
+                    if await self.storage.compare_and_swap(
+                        curr_key, expected, curr_count + cost, self.window * 2
+                    ):
+                        remaining = int(self.limit - estimated - cost)
+                        return AcquireResult(
+                            allowed=True,
+                            remaining=max(0, remaining),
+                            limit=self.limit,
+                            reset_at=time.time() + (self.window - elapsed),
+                        )
+                    # CAS failed - another request modified the counter, retry
+                    attempt += 1
+                    await asyncio.sleep(random.uniform(0, 0.001))
+                    continue
+
                 # Over limit - don't increment
                 retry_after = self.window - elapsed
                 if block and timeout is not None:
-                    await asyncio.sleep(min(retry_after, timeout))
+                    remaining_wait = min(
+                        retry_after, timeout - (time.monotonic() - start)
+                    )
+                    if remaining_wait <= 0:
+                        remaining = max(0, int(self.limit - estimated))
+                        return AcquireResult(
+                            allowed=False,
+                            remaining=remaining,
+                            limit=self.limit,
+                            retry_after=retry_after,
+                            reset_at=time.time() + retry_after,
+                        )
+                    await asyncio.sleep(min(remaining_wait, 0.1))
                     now = time.monotonic()
                     continue
 
                 remaining = max(0, int(self.limit - estimated))
                 return AcquireResult(
                     allowed=False,
-                    remaining=max(0, remaining),
+                    remaining=remaining,
                     limit=self.limit,
                     retry_after=retry_after,
                     reset_at=time.time() + retry_after,
                 )
 
-        # Exhausted retries - fail closed
-        return AcquireResult(
-            allowed=False,
-            remaining=0,
-            limit=self.limit,
-            retry_after=0.0,
-            reset_at=time.time() + self.window,
-        )
+            # Exhausted retries - fail closed
+            return AcquireResult(
+                allowed=False,
+                remaining=0,
+                limit=self.limit,
+                retry_after=0.0,
+                reset_at=time.time() + self.window,
+            )
+        except BackendFailure:
+            raise
+        except Exception as e:
+            raise BackendFailure(
+                message=f"Sliding window storage error: {e}",
+                backend=self.storage.__class__.__name__,
+                original_error=e,
+            ) from e
 
     async def peek(self, key: str) -> AcquireResult:
         """Check state without consuming tokens."""

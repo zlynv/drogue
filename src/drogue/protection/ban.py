@@ -117,38 +117,38 @@ class ProgressiveBanManager:
 
         return 0
 
+    def _prune_expired_state(self, key: str, now: float) -> None:
+        """Drop a key's tombstones once nothing unexpired remains.
+
+        is_banned/get_ban run on every request, so pruning here keeps
+        _violations from leaking keys whose ban and violations have all
+        aged out. Keys with an active ban are left untouched: their
+        history is escalation bookkeeping.
+        """
+        entry = self._bans.get(key)
+        if entry is not None and entry.expires_at is not None and now >= entry.expires_at:
+            del self._bans[key]
+            entry = None
+        if entry is not None:
+            return
+        history = self._violations.get(key)
+        if history is None:
+            return
+        retained = [t for t in history if now - t < self.window]
+        if retained:
+            self._violations[key] = retained
+        else:
+            del self._violations[key]
+
     def is_banned(self, key: str) -> bool:
         """Check if a client is currently banned."""
-        entry = self._bans.get(key)
-        if entry is None:
-            return False
-
-        # Permanent ban
-        if entry.expires_at is None:
-            return True
-
-        # Check expiry
-        now = time.monotonic()
-        if now >= entry.expires_at:
-            # Ban expired, remove
-            del self._bans[key]
-            return False
-
-        return True
+        self._prune_expired_state(key, time.monotonic())
+        return key in self._bans
 
     def get_ban(self, key: str) -> BanEntry | None:
         """Get the ban entry for a client, if any."""
-        entry = self._bans.get(key)
-        if entry is None:
-            return None
-
-        if entry.expires_at is not None:
-            now = time.monotonic()
-            if now >= entry.expires_at:
-                del self._bans[key]
-                return None
-
-        return entry
+        self._prune_expired_state(key, time.monotonic())
+        return self._bans.get(key)
 
     def get_retry_after(self, key: str) -> float | None:
         """Get seconds until ban expires, or None if not banned."""
@@ -189,6 +189,8 @@ class ProgressiveBanManager:
                 expired.append(key)
         for key in expired:
             del self._bans[key]
+        for key in list(self._violations):
+            self._prune_expired_state(key, now)
         return active
 
     def _violation_key(self, key: str) -> str:

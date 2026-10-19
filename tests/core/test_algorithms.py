@@ -2,13 +2,33 @@
 from __future__ import annotations
 
 import asyncio
+import time
 
 import pytest
 
 from drogue.core.algorithms.fixed_window import FixedWindowAlgorithm
 from drogue.core.algorithms.sliding_window import SlidingWindowAlgorithm
 from drogue.core.algorithms.token_bucket import TokenBucketAlgorithm
+from drogue.core.errors import BackendFailure
 from drogue.core.storage.memory import MemoryStorage
+
+
+class _FailingStorage:
+    """Storage stub whose operations always fail with RuntimeError."""
+
+    async def get(self, key: str) -> None:
+        raise RuntimeError("storage unavailable")
+
+    async def set(self, key: str, value: object, ttl: float) -> None:
+        raise RuntimeError("storage unavailable")
+
+    async def delete(self, key: str) -> None:
+        raise RuntimeError("storage unavailable")
+
+    async def compare_and_swap(
+        self, key: str, expected: object, new_value: object, ttl: float
+    ) -> bool:
+        raise RuntimeError("storage unavailable")
 
 
 class TestTokenBucket:
@@ -216,6 +236,70 @@ class TestFixedWindow:
         await algo.reset("user1")
         result = await algo.acquire("user1")
         assert result.allowed is True
+
+
+class TestBackendFailureWrapping:
+    """Storage exceptions must surface as BackendFailure, never raw errors."""
+
+    @pytest.mark.asyncio
+    async def test_token_bucket_backend_failure(self) -> None:
+        algo = TokenBucketAlgorithm(storage=_FailingStorage(), limit=5, window=1.0)
+        with pytest.raises(BackendFailure):
+            await algo.acquire("user1")
+
+    @pytest.mark.asyncio
+    async def test_sliding_window_backend_failure(self) -> None:
+        algo = SlidingWindowAlgorithm(storage=_FailingStorage(), limit=5, window=1.0)
+        with pytest.raises(BackendFailure):
+            await algo.acquire("user1")
+
+    @pytest.mark.asyncio
+    async def test_fixed_window_backend_failure(self) -> None:
+        algo = FixedWindowAlgorithm(storage=_FailingStorage(), limit=5, window=1.0)
+        with pytest.raises(BackendFailure):
+            await algo.acquire("user1")
+
+    @pytest.mark.asyncio
+    async def test_backend_failure_preserves_original_error(self) -> None:
+        algo = SlidingWindowAlgorithm(storage=_FailingStorage(), limit=5, window=1.0)
+        with pytest.raises(BackendFailure) as exc_info:
+            await algo.acquire("user1")
+        assert isinstance(exc_info.value.original_error, RuntimeError)
+
+
+class TestBlockingDeadline:
+    """block=True with a finite timeout must stop waiting at the deadline."""
+
+    @pytest.mark.asyncio
+    async def test_fixed_window_blocking_respects_timeout(self) -> None:
+        storage = MemoryStorage()
+        algo = FixedWindowAlgorithm(storage=storage, limit=5, window=60.0)
+        for _ in range(5):
+            result = await algo.acquire("user1")
+            assert result.allowed is True
+
+        start = time.monotonic()
+        result = await algo.acquire("user1", block=True, timeout=0.2)
+        elapsed = time.monotonic() - start
+
+        assert result.allowed is False
+        assert result.retry_after is not None
+        assert elapsed < 2.0
+
+    @pytest.mark.asyncio
+    async def test_sliding_window_blocking_respects_timeout(self) -> None:
+        storage = MemoryStorage()
+        algo = SlidingWindowAlgorithm(storage=storage, limit=5, window=60.0)
+        for _ in range(5):
+            result = await algo.acquire("user1")
+            assert result.allowed is True
+
+        start = time.monotonic()
+        result = await algo.acquire("user1", block=True, timeout=0.2)
+        elapsed = time.monotonic() - start
+
+        assert result.allowed is False
+        assert elapsed < 2.0
 
 
 class TestAlgorithmComparison:

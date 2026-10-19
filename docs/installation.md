@@ -30,6 +30,13 @@ pip install drogue[drf]       # Django REST Framework
 
 ```bash
 pip install drogue[redis]     # Redis backend (redis[hiredis] >= 5.0)
+pip install drogue[mongodb]   # MongoDB backend (motor >= 3.0)
+```
+
+## Challenge extras
+
+```bash
+pip install drogue[turnstile] # Cloudflare Turnstile CAPTCHA challenges
 ```
 
 ## Observability extras

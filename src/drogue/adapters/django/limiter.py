@@ -178,8 +178,14 @@ class DrogueRateLimiter:
 
                 response = view_func(request, *args, **kwargs)
 
-                # Inject headers from the first check result
-                if hasattr(response, "items") and rule.headers:
+                # Inject headers from the first check result.Django
+                # converts plain-dict returns itself; writing into a
+                # dict would turn rate-limit headers into body keys.
+                if (
+                    rule.headers
+                    and not isinstance(response, dict)
+                    and hasattr(response, "items")
+                ):
                     for header, value in result.headers.items():
                         response[header] = value
 

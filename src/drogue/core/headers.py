@@ -62,5 +62,5 @@ def build_429_response(
     if result.limit:
         body["limit"] = result.limit
     if result.remaining is not None:
-        body["remaining"] = result.remaining
+        body["remaining"] = max(0, result.remaining)
     return body

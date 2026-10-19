@@ -260,7 +260,12 @@ class ChallengeManager:
         redirects) and protocol-relative (``//evil.com``) collapse to
         ``/``.
         """
-        if not raw or not raw.startswith("/") or raw.startswith("//"):
+        if (
+            not raw
+            or not raw.startswith("/")
+            or raw.startswith("//")
+            or "\\" in raw
+        ):
             return "/"
         return raw
 

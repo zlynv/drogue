@@ -15,6 +15,36 @@ def _is_valid_ip(value: str) -> bool:
         return False
 
 
+def _is_trusted_proxy(ip: str, trusted: set[str]) -> bool:
+    """Check whether ip matches a trusted proxy entry.
+
+    Trusted entries may be exact addresses, CIDR networks, or plain
+    labels. IPv4-mapped IPv6 peers (::ffff:10.0.0.1) are normalized to
+    their IPv4 form so both address- and CIDR-based entries match.
+    Invalid entries are skipped rather than raising.
+    """
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return ip in trusted
+
+    normalized = str(addr)
+    mapped = addr.ipv4_mapped if isinstance(addr, ipaddress.IPv6Address) else None
+
+    for entry in trusted:
+        if entry in (ip, normalized):
+            return True
+        try:
+            network = ipaddress.ip_network(entry, strict=False)
+        except ValueError:
+            continue
+        if addr in network:
+            return True
+        if mapped is not None and mapped in network:
+            return True
+    return False
+
+
 class RemoteAddressExtractor(IdentityExtractor):
     """Extract rate limit key by client IP address.
 
@@ -49,7 +79,7 @@ class RemoteAddressExtractor(IdentityExtractor):
         # Only honor forwarded headers when the direct peer is a proxy we
         # trust. With no trusted proxies configured, header values are
         # attacker-controlled and must never be used as identity.
-        if not self.trusted_proxies or peer not in self.trusted_proxies:
+        if not self.trusted_proxies or not _is_trusted_proxy(peer, self.trusted_proxies):
             return peer
 
         # Peer is a trusted proxy: resolve the real client from headers.
@@ -88,7 +118,7 @@ class RemoteAddressExtractor(IdentityExtractor):
         # Walk from right to left, find the last untrusted IP
         # (the one closest to the client that isn't a known proxy)
         for ip in reversed(ips):
-            if ip not in self.trusted_proxies:
+            if not _is_trusted_proxy(ip, self.trusted_proxies):
                 return ip
 
         # All IPs are trusted proxies; return the leftmost (original client)
@@ -138,15 +168,24 @@ class UserExtractor(IdentityExtractor):
 class HeaderExtractor(IdentityExtractor):
     """Extract rate limit key from a specific header."""
 
+    _MAX_LENGTH = 256
+
     def __init__(self, header_name: str, fallback: str = "anonymous") -> None:
         self.header_name = header_name.lower()
         self.fallback = fallback
+
+    def _sanitize(self, raw: str) -> str:
+        """Clamp to a bounded length, dropping non-printable-ASCII characters."""
+        cleaned = "".join(ch for ch in raw if 32 <= ord(ch) <= 126)
+        return cleaned[: self._MAX_LENGTH]
 
     async def extract(self, context: dict[str, Any]) -> str:
         headers = context.get("headers", {})
         for key, val in headers.items():
             if key.lower() == self.header_name:
-                return val.decode() if isinstance(val, bytes) else str(val)
+                raw = val.decode() if isinstance(val, bytes) else str(val)
+                cleaned = self._sanitize(raw)
+                return cleaned if cleaned else self.fallback
         return self.fallback
 
 

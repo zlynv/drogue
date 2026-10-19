@@ -1,16 +1,19 @@
 """Drogue - Modern rate limiting and application-layer protection for Python.
 
 Usage:
-    from drogue import DrogueLimiter, RateLimitRule
+    from fastapi import FastAPI
+    from drogue.adapters.fastapi import DrogueLimiter
 
-    # FastAPI
     app = FastAPI()
-    limiter = DrogueLimiter(app)
+    limiter = DrogueLimiter(app, default_limits=["100/minute"])
 
     @app.get("/api/data")
-    @limiter.limit("100/minute")
+    @limiter.limit("10/minute")
     async def get_data():
         return {"data": "value"}
+
+Core building blocks (rules, storage, algorithms, errors) are exported
+from ``drogue`` directly; framework adapters live in ``drogue.adapters``.
 """
 
 from __future__ import annotations
@@ -39,7 +42,7 @@ from drogue.core.identity import (
 from drogue.core.rules.rule import AlgorithmType, RateLimitRule, parse_rule_string
 from drogue.core.storage.memory import MemoryStorage
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     # Core

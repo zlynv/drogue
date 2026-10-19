@@ -21,10 +21,14 @@ class TestDjangoThrottleWaitShadow:
     """
 
     def test_wait_returns_float_not_raises(self) -> None:
+        from django.core.exceptions import ImproperlyConfigured
+
         try:
             from drogue.adapters.django.throttle import DrogueThrottle
-        except (ImportError, ModuleNotFoundError):
-            pytest.skip("djangorestframework not installed")
+        except (ImportError, ModuleNotFoundError, ImproperlyConfigured):
+            pytest.skip(
+                "djangorestframework not installed or Django settings unconfigured"
+            )
 
         from unittest.mock import patch
 
