@@ -96,23 +96,13 @@ No `request: Request` parameter. Rate limit headers are injected automatically. 
 
 ---
 
-## Performance
+--------|--------|-------
 
-| Metric | drogue | Notes |
-|--------|--------|-------|
-| Token Bucket | ~1.4us | median latency per acquire |
-| Sliding Window | ~1.6us | median latency per acquire |
-| Fixed Window | ~1.1us | median latency per acquire |
-| Throughput | 700K+ req/s | single worker, in-memory storage |
-| Memory per key | ~150 bytes | in-process storage |
+## Benchmarks
 
-*Measured on Intel Core Ultra 5 225F, Python 3.13, asyncio single-worker, in-memory storage, 100K iterations.*
+Run the full benchmark suite (see the enchmarks/ directory):
 
-### Benchmarks
-
-Run the full benchmark suite:
-
-```bash
+`ash
 pip install locust pytest-benchmark
 pip install -e ".[fastapi]"
 
@@ -120,25 +110,7 @@ pip install -e ".[fastapi]"
 pytest benchmarks/test_algorithm_latency.py -v --benchmark-only
 pytest benchmarks/test_algorithm_throughput.py -v --benchmark-only
 pytest benchmarks/test_memory.py -v --benchmark-only
-
-# HTTP load test
-python -m uvicorn benchmarks.apps.fastapi_app:app --port 8000
-locust -f benchmarks/locustfile.py --headless -u 100 -r 10 --run-time 60s -H http://localhost:8000
-
-# DDoS protection test
-python -m uvicorn benchmarks.apps.ddos_app:app --port 8000
-locust -f benchmarks/ddos_locustfile.py --headless -u 100 -r 10 --run-time 60s -H http://localhost:8000
-```
-
-**Results (Windows, Python 3.13, MemoryStorage):**
-
-| Test | Result |
-|------|--------|
-| Function-level ops/sec | 80-88K acquire calls/sec |
-| HTTP throughput | 2,400+ req/sec |
-| DDoS protection | 97.8% attackers banned, p50: 5ms |
-
----
+`
 
 ## Install
 
@@ -342,3 +314,6 @@ MIT License. See [LICENSE](LICENSE) for details.
 ---
 
 Created by [Zlynv](https://github.com/Zlynv)
+
+
+
