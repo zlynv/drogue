@@ -42,7 +42,7 @@ from drogue.core.identity import (
 from drogue.core.rules.rule import AlgorithmType, RateLimitRule, parse_rule_string
 from drogue.core.storage.memory import MemoryStorage
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = [
     # Core

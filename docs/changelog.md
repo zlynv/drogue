@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.1
+
+### Added
+
+- `error_renderer` callback on `DrogueLimiter` for custom 429 response bodies (receive request, exception, and headers; return a response)
+- Support for sync (non-`async def`) FastAPI endpoints in the rate limit decorator
+
+### Fixed
+
+- Sync FastAPI endpoints no longer raise `TypeError` at request time
+- README drops unverified performance claims; benchmark instructions remain
+
+### Documentation
+
+- Migration guide notes token bucket vs fixed window burst behavior (with `FIXED_WINDOW` opt-in for strict quotas)
+
 ## 0.4.0
 
 ### Added

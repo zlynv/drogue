@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.1] - 2026-10-19
+
+### Added
+
+- `error_renderer` callback for custom 429 response bodies
+- Sync (non-`async def`) FastAPI endpoint support in the rate limit decorator
+
+### Fixed
+
+- Sync endpoints no longer crash with a TypeError at request time
+- README removes unverified performance claims
+
 ## [0.4.0] - 2026-10-19
 
 ### Added

@@ -10,7 +10,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/zlynv/drogue?style=social)](https://github.com/zlynv/drogue)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-367%20passing-brightgreen.svg)](https://github.com/zlynv/drogue/actions)
+[![Tests](https://img.shields.io/badge/tests-372%20passing-brightgreen.svg)](https://github.com/zlynv/drogue/actions)
 [![codecov](https://codecov.io/github/zlynv/drogue/graph/badge.svg?token=VVJ3EEPOD7)](https://codecov.io/github/zlynv/drogue)
 [![PyPI version](https://img.shields.io/pypi/v/drogue.svg)](https://pypi.org/project/drogue/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/drogue.svg)](https://pypi.org/project/drogue/)
