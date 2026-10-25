@@ -1,0 +1,67 @@
+# drogue
+
+> Rate limiting and application-layer protection for Python. FastAPI, Django, Flask, Django REST Framework. No `request: Request` in your signatures.
+
+## Install
+
+```bash
+pip install drogue[fastapi]   # or [django], [flask], [drf]
+```
+
+## Usage (FastAPI)
+
+```python
+from fastapi import FastAPI
+from drogue.adapters.fastapi import DrogueLimiter
+
+app = FastAPI()
+limiter = DrogueLimiter(app, default_limits=["100/minute"])
+
+@app.get("/api/data")
+@limiter.limit("10/minute")
+async def get_data():
+    return {"data": "value"}   # no request: Request needed
+```
+
+Sync `def` endpoints work too. The decorator handles both.
+
+## Key API
+
+- `DrogueLimiter(app, ...)` - attach to app, optional `default_limits`, `storage`, `key_func`, `config`, `error_renderer`
+- `@limiter.limit("10/minute", algorithm=..., key_func=..., block=..., shadow=...)` - per-route limit
+- `@limiter.limit_ws("10/minute")` - WebSocket rate limiting
+- `DrogueConfig(...)` - enable ban, DDoS, circuit breaker, CIDR, trust, challenges (all off by default)
+- `error_renderer(request, exc, headers) -> Response` - custom 429 body
+
+## Rate limit strings
+
+`"100/minute"`, `"10/second;50/minute"` (multi-window), `"100/minute@cost=2"` (cost-aware)
+
+Algorithms: `TOKEN_BUCKET` (default, burst-friendly), `SLIDING_WINDOW`, `FIXED_WINDOW`, `GCRA`, `LEAKY_BUCKET`
+
+## Storage
+
+- `MemoryStorage()` (default, in-process)
+- `RedisStorage(url="redis://localhost")` (multi-process)
+- `MongoDBStorage(...)` (via Motor)
+
+## Headers
+
+`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After` injected on all responses by default.
+
+## Migration from slowapi
+
+Remove `request: Request` from endpoints. Replace `Limiter(key_func=...)` with `DrogueLimiter(app)`. drogue defaults to Token Bucket; slowapi uses Fixed Window (strict). Use `algorithm=AlgorithmType.FIXED_WINDOW` to match slowapi semantics.
+
+## What drogue does NOT do
+
+SQL injection, XSS, CSRF, authentication, authorization. Use a dedicated security stack.
+
+## Documentation
+
+- Full docs: https://zlynv.github.io/drogue/
+- Migration guide: https://zlynv.github.io/drogue/migration/slowapi/
+- Security model: https://zlynv.github.io/drogue/guides/security-model/
+- API reference: https://zlynv.github.io/drogue/api/adapters/
+- GitHub: https://github.com/zlynv/drogue
+- PyPI: https://pypi.org/project/drogue/

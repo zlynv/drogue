@@ -16,7 +16,9 @@
 [![PyPI downloads](https://img.shields.io/pypi/dm/drogue.svg)](https://pypi.org/project/drogue/)
 [![Supported frameworks](https://img.shields.io/badge/frameworks-FastAPI%20%7C%20Django%20%7C%20Flask-lightgrey.svg)](#features)
 
-Modern rate limiting and application-layer protection for Python. Clean APIs, WebSocket support, and built-in defense layers.
+**Rate limiting and application-layer protection for Python. No `request: Request` in your function signatures.**
+
+Clean APIs, WebSocket support, built-in defense layers. FastAPI, Django, Flask, Django REST Framework.
 
 **[Read the documentation](https://zlynv.github.io/drogue/)**
 
@@ -24,9 +26,7 @@ Modern rate limiting and application-layer protection for Python. Clean APIs, We
 
 ## What problem does drogue solve?
 
-Web applications need rate limiting to prevent abuse, but existing solutions have gaps:
-
-1. **Signature pollution** -- Most rate limiters force `request: Request` into every function signature, coupling your business logic to the rate limiter.
+Most Python rate limiters force `request: Request` into every function signature, coupling your business logic to the rate limiter. drogue extracts identity from the ASGI/WSGI context without polluting endpoint signatures.
 
 2. **No WebSocket protection** -- Real-time applications using WebSockets have no built-in rate limiting.
 
