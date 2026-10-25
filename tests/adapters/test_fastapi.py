@@ -1,6 +1,8 @@
 """Tests for FastAPI adapter."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
@@ -9,6 +11,9 @@ from starlette.requests import Request
 from drogue.adapters.fastapi import DrogueLimiter
 from drogue.core.rules.rule import AlgorithmType
 from drogue.core.storage.memory import MemoryStorage
+
+if TYPE_CHECKING:
+    from drogue.core.errors import RateLimitExceeded
 
 
 @pytest.fixture
@@ -352,3 +357,121 @@ class TestRequestParameterForwarding:
         assert client.get("/stacked").status_code == 200
         assert client.get("/stacked").status_code == 200
         assert client.get("/stacked").status_code == 429
+
+
+class TestSyncEndpointSupport:
+    """Routes defined as plain `def` (not `async def`) must work.
+    Regression: the decorator used to await sync functions directly
+    and crashed with a TypeError at request time."""
+
+    def test_sync_endpoint_works(self, app: FastAPI, storage: MemoryStorage) -> None:
+        limiter = DrogueLimiter(app, storage=storage)
+
+        @app.get("/sync")
+        @limiter.limit("5/minute")
+        def sync_route():
+            return {"ok": True}
+
+        client = TestClient(app)
+        r = client.get("/sync")
+        assert r.status_code == 200
+        assert r.json() == {"ok": True}
+
+    def test_sync_endpoint_respects_limit(
+        self, app: FastAPI, storage: MemoryStorage
+    ) -> None:
+        limiter = DrogueLimiter(app, storage=storage)
+
+        @app.get("/sync-limited")
+        @limiter.limit("2/minute")
+        def sync_route():
+            return {"ok": True}
+
+        client = TestClient(app)
+        assert client.get("/sync-limited").status_code == 200
+        assert client.get("/sync-limited").status_code == 200
+        assert client.get("/sync-limited").status_code == 429
+
+    def test_mixed_sync_and_async_works(
+        self, app: FastAPI, storage: MemoryStorage
+    ) -> None:
+        limiter = DrogueLimiter(app, storage=storage)
+
+        @app.get("/mixed-sync")
+        @limiter.limit("5/minute")
+        def sync_route():
+            return {"type": "sync"}
+
+        @app.get("/mixed-async")
+        @limiter.limit("5/minute")
+        async def async_route():
+            return {"type": "async"}
+
+        client = TestClient(app)
+        assert client.get("/mixed-sync").json() == {"type": "sync"}
+        assert client.get("/mixed-async").json() == {"type": "async"}
+
+
+class TestErrorRendererHook:
+    """Custom 429 response via error_renderer callback."""
+
+    def test_custom_error_body(self, app: FastAPI, storage: MemoryStorage) -> None:
+        from starlette.requests import Request as StarletteRequest
+        from starlette.responses import JSONResponse
+
+
+        def custom_renderer(
+            request: StarletteRequest,
+            exc: RateLimitExceeded,
+            headers: dict[str, str],
+        ):
+            return JSONResponse(
+                {"api_error": "rate_limited", "detail": "Slow down"},
+                status_code=429,
+                headers=headers,
+            )
+
+        limiter = DrogueLimiter(
+            app, storage=storage, error_renderer=custom_renderer
+        )
+
+        @app.get("/custom-error")
+        @limiter.limit("1/minute")
+        def route():
+            return {"ok": True}
+
+        client = TestClient(app)
+        assert client.get("/custom-error").status_code == 200
+        r = client.get("/custom-error")
+        assert r.status_code == 429
+        assert r.json() == {"api_error": "rate_limited", "detail": "Slow down"}
+
+    def test_headers_injected_into_custom_response(
+        self, app: FastAPI, storage: MemoryStorage
+    ) -> None:
+        from starlette.requests import Request as StarletteRequest
+        from starlette.responses import JSONResponse
+
+
+        def custom_renderer(
+            request: StarletteRequest,
+            exc: RateLimitExceeded,
+            headers: dict[str, str],
+        ):
+            return JSONResponse({"error": "custom"}, status_code=429, headers=headers)
+
+        limiter = DrogueLimiter(
+            app, storage=storage, error_renderer=custom_renderer
+        )
+
+        @app.get("/custom-headers")
+        @limiter.limit("1/minute")
+        def route():
+            return {"ok": True}
+
+        client = TestClient(app)
+        assert client.get("/custom-headers").status_code == 200
+        r = client.get("/custom-headers")
+        assert r.status_code == 429
+        assert "Retry-After" in r.headers
+        assert "X-RateLimit-Limit" in r.headers

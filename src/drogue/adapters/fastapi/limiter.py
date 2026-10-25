@@ -88,9 +88,11 @@ class DrogueLimiter:
         default_limits: list[str] | None = None,
         pipeline: Any | None = None,
         challenge_provider: Any | None = None,
+        error_renderer: Callable[[Any, RateLimitExceeded, dict[str, str]], Any] | None = None,
     ) -> None:
         self.config = config or DrogueConfig()
         self.storage = storage if storage is not None else MemoryStorage()
+        self._error_renderer = error_renderer
         self.key_func = key_func or RemoteAddressExtractor(
             trusted_proxies=self.config.trusted_proxies,
             trust_x_real_ip=self.config.trust_x_real_ip,
@@ -272,6 +274,8 @@ class DrogueLimiter:
                 body["retry_after"] = exc.retry_after
             if exc.limit is not None:
                 body["limit"] = exc.limit
+            if limiter._error_renderer is not None:
+                return limiter._error_renderer(request, exc, headers)
             return JSONResponse(
                 body,
                 status_code=429,
@@ -748,6 +752,13 @@ class DrogueLimiter:
         def decorator(func: Callable) -> Callable:
             func_name = f"{func.__module__}.{func.__qualname__}"
             self._route_rules.setdefault(func_name, []).append(rule)
+            _is_async = inspect.iscoroutinefunction(func)
+
+            async def _invoke(*a: Any, **kw: Any) -> Any:
+                if _is_async:
+                    return await func(*a, **kw)
+                from starlette.concurrency import run_in_threadpool
+                return await run_in_threadpool(func, *a, **kw)
 
             @functools.wraps(func)
             async def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -791,7 +802,7 @@ class DrogueLimiter:
                             "BackendFailure in route %s; failing open (fail_closed=False)",
                             func_name,
                         )
-                        return await func(*call_args, **call_kwargs)
+                        return await _invoke(*call_args, **call_kwargs)
                     raise
 
                 # Store the result for the middleware to inject route-level
@@ -799,7 +810,7 @@ class DrogueLimiter:
                 if rule.headers:
                     _route_result.set(result)
 
-                response = await func(*call_args, **call_kwargs)
+                response = await _invoke(*call_args, **call_kwargs)
                 return response
 
 

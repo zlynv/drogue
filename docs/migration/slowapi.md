@@ -104,6 +104,8 @@ limiter = DrogueLimiter(app, storage=storage)
 | Algorithms | Token Bucket | Token Bucket, Sliding Window, Fixed Window, GCRA, Leaky Bucket |
 | Storage | Redis, Memcached | Memory, Redis, Count-Min Sketch |
 
+> **Burst behavior note.** drogue defaults to Token Bucket, which permits short bursts above the average rate (e.g. `"30/minute"` may briefly allow more than 30 in a window). slowapi and `limits` use Fixed Windows, which enforce a hard cap. If you rely on strict per-window quotas, use `algorithm=AlgorithmType.FIXED_WINDOW` in `@limiter.limit(...)` to match slowapi semantics.
+
 ## Additional Features
 
 Once migrated, you gain access to:
