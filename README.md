@@ -100,9 +100,9 @@ No `request: Request` parameter. Rate limit headers are injected automatically. 
 
 ## Benchmarks
 
-Run the full benchmark suite (see the enchmarks/ directory):
+Run the full benchmark suite (see the `benchmarks/` directory):
 
-`ash
+```bash
 pip install locust pytest-benchmark
 pip install -e ".[fastapi]"
 
@@ -110,7 +110,7 @@ pip install -e ".[fastapi]"
 pytest benchmarks/test_algorithm_latency.py -v --benchmark-only
 pytest benchmarks/test_algorithm_throughput.py -v --benchmark-only
 pytest benchmarks/test_memory.py -v --benchmark-only
-`
+```
 
 ## Install
 
