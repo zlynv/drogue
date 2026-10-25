@@ -111,8 +111,9 @@ nav:
     - Metrics: observability/metrics.md
     - Logging: observability/logging.md
     - OpenTelemetry: observability/opentelemetry.md
-  - Guides:
-    - Security Model: guides/security-model.md
+    - Guides:
+      - Why drogue: guides/why-drogue.md
+      - Security Model: guides/security-model.md
     - Real-World Examples: guides/real-world-examples.md
     - CDN vs Library-Level: guides/cdn-vs-library.md
     - Serverless: guides/serverless.md
